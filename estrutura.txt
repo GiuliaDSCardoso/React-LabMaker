@@ -1,0 +1,38 @@
+src/
+ .
+ --> app.jsx
+ .
+ .
+ -->componentes/
+ .	.
+ .      .
+ .	--> AddSolicitação.jsx
+ .	.
+ .	--> Solicitacao.jsx
+ .	
+ .
+ -->pages/
+ .	.
+ .      .
+ .	--> Contact.jsx
+ .	.
+ .	--> Emprestimo.jsx
+ .	.
+ .	--> Login.jsx
+ .	
+ .
+ -->styles/
+ .
+ .      .
+ .	--> ALink.jsx
+ .	.
+ .	--> Body.jsx
+ .	.
+ .	--> Button.jsx
+ .	.	
+ .	--> CardStyle.jsx
+ .	.	
+ .	--> Input.jsx
+
+
+
