@@ -13,7 +13,7 @@ function CardStyle({ title, description, icon, href, color }) {
   return (
     <a
       href={href}
-      className="flex flex-col w-64 h-40 p-6 rounded-2xl shadow-lg  hover:shadow-xl transition-shadow duration-300"
+      className="flex flex-col  md:h-40 w-64 p-6 rounded-2xl shadow-lg  hover:shadow-xl transition-shadow duration-300"
     >
       <div className='flex  items-center gap-3 mb-3'>
         {/* Ícone */}
@@ -21,14 +21,14 @@ function CardStyle({ title, description, icon, href, color }) {
           {icon}
         </div>
         {/* Título */}
-        <h2 className="text-[18px] text-black/70 font-bold leading-tight ">
+        <h2 className="text-[18px]  text-black/70 font-bold leading-tight ">
           {title}
         </h2>
       </div>
       
 
       {/* Descrição */}
-      <p className="text-black/50 text-md leading-relaxed line-clamp-2">
+      <p className="text-black/50 md:text-md text-sm leading-relaxed line-clamp-2">
         {description}
       </p>
     </a>

@@ -1,25 +1,24 @@
 import "./index.css";
-import ALink from "./assets/styles/ALink.jsx";
+
 import "lucide-react";
 import { CalendarSearchIcon, FileBoxIcon, PackagePlusIcon, ReplaceIcon } from "lucide-react";
 import CardStyle from "./assets/styles/CardStyle.jsx";
 import Body from "./assets/styles/Body.jsx";
 
+import Nav from "./assets/styles/Nav.jsx";
+
+
+
 
 function App(){
+
+
   return(
     <Body>
        {/* Nav */}
-      <nav className="flex h-10 bg-blue-50 items-center  justify-center w-screen">
-        <img src="../logos/logo-azul.svg" className="w-[80%] h-[40px]" alt="Lab Maker Logo" />
-        <ul className="flex gap-9  w-[100%] items-center">
-         
-         <ALink href="/home">Home</ALink>
-         <ALink href="/contact">Contato</ALink>
-         <ALink href="/login">Login</ALink>
-        </ul>
-      </nav>
-      <div className="flex flex-col gap-6">
+       
+        <Nav/>
+
         {/* Container */}
       <div className="w-screen flex justify-center items-center bg-gradient-to-r from-[#1976d2] to-blue-800 h-80">
         <div>
@@ -30,8 +29,9 @@ function App(){
         </div>
       </div>
       {/* Cards */}
-      <div className="w-screen flex justify-center items-center gap-10 bg-blue-50">
-        <CardStyle
+      <div className="w-screen flex-col mt-[2%] md:flex-row flex justify-center items-center gap-3 bg-blue-50">
+        <div className=" flex flex-col  md:flex-row gap-3">
+          <CardStyle
           title="Empréstimo de Componentes"
           description="Registro e controle de Materiais"
           icon={<ReplaceIcon />}
@@ -45,7 +45,9 @@ function App(){
           href="/agendauso"
           color="red"
         />
-        <CardStyle
+        </div>
+        <div className=" flex flex-col  md:flex-row gap-3">
+          <CardStyle
           title="Guardar Projetos"
           description="Projetos armazenados no Maker"
           icon={< FileBoxIcon />}
@@ -58,9 +60,12 @@ function App(){
           icon={<PackagePlusIcon/>}
           href="/pedidos"
           color="green"
-        />
+        /> 
+        </div>
+        
+       
       </div>
-      </div>
+    
       
     </Body>
   );

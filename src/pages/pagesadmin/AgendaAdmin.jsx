@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import AddAgendamento from "../../components/AddAgendamento";
-import { MoveLeftIcon, Phone } from "lucide-react";
+import { Phone } from "lucide-react";
 import Body from "../../assets/styles/Body";
-import { useNavigate } from "react-router-dom";
+
+import NavAdmin from "../../assets/styles/NavAdmin";
 
 export default function AgendaAdmin() {
-  const navigate = useNavigate();
+
   const [todosDados, setTodosDados] = useState([]);
   const [filtro, setFiltro] = useState("recentes"); 
 // recentes | semana
@@ -34,9 +35,7 @@ export default function AgendaAdmin() {
     setTodosDados(ativos);
 }
 
-  function onBackClick() {
-    navigate(-1);
-  }
+ 
   useEffect(() => {
   carregar();
 
@@ -82,7 +81,14 @@ function aplicarFiltro() {
 
   return todosDados;
 }
+useEffect(() => {
+        const isAuth = localStorage.getItem("auth");
+        if (!isAuth) {
+        window.location.href = "/";
+        }
+    }, []);
 
+  
 function formatarDataHora(timestamp) {
   if (!timestamp) return "";
 
@@ -108,16 +114,12 @@ function isExpirado(item) {
 
   return (
      <Body>
+       <NavAdmin/>
       <header className="flex items-center bg-gradient-to-r mb-[2%] from-[#1976d2] to-blue-800 h-40 px-6">
-        <button
-          onClick={onBackClick}
-          className="text-white bg-[#0062c4] p-2 rounded-full"
-        >
-          <MoveLeftIcon />
-        </button>
+       
 
         <h1 className="text-3xl text-white font-bold text-center w-full">
-          Solicitação de empréstimo <br /> de componentes
+          Solicitação de Agendamento<br /> do LabMaker
         </h1>
       </header>
 

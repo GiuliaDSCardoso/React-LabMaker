@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
 import Body from "../../assets/styles/Body.jsx";
-import { useNavigate } from "react-router-dom";
 import {
-  MoveLeftIcon,
   DeleteIcon,
   PhoneIcon,
   FileIcon,
 } from "lucide-react";
+import NavAdminBlue from "../../assets/styles/NavAdminBlue.jsx";
 
 export default function PedidosAdmin() {
   const [pedidos, setPedidos] = useState([]);
@@ -14,12 +13,11 @@ export default function PedidosAdmin() {
   const [statusFilter, setStatusFilter] = useState("all"); // all | completed | pending
   const [historicoAberto, setHistoricoAberto] = useState(null);
 
-  const navigate = useNavigate();
+
 
   // 🔙 Voltar
-  function onBackClick() {
-    navigate(-1);
-  }
+
+
 
   // 📦 Carregar pedidos
   useEffect(() => {
@@ -32,6 +30,13 @@ export default function PedidosAdmin() {
     setPedidos(novos);
     localStorage.setItem("pedidos", JSON.stringify(novos));
   }
+
+  useEffect(() => {
+        const isAuth = localStorage.getItem("auth");
+        if (!isAuth) {
+        window.location.href = "/";
+        }
+    }, []);
 
 
 
@@ -130,16 +135,11 @@ export default function PedidosAdmin() {
 
   return (
     <Body>
+      <NavAdminBlue/>
       <div className="flex flex-col p-10 gap-10">
         {/* HEADER */}
         <div className="flex items-center  justify-between">
-          <button
-            onClick={onBackClick}
-            className="text-white bg-[#0062c4] p-2 rounded-full"
-          >
-            <MoveLeftIcon />
-          </button>
-
+          
           <h1 className="text-2xl font-bold w-[95%] text-[#1976d2]">
             Solicitações de Confecção
           </h1>

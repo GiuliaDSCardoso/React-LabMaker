@@ -4,6 +4,8 @@ import InputDate from "../assets/styles/InputDate";
 import Body from "../assets/styles/Body";
 import { useNavigate } from "react-router-dom";
 import { MoveLeftIcon } from "lucide-react";
+import Nav from "../assets/styles/Nav";
+  
 
 export default function AgendaUso() {
   const [nome, setNome] = useState("");
@@ -15,7 +17,7 @@ export default function AgendaUso() {
   const [horaInicio, setHoraInicio] = useState("08:00");
   const [horaFim, setHoraFim] = useState("09:00");
   const navigate = useNavigate();
-
+ 
   function enviar() {
     const bloqueios =
       JSON.parse(localStorage.getItem("agendamentos_admin")) || [];
@@ -74,6 +76,8 @@ export default function AgendaUso() {
  
   return (
     <Body>
+      {/* Nav */}
+       <Nav/>
       <header className="flex items-center bg-gradient-to-r mb-[2%] from-[#1976d2] to-blue-800 h-40 px-6">
         <button
           onClick={onBackClick}

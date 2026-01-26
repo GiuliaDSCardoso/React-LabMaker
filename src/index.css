@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 body{
+    min-width: 240px;
     font-family: 'DM Sans', sans-serif;
     background-color: #ebf4ff;
 }
@@ -10,4 +11,7 @@ body{
 .logo{
     width: 32px;
     height: 32px;
+}
+#root {
+  min-width: 240px;
 }

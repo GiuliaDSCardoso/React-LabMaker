@@ -1,8 +1,8 @@
 
 export default function Button({method, text}) {
   return (
-    <div className="flex flex-col justify-center items-center h-full w-full">
-        <button onClick={method}  className='p-3 bg-blue-500 text-white rounded-md  w-[50%] hover:bg-blue-600'>
+    <div className="flex flex-col justify-center items-center md:h-full md:w-full">
+        <button onClick={method}  className='p-3 mt-3 bg-blue-500 text-white rounded-md w-[100%] md:text-[16px] text-[13px] md:w-[100%] hover:bg-blue-900'>
             {text}
         </button>
     </div>

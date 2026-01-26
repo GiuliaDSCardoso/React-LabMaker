@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import Body from "../../assets/styles/Body";
-import { useNavigate } from "react-router-dom";
-import { MoveLeftIcon, DeleteIcon, PhoneIcon } from "lucide-react";
+
+import { DeleteIcon, PhoneIcon } from "lucide-react";
+import NavAdminBlue from "../../assets/styles/NavAdminBlue.jsx";
+
 
 export default function EmprestimoAdmin() {
   const [solicitacoes, setSolicitacoes] = useState([]);
@@ -9,12 +11,10 @@ export default function EmprestimoAdmin() {
   const [statusFilter, setStatusFilter] = useState("all"); // all | completed | pending
   const [historicoAberto, setHistoricoAberto] = useState(null);
 
-  const navigate = useNavigate();
+
 
   // 🔙 Voltar
-  function onBackClick() {
-    navigate(-1);
-  }
+  
 
   // 📦 Carregar dados
   useEffect(() => {
@@ -91,7 +91,14 @@ export default function EmprestimoAdmin() {
         </ul>
       );
     }
+  useEffect(() => {
+        const isAuth = localStorage.getItem("auth");
+        if (!isAuth) {
+        window.location.href = "/";
+        }
+    }, []);
 
+    
   // 🔄 Desconcluir
   function desmarcarComoConcluido(id) {
     const agora = new Date().toLocaleString();
@@ -123,12 +130,10 @@ export default function EmprestimoAdmin() {
 
   return (
     <Body>
+      <NavAdminBlue/>
       <div className="flex flex-col p-10 gap-10 ">
-         <div className="flex items-center justify-between "> 
-            <button onClick={onBackClick} className=" flex text-white items-center justify-center h-[30px]
-             text-center w-[2%] bg-[#0062c4] p-2 rounded-full" >
-                 <MoveLeftIcon /> 
-                 </button>
+         <div className="flex items-center text-[#1769bb] justify-between "> 
+            
              <h1 className="text-2xl font-bold w-[95%] text-[#1976d2]"> Solicitações de Empréstimo </h1>
        </div>
 
