@@ -22,7 +22,7 @@ export default function App() {
       <Routes>
 
         {/* Públicas */}
-        <Route path="/home" element={<Home />} />
+        <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/agendauso" element={<AgendaUso />} />
         <Route path="/emprestimo" element={<Emprestimo/>} />
