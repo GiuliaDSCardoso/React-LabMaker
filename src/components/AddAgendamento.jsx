@@ -43,7 +43,9 @@ export default function AddAgendamento({ onAdd }) {
 
       <input
         type="date"
-        className="w-full h-[50px] px-3 text-lg md:text-xl bg-[#e5eeff]"
+        className="w-full focus:outline-none
+                focus:ring-1
+                focus:border-blue-50 h-[50px] px-3 text-lg md:text-xl bg-[#e5eeff]"
         value={data}
         onChange={(e) => setData(e.target.value)}
       />
@@ -61,13 +63,17 @@ export default function AddAgendamento({ onAdd }) {
         <div className="flex gap-2">
           <input
             type="time"
-            className="w-full h-[50px] px-3 text-lg md:text-xl bg-[#e5eeff]"
+            className="w-full h-[50px] focus:outline-none
+                focus:ring-1
+                focus:border-blue-50 px-3 text-lg md:text-xl bg-[#e5eeff]"
             value={horaInicio}
             onChange={(e) => setHoraInicio(e.target.value)}
           />
           <input
             type="time"
-            className="w-full h-[50px] px-3 text-lg md:text-xl bg-[#e5eeff]"
+            className="w-full h-[50px] focus:outline-none
+                focus:ring-1
+                focus:border-blue-50  px-3 text-lg md:text-xl bg-[#e5eeff]"
             value={horaFim}
             onChange={(e) => setHoraFim(e.target.value)}
           />
@@ -77,7 +83,9 @@ export default function AddAgendamento({ onAdd }) {
         <label htmlFor="motivo" className="text-lg md:text-xl">Insira o motivo da ocupação</label>
         <textarea
         placeholder="Motivo da ocupação"
-        className="w-full p-2 text-lg bg-[#e5eeff]"
+        className="w-full focus:outline-none
+                focus:ring-1
+                focus:border-blue-50 p-2 text-lg bg-[#e5eeff]"
         value={motivo}
         onChange={(e) => setMotivo(e.target.value)}
       />
