@@ -3,7 +3,7 @@ import Body from "../../assets/styles/Body";
 
 import { DeleteIcon, PhoneIcon } from "lucide-react";
 import NavAdminBlue from "../../assets/styles/NavAdminBlue.jsx";
-
+import { supabase } from "../../services/supabase";
 
 export default function EmprestimoAdmin() {
   const [solicitacoes, setSolicitacoes] = useState([]);
@@ -11,23 +11,24 @@ export default function EmprestimoAdmin() {
   const [statusFilter, setStatusFilter] = useState("all"); // all | completed | pending
   const [historicoAberto, setHistoricoAberto] = useState(null);
 
-
-
-  // 🔙 Voltar
-  
-
-  // 📦 Carregar dados
+  // 📦 Carregar dados do Supabase
   useEffect(() => {
-    const dados = JSON.parse(localStorage.getItem("solicitacoes")) || [];
-    setSolicitacoes(dados);
+    carregarSolicitacoes();
   }, []);
 
-  // 💾 Atualizar LocalStorage
-  function atualizarSolicitacoes(novas) {
-    setSolicitacoes(novas);
-    localStorage.setItem("solicitacoes", JSON.stringify(novas));
-  }
+  async function carregarSolicitacoes() {
+    const { data, error } = await supabase
+      .from("emprestimos")
+      .select("*")
+      .order("created_at", { ascending: false });
 
+    if (error) {
+      console.error("Erro ao buscar empréstimos:", error);
+      return;
+    }
+
+    setSolicitacoes(data || []);
+  }
 
   // 🔍 Busca + filtros
   const solicitacoesFiltradas = solicitacoes.filter((item) => {
@@ -35,107 +36,97 @@ export default function EmprestimoAdmin() {
 
     const matchTexto =
       item.solicitante?.toLowerCase().includes(textoBusca) ||
-      item.email?.toLowerCase().includes(textoBusca) ||
-      item.cursoETurma?.toLowerCase().includes(textoBusca) ||
       item.contato?.toLowerCase().includes(textoBusca) ||
-      item.componente?.toLowerCase().includes(textoBusca);
-
+      item.item?.toLowerCase().includes(textoBusca);
 
     const matchStatus =
       statusFilter === "all" ||
-      (statusFilter === "completed" && item.isCompleted) ||
-      (statusFilter === "pending" && !item.isCompleted);
+      (statusFilter === "completed" && item.is_completed) ||
+      (statusFilter === "pending" && !item.is_completed);
 
-    return matchTexto  && matchStatus;
+    return matchTexto && matchStatus;
   });
 
   // ✅ Concluir
-  function marcarComoConcluido(id) {
+  async function marcarComoConcluido(id, historicoAtual = []) {
     const agora = new Date().toLocaleString();
 
-    atualizarSolicitacoes(
-      solicitacoes.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              isCompleted: true,
-              historico: [
-                ...(item.historico || []),
-                { data: agora, acao: "Empréstimo concluído" },
-              ],
-            }
-          : item
-      )
-    );
+    const novoHistorico = [
+      ...historicoAtual,
+      { data: agora, acao: "Empréstimo concluído" },
+    ];
+
+    await supabase
+      .from("emprestimos")
+      .update({
+        is_completed: true,
+        historico: novoHistorico,
+      })
+      .eq("id", id);
+
+    carregarSolicitacoes();
   }
-    function renderComponentes(componentes) {
-      if (!componentes || componentes.length === 0) {
-        return "Nenhum componente";
-      }
 
-      // Se por acaso for string (dados antigos)
-      if (typeof componentes === "string") {
-        return componentes;
-      }
-
-      return (
-        <ul className="space-y-1 text-left">
-          {componentes.map((item, index) => (
-            <li
-              key={index}
-              className="bg-blue-50 px-2 py-1 rounded text-xs"
-            >
-              • {item}
-            </li>
-          ))}
-        </ul>
-      );
-    }
-  useEffect(() => {
-        const isAuth = localStorage.getItem("auth");
-        if (!isAuth) {
-        window.location.href = "/";
-        }
-    }, []);
-
-    
   // 🔄 Desconcluir
-  function desmarcarComoConcluido(id) {
+  async function desmarcarComoConcluido(id, historicoAtual = []) {
     const agora = new Date().toLocaleString();
 
-    atualizarSolicitacoes(
-      solicitacoes.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              isCompleted: false,
-              historico: [
-                ...(item.historico || []),
-                { data: agora, acao: "Empréstimo reaberto" },
-              ],
-            }
-          : item
-      )
+    const novoHistorico = [
+      ...historicoAtual,
+      { data: agora, acao: "Empréstimo reaberto" },
+    ];
+
+    await supabase
+      .from("emprestimos")
+      .update({
+        is_completed: false,
+        historico: novoHistorico,
+      })
+      .eq("id", id);
+
+    carregarSolicitacoes();
+  }
+
+  function renderComponentes(componentes) {
+    if (!componentes) return "Nenhum componente";
+
+    // caso seja string (campo item)
+    if (typeof componentes === "string") return componentes;
+
+    return (
+      <ul className="space-y-1 text-left">
+        {componentes.map((item, index) => (
+          <li key={index} className="bg-blue-50 px-2 py-1 rounded text-xs">
+            • {item}
+          </li>
+        ))}
+      </ul>
     );
   }
+
+
   function abrirWhatsApp(telefone) {
     const numeroLimpo = telefone.replace(/\D/g, "");
     window.open(`https://wa.me/55${numeroLimpo}`, "_blank");
   }
+
   // 🗑️ Excluir
-  function onDeleteSolicitacao(id) {
+  async function onDeleteSolicitacao(id) {
     if (!window.confirm("Tem certeza que deseja excluir esta solicitação?")) return;
-    atualizarSolicitacoes(solicitacoes.filter((s) => s.id !== id));
+
+    await supabase.from("emprestimos").delete().eq("id", id);
+    carregarSolicitacoes();
   }
 
   return (
     <Body>
-      <NavAdminBlue/>
+      <NavAdminBlue />
       <div className="flex flex-col p-10 gap-10 ">
-         <div className="flex items-center text-[#1769bb] justify-between "> 
-            
-             <h1 className="text-2xl font-bold w-[95%] text-[#1976d2]"> Solicitações de Empréstimo </h1>
-       </div>
+        <div className="flex items-center text-[#1769bb] justify-between ">
+          <h1 className="text-2xl font-bold w-[95%] text-[#1976d2]">
+            Solicitações de Empréstimo
+          </h1>
+        </div>
 
         {/* FILTROS */}
         <div className="flex flex-wrap justify-between gap-4">
@@ -144,19 +135,19 @@ export default function EmprestimoAdmin() {
             placeholder="Pesquisar solicitações..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-[300px] px-3 py-2 border border-blue-300 rounded-md focus:ring-2 focus:ring-blue-400"
+            className="w-[300px] h-[50px] px-3 py-2 border text-lg
+                focus:outline-none
+                focus:ring-1
+                focus:border-blue-50"
           />
 
           <div className="flex flex-wrap gap-2">
-            
-
-            {/* Filtro por status */}
             <button
               onClick={() => setStatusFilter("all")}
-              className={`min-w-[90px] h-9 px-3 rounded text-sm flex items-center justify-center ${
+              className={`min-w-[90px] h-12 px-3 rounded text-xl ${
                 statusFilter === "all"
-                  ? "bg-gray-600 text-white"
-                  : "bg-gray-200 text-gray-700"
+                   ? "bg-blue-600 text-white"
+                    : "bg-gray-200 text-gray-700"
               }`}
             >
               Todas
@@ -164,10 +155,10 @@ export default function EmprestimoAdmin() {
 
             <button
               onClick={() => setStatusFilter("pending")}
-              className={`min-w-[90px] h-9 px-3 rounded text-sm flex items-center justify-center ${
+              className={`min-w-[90px] h-12 px-3 rounded text-xl ${
                 statusFilter === "pending"
-                  ? "bg-yellow-500 text-white"
-                  : "bg-yellow-100 text-yellow-700"
+                   ? "bg-blue-600 text-white"
+                    : "bg-gray-200 text-gray-700"
               }`}
             >
               Pendentes
@@ -175,10 +166,10 @@ export default function EmprestimoAdmin() {
 
             <button
               onClick={() => setStatusFilter("completed")}
-              className={`min-w-[90px] h-9 px-3 rounded text-sm flex items-center justify-center ${
+              className={`min-w-[90px] h-12 px-3 rounded text-xl ${
                 statusFilter === "completed"
-                  ? "bg-green-600 text-white"
-                  : "bg-green-100 text-green-700"
+                   ? "bg-blue-600 text-white"
+                    : "bg-gray-200 text-gray-700"
               }`}
             >
               Concluídas
@@ -188,43 +179,42 @@ export default function EmprestimoAdmin() {
 
         {/* TABELA */}
         <div className="overflow-x-auto">
-          <table className="min-w-full border bg-white text-sm">
+          <table className="min-w-full border bg-white text-xl">
             <thead className="bg-blue-100 text-blue-800">
               <tr>
-                <th className="border px-2 py-2">Solicitante</th>
-                <th className="border px-2 py-2">Email</th>
-                <th className="border px-2 py-2">Curso</th>
-                <th className="border px-2 py-2">Contato</th>
-                <th className="border px-2 py-2">Componente</th>
-                <th className="border px-2 py-2">Empréstimo</th>
-                <th className="border px-2 py-2">Devolução</th>
-                <th className="border px-2 py-2">Status</th>
-                <th className="border px-2 py-2">Ações</th>
+                <th className="border px-2 py-4">Solicitante</th>
+                <th className="border px-2 py-4">Email</th>
+                <th className="border px-2 py-4">Contato</th>
+                <th className="border px-2 py-4">Curso e Turma</th>
+                <th className="border px-2 py-4">Componente</th>
+                <th className="border px-2 py-4">Empréstimo</th>
+                <th className="border px-2 py-4">Devolução</th>
+                <th className="border px-2 py-4">Status</th>
+                <th className="border px-2 py-4">Ações</th>
               </tr>
             </thead>
 
             <tbody>
               {solicitacoesFiltradas.length === 0 ? (
                 <tr>
-                  <td colSpan="9" className="text-center py-4 text-gray-500">
+                  <td colSpan="7" className="text-center py-4 text-gray-500">
                     Nenhuma solicitação encontrada
                   </td>
                 </tr>
               ) : (
                 solicitacoesFiltradas.map((item) => (
                   <tr key={item.id} className="text-center hover:bg-blue-50">
-                    <td className="border px-2 py-1">{item.solicitante}</td>
-                    <td className="border px-2 py-1">{item.email}</td>
-                    <td className="border px-2 py-1">{item.cursoETurma}</td>
-                    <td className="border px-2 py-1">{item.contato}</td>
-                    <td className="border px-2 py-1">
-                      {renderComponentes(item.componentes)}
+                    <td className="border px-2 py-4">{item.solicitante}</td>
+                    <td className="border px-2 py-4">{item.email}</td>
+                    <td className="border px-2 py-4">{item.contato}</td>
+                    <td className="border px-2 py-4">{item.curso_turma}</td>
+                    <td className="border px-2 py-4">
+                      {renderComponentes(item.item)}
                     </td>
-
-                    <td className="border px-2 py-1">{item.dataEmprestimo}</td>
-                    <td className="border px-2 py-1">{item.dataDevolucao}</td>
-                    <td className="border px-2 py-1">
-                      {item.isCompleted ? (
+                    <td className="border px-2 py-4">{item.data_saida}</td>
+                    <td className="border px-2 py-4">{item.data_retorno}</td>
+                    <td className="border px-2 py-4">
+                      {item.is_completed ? (
                         <span className="text-green-600 font-semibold">
                           Concluído
                         </span>
@@ -234,38 +224,45 @@ export default function EmprestimoAdmin() {
                         </span>
                       )}
                     </td>
-                    <td className="border px-2 py-1 flex gap-2 justify-center">
-                      {!item.isCompleted ? (
+                    <td className="border px-2 py-4 flex gap-2 justify-center">
+                      {!item.is_completed ? (
                         <button
-                          onClick={() => marcarComoConcluido(item.id)}
-                          className="bg-green-500 text-white px-2 py-1 rounded text-xs"
+                          onClick={() =>
+                            marcarComoConcluido(item.id, item.historico)
+                          }
+                          className="bg-green-500 text-white px-2 py-2 rounded text-xl"
                         >
                           Concluir
                         </button>
                       ) : (
                         <button
-                          onClick={() => desmarcarComoConcluido(item.id)}
-                          className="bg-yellow-500 text-white px-2 py-1 rounded text-xs"
+                          onClick={() =>
+                            desmarcarComoConcluido(item.id, item.historico)
+                          }
+                          className="bg-yellow-500 text-white px-2 py-2 rounded text-xl"
                         >
                           Desconcluir
                         </button>
-                      )}
-
-                      <button
-                        onClick={() => setHistoricoAberto(item)}
-                        className="bg-blue-500 text-white px-2 py-1 rounded text-xs"
-                      >
-                        Histórico
-                      </button>
+                      )} 
                       <button
                         onClick={() => abrirWhatsApp(item.contato)}
-                        className="bg-green-600 text-white px-2 py-1 rounded text-xs"
+                        className="bg-green-600 text-white px-2 py-2 rounded text-xl"
                       >
                         <PhoneIcon size={14} />
                       </button>
+
+                      <button
+                        onClick={() => setHistoricoAberto(item)}
+                        className="bg-blue-500 text-white px-2 py-2 rounded text-xl"
+                      >
+                        Histórico
+                      </button>
+
+                     
+
                       <button
                         onClick={() => onDeleteSolicitacao(item.id)}
-                        className="bg-red-500 text-white p-1 rounded"
+                        className="bg-red-500 text-white p-2 rounded"
                       >
                         <DeleteIcon size={16} />
                       </button>

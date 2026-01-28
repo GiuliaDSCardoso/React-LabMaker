@@ -1,137 +1,109 @@
 import { useEffect, useState } from "react";
 import Body from "../../assets/styles/Body.jsx";
-import {
-  DeleteIcon,
-  PhoneIcon,
-  FileIcon,
-} from "lucide-react";
+import { DeleteIcon, PhoneIcon, FileIcon } from "lucide-react";
+import { supabase } from "../../services/supabase";
 import NavAdminBlue from "../../assets/styles/NavAdminBlue.jsx";
 
 export default function PedidosAdmin() {
   const [pedidos, setPedidos] = useState([]);
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all"); // all | completed | pending
+  const [statusFilter, setStatusFilter] = useState("all");
   const [historicoAberto, setHistoricoAberto] = useState(null);
 
-
-
-  // 🔙 Voltar
-
-
-
-  // 📦 Carregar pedidos
   useEffect(() => {
-    const dados = JSON.parse(localStorage.getItem("pedidos")) || [];
-    setPedidos(dados);
+    carregarPedidos();
   }, []);
 
-  // 💾 Atualizar localStorage
-  function atualizarPedidos(novos) {
-    setPedidos(novos);
-    localStorage.setItem("pedidos", JSON.stringify(novos));
+  async function carregarPedidos() {
+    const { data, error } = await supabase
+      .from("pedidos")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      alert("Erro ao carregar pedidos");
+      return;
+    }
+
+    setPedidos(data);
   }
 
-  useEffect(() => {
-        const isAuth = localStorage.getItem("auth");
-        if (!isAuth) {
-        window.location.href = "/";
-        }
-    }, []);
+  function novoEvento(acao) {
+    return {
+      data: new Date().toLocaleString("pt-BR"),
+      acao,
+    };
+  }
 
+  async function marcarComoConcluido(id) {
+    const pedido = pedidos.find((p) => p.id === id);
 
+    await supabase
+      .from("pedidos")
+      .update({
+        is_completed: true,
+        historico: [...(pedido.historico || []), novoEvento("Pedido concluído")],
+      })
+      .eq("id", id);
 
-  // 🔍 Busca + filtros
-  const pedidosFiltrados = pedidos.filter((item) => {
+    carregarPedidos();
+  }
+
+  async function desmarcarComoConcluido(id) {
+    const pedido = pedidos.find((p) => p.id === id);
+
+    await supabase
+      .from("pedidos")
+      .update({
+        is_completed: false,
+        historico: [...(pedido.historico || []), novoEvento("Pedido reaberto")],
+      })
+      .eq("id", id);
+
+    carregarPedidos();
+  }
+
+  async function excluirPedido(id) {
+    if (!window.confirm("Deseja excluir?")) return;
+
+    await supabase.from("pedidos").delete().eq("id", id);
+    carregarPedidos();
+  }
+
+  function renderArquivo(base64) {
+    if (!base64) return "Sem arquivo";
+
+    return (
+      <a
+        href={base64}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-blue-600 underline flex gap-1 justify-center"
+      >
+        <FileIcon size={14} /> Abrir
+      </a>
+    );
+  }
+  function abrirWhatsApp(telefone) {
+     const numeroLimpo = telefone.replace(/\D/g, ""); 
+    window.open(`https://wa.me/55${numeroLimpo}`, "_blank"); }
+
+  const pedidosFiltrados = pedidos.filter((p) => {
     const texto = search.toLowerCase();
 
     const matchTexto =
-      item.solicitante?.toLowerCase().includes(texto) ||
-      item.email?.toLowerCase().includes(texto) ||
-      item.cursoETurma?.toLowerCase().includes(texto) ||
-      item.contato?.toLowerCase().includes(texto) ||
-      item.material?.toLowerCase().includes(texto) ||
-      item.sobreProjeto?.toLowerCase().includes(texto);
-
-
+      p.solicitante?.toLowerCase().includes(texto) ||
+      p.email?.toLowerCase().includes(texto) ||
+      p.curso_turma?.toLowerCase().includes(texto);
 
     const matchStatus =
       statusFilter === "all" ||
-      (statusFilter === "completed" && item.isCompleted) ||
-      (statusFilter === "pending" && !item.isCompleted);
+      (statusFilter === "completed" && p.is_completed) ||
+      (statusFilter === "pending" && !p.is_completed);
 
     return matchTexto && matchStatus;
   });
 
-  // ✅ Concluir
-  function marcarComoConcluido(id) {
-    const agora = new Date().toLocaleString();
-
-    atualizarPedidos(
-      pedidos.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              isCompleted: true,
-              historico: [
-                ...(item.historico || []),
-                { data: agora, acao: "Pedido concluído" },
-              ],
-            }
-          : item
-      )
-    );
-  }
-
-  // 🔄 Reabrir
-  function desmarcarComoConcluido(id) {
-    const agora = new Date().toLocaleString();
-
-    atualizarPedidos(
-      pedidos.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              isCompleted: false,
-              historico: [
-                ...(item.historico || []),
-                { data: agora, acao: "Pedido reaberto" },
-              ],
-            }
-          : item
-      )
-    );
-  }
-
-  function abrirWhatsApp(telefone) {
-    const numeroLimpo = telefone.replace(/\D/g, "");
-    window.open(`https://wa.me/55${numeroLimpo}`, "_blank");
-  }
-
-  // 🗑️ Excluir
-  function onDeletePedido(id) {
-    if (!window.confirm("Deseja excluir este pedido?")) return;
-    atualizarPedidos(pedidos.filter((p) => p.id !== id));
-  }
-
-  // 📎 Renderizar arquivo (BASE64)
-  function renderArquivo(arquivo) {
-    if (!arquivo || !arquivo.base64) {
-      return "Nenhum arquivo";
-    }
-
-    return (
-      <a
-        href={arquivo.base64}
-        download={arquivo.nome}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-blue-600 flex items-center gap-1 justify-center underline"
-      >
-        <FileIcon size={14} />
-        {arquivo.nome}
-      </a>
-    );
-  }
 
   return (
     <Body>
@@ -152,27 +124,30 @@ export default function PedidosAdmin() {
             placeholder="Pesquisar pedidos..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-[300px] px-3 py-2 border border-blue-300 rounded-md focus:ring-2 focus:ring-blue-400"
+            className="w-[300px] h-[50px] px-3 py-2 border text-lg
+                focus:outline-none
+                focus:ring-1
+                focus:border-blue-50"
           />
 
          
           <div className="flex gap-2">
             <button
               onClick={() => setStatusFilter("all")}
-              className={`min-w-[90px] h-9 px-3 rounded text-sm flex items-center justify-center ${
+              className={`min-w-[90px] h-9 px-3 rounded text-xl flex items-center justify-center ${
                 statusFilter === "all"
-                  ? "bg-gray-600 text-white"
-                  : "bg-gray-200 text-gray-700"
+                   ? "bg-blue-600 text-white"
+                    : "bg-gray-200 text-gray-700"
               }`}
             >
               Todas
             </button>
             <button
               onClick={() => setStatusFilter("pending")}
-              className={`min-w-[90px] h-9 px-3 rounded text-sm ${
+              className={`min-w-[90px] h-9 px-3 rounded text-xl ${
                 statusFilter === "pending"
-                  ? "bg-yellow-500 text-white"
-                  : "bg-yellow-100 text-yellow-700"
+                   ? "bg-blue-600 text-white"
+                    : "bg-gray-200 text-gray-700"
               }`}
             >
               Pendentes
@@ -180,10 +155,10 @@ export default function PedidosAdmin() {
 
             <button
               onClick={() => setStatusFilter("completed")}
-              className={`min-w-[90px] h-9 px-3 rounded text-sm ${
+              className={`min-w-[90px] h-9 px-3 rounded text-xl ${
                 statusFilter === "completed"
-                  ? "bg-green-600 text-white"
-                  : "bg-green-100 text-green-700"
+                   ? "bg-blue-600 text-white"
+                    : "bg-gray-200 text-gray-700"
               }`}
             >
               Concluídos
@@ -193,21 +168,21 @@ export default function PedidosAdmin() {
 
         {/* TABELA */}
         <div className="overflow-x-auto">
-          <table className="min-w-full border bg-white text-sm">
+          <table className="min-w-full border bg-white text-xl">
             <thead className="bg-blue-100 text-blue-800">
               <tr>
-                <th className="border px-2 py-2">Solicitante</th>
-                <th className="border px-2 py-2">Email</th>
-                <th className="border px-2 py-2">Curso</th>
-                <th className="border px-2 py-2">Contato</th>
-                <th className="border px-2 py-2">Detalhe</th>
-                <th className="border px-2 py-2">Sobre</th>
-                <th className="border px-2 py-2">Cargo</th>
-                <th className="border px-2 py-2">Arquivo</th>
-                <th className="border px-2 py-2">Entrega</th>
-                <th className="border px-2 py-2">Material</th>
-                <th className="border px-2 py-2">Status</th>
-                <th className="border px-2 py-2">Ações</th>
+                <th className="border px-2 py-4">Solicitante</th>
+                <th className="border px-2 py-4">Email</th>
+                <th className="border px-2 py-4">Curso</th>
+                <th className="border px-2 py-4">Contato</th>
+                <th className="border px-2 py-4">Detalhe</th>
+                <th className="border px-2 py-4">Sobre</th>
+                <th className="border px-2 py-4">Cargo</th>
+                <th className="border px-2 py-4">Arquivo</th>
+                <th className="border px-2 py-4">Entrega</th>
+                <th className="border px-2 py-4">Material</th>
+                <th className="border px-2 py-4">Status</th>
+                <th className="border px-2 py-4">Ações</th>
               </tr>
             </thead>
 
@@ -221,20 +196,20 @@ export default function PedidosAdmin() {
               ) : (
                 pedidosFiltrados.map((item) => (
                   <tr key={item.id} className="text-center hover:bg-blue-50">
-                    <td className="border px-2 py-1">{item.solicitante}</td>
-                    <td className="border px-2 py-1">{item.email}</td>
-                    <td className="border px-2 py-1">{item.cursoETurma}</td>
-                    <td className="border px-2 py-1">{item.contato}</td>
-                    <td className="border px-2 py-1">{item.detalhe}</td>
-                    <td className="border px-2 py-1">{item.sobreProjeto}</td>
-                    <td className="border px-2 py-1">{item.cargo}</td>
-                    <td className="border px-2 py-1">
+                    <td className="border px-2 py-4">{item.solicitante}</td>
+                    <td className="border px-2 py-4">{item.email}</td>
+                    <td className="border px-2 py-4">{item.curso_turma}</td>
+                    <td className="border px-2 py-4">{item.contato}</td>
+                    <td className="border px-2 py-4">{item.detalhe}</td>
+                    <td className="border px-2 py-4">{item.sobre_projeto}</td>
+                    <td className="border px-2 py-4">{item.cargo}</td>
+                    <td className="border px-2 py-4">
                       {renderArquivo(item.arquivo)}
                     </td>
-                    <td className="border px-2 py-1">{item.dataEntrega}</td>
-                    <td className="border px-2 py-1">{item.material}</td>
-                    <td className="border px-2 py-1">
-                      {item.isCompleted ? (
+                    <td className="border px-2 py-4">{item.data_entrega}</td>
+                    <td className="border px-2 py-4">{item.material}</td>
+                    <td className="border px-2 py-4">
+                      {item.is_completed ? (
                         <span className="text-green-600 font-semibold">
                           Concluído
                         </span>
@@ -244,18 +219,18 @@ export default function PedidosAdmin() {
                         </span>
                       )}
                     </td>
-                    <td className="border px-2 py-1 flex gap-2 justify-center">
-                      {!item.isCompleted ? (
+                    <td className="border px-2 py-4 flex gap-2 justify-center">
+                      {!item.is_completed ? (
                         <button
                           onClick={() => marcarComoConcluido(item.id)}
-                          className="bg-green-500 text-white px-2 py-1 rounded text-xs"
+                          className="bg-green-500 text-white px-2 py-2 rounded text-xl"
                         >
                           Concluir
                         </button>
                       ) : (
                         <button
                           onClick={() => desmarcarComoConcluido(item.id)}
-                          className="bg-yellow-500 text-white px-2 py-1 rounded text-xs"
+                          className="bg-yellow-500 text-white px-2 py-2 rounded text-xl"
                         >
                           Reabrir
                         </button>
@@ -263,21 +238,21 @@ export default function PedidosAdmin() {
 
                       <button
                         onClick={() => abrirWhatsApp(item.contato)}
-                        className="bg-green-600 text-white px-2 py-1 rounded text-xs"
+                        className="bg-green-600 text-white px-2 py-2 rounded text-xl"
                       >
                         <PhoneIcon size={14} />
                       </button>
 
                       <button
                         onClick={() => setHistoricoAberto(item)}
-                        className="bg-blue-500 text-white px-2 py-1 rounded text-xs"
+                        className="bg-blue-500 text-white px-2 py-2 rounded text-xl"
                       >
                         Histórico
                       </button>
 
                       <button
-                        onClick={() => onDeletePedido(item.id)}
-                        className="bg-red-500 text-white p-1 rounded"
+                        onClick={() => excluirPedido(item.id)}
+                        className="bg-red-500 text-white px-2 py-2 rounded"
                       >
                         <DeleteIcon size={16} />
                       </button>

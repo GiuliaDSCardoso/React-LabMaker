@@ -8,9 +8,9 @@ import CardStyle from "../assets/styles/CardStyle.jsx";
 import Body from "../assets/styles/Body.jsx";
 import NavAdmin from "../assets/styles/NavAdmin.jsx";
 
-export default function Admin() {
-    
 
+export default function Admin() {
+ 
     return(
         <Body>
         {/* Nav */}

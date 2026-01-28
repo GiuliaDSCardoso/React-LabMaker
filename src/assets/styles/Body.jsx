@@ -3,7 +3,7 @@ import "../../index.css";
 
 export default function Body(props) {
     return(
-        <div className=" mx-0 w-screen mb-20 h-screen ">
+        <div className=" flex flex-col itemns-center mx-0 w-screen mb-30 h-screen ">
             {props.children}
         </div>);
 }

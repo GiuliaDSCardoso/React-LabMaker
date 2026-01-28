@@ -1,74 +1,78 @@
-import "./index.css";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-import "lucide-react";
-import { CalendarSearchIcon, FileBoxIcon, PackagePlusIcon, ReplaceIcon } from "lucide-react";
-import CardStyle from "./assets/styles/CardStyle.jsx";
-import Body from "./assets/styles/Body.jsx";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import AgendaUso from "./pages/AgendaUso";
 
-import Nav from "./assets/styles/Nav.jsx";
+import Admin from "./pages/Admin";
+import AgendaAdmin from "./pages/pagesadmin/AgendaAdmin";
 
+import PrivateRoute from "./components/PrivateRoute";
+import Pedidos from "./pages/Pedidos";
+import GuardarProjetos from "./pages/GuardarProjetos";
+import Emprestimo from "./pages/Emprestimo";
+import GuardarAdmin from "./pages/pagesadmin/GuardarAdmin";
+import PedidosAdmin from "./pages/pagesadmin/PedidosAdmin";
+import EmprestimoAdmin from "./pages/pagesadmin/EmprestimoAdmin";
+import Contact from "./pages/Contact";
 
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
 
-
-function App(){
-
-
-  return(
-    <Body>
-       {/* Nav */}
-       
-        <Nav/>
-
-        {/* Container */}
-      <div className="w-screen flex justify-center items-center bg-gradient-to-r from-[#1976d2] to-blue-800 h-80">
-        <div>
-          <h2 className="text-white text-center text-3xl font-bold"> Bem-vindo ao Lab Maker</h2>
-          <h3 className="text-white text-center text-lg">
-            Horário de Funcionamento: 10h às 20h
-          </h3>
-        </div>
-      </div>
-      {/* Cards */}
-      <div className="w-screen flex-col mt-[2%] md:flex-row flex justify-center items-center gap-3 bg-blue-50">
-        <div className=" flex flex-col  md:flex-row gap-3">
-          <CardStyle
-          title="Empréstimo de Componentes"
-          description="Registro e controle de Materiais"
-          icon={<ReplaceIcon />}
-          href="/emprestimo"
-          color="yellow"
+        {/* Públicas */}
+        <Route path="/home" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/agendauso" element={<AgendaUso />} />
+        <Route path="/emprestimo" element={<Emprestimo/>} />
+        <Route path="/guardarprojetos" element={<GuardarProjetos />} />
+        <Route path="/pedidos" element={<Pedidos />} />
+        <Route path="/contact" element={<Contact />} />
+        {/* Admin protegidas */}
+        <Route
+          path="/admin"
+          element={
+            <PrivateRoute>
+              <Admin />
+            </PrivateRoute>
+          }
         />
-        <CardStyle
-          title="Agenda de Uso"
-          description="Reserva do espaço Maker"
-          icon={<CalendarSearchIcon />}
-          href="/agendauso"
-          color="red"
+
+        <Route
+          path="/agendaadmin"
+          element={
+            <PrivateRoute>
+              <AgendaAdmin />
+            </PrivateRoute>
+          }
         />
-        </div>
-        <div className=" flex flex-col  md:flex-row gap-3">
-          <CardStyle
-          title="Guardar Projetos"
-          description="Projetos armazenados no Maker"
-          icon={< FileBoxIcon />}
-          href="/guardarprojetos"
-          color="blue"
+        <Route
+          path="/guardaradmin"
+          element={
+            <PrivateRoute>
+              <GuardarAdmin />
+            </PrivateRoute>
+          }
         />
-        <CardStyle
-          title="Pedidos LabMaker"
-          description="Solicitação de confecção"
-          icon={<PackagePlusIcon/>}
-          href="/pedidos"
-          color="green"
-        /> 
-        </div>
-        
-       
-      </div>
-    
-      
-    </Body>
+        <Route
+          path="/pedidosadmin"
+          element={
+            <PrivateRoute>
+              <PedidosAdmin />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/emprestimoadmin"
+          element={
+            <PrivateRoute>
+              < EmprestimoAdmin />
+            </PrivateRoute>
+          }
+        />
+
+      </Routes>
+    </BrowserRouter>
   );
 }
-
-export default App;

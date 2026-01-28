@@ -2,54 +2,62 @@ import { useState } from "react";
 import { Eye, EyeOff, MoveLeftIcon } from "lucide-react";
 import Button from "../assets/styles/Button";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "../services/supabase";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [perfil, setPerfil] = useState("");
   const [password, setPassword] = useState("");
+  const [remember, setRemember] = useState(true);
+
   const [error, setError] = useState("");
   const navigate = useNavigate();
     function onBackClick() {
       navigate(-1); 
   }
-  function onSubmitLogin(e) {
-    e.preventDefault();
-    setError("");
+  async function onSubmitLogin(e) {
+  e.preventDefault();
+  setError("");
 
-  
-    const USER_LOGIN = {
-      perfil: "adminmaker",
-      password: "labmaker123",
-    };
-
-    if (!perfil || !password) {
-      setError("Preencha todos os campos.");
-      return;
-    }
-
-    if (
-      perfil === USER_LOGIN.perfil &&
-      password === USER_LOGIN.password
-    ) {
-      localStorage.setItem("auth", "true");
-      window.location.href = "/admin";
-    } else {
-      setError("Perfil ou senha incorretos.");
-    }
+  if (!perfil || !password) {
+    setError("Preencha todos os campos.");
+    return;
   }
+
+  const { error } = await supabase.auth.signInWithPassword({
+    email: perfil,
+    password,
+  });
+
+  if (error) {
+    setError("Email ou senha incorretos.");
+    return;
+  }
+
+  if (!remember) {
+    // remove persistência
+    window.addEventListener("beforeunload", () => {
+      supabase.auth.signOut();
+    });
+  }
+
+  navigate("/admin", { replace: true });
+}
+
+
 
   return (
     <div className="h-screen w-screen bg-gradient-to-r from-[#1976d2] to-blue-800 flex flex-col md:flex-row">
       
       {/* LADO ESQUERDO */}
-      <div className="flex w-full gap-4  md:w-1/2 h-[20%] md:h-[100%] mb-20 items-center justify-center bg-blue-800">
+      <div className="flex  w-[100%] gap-4 px-4 md:w-1/2 h-[20%] md:h-[100%] mb-20 items-center justify-center bg-blue-800">
        <div>
         <button onClick={onBackClick} className="text-white px-1 pb-1 pt-1 rounded-[100%] bg-[#0b2c85] hover:bg-[#07227c]">
             <MoveLeftIcon size={20} />
             </button>
        </div>
         <div>
-         <h2 className="text-white md:w-full w-[50%] md:text-3xl text-2xl font-bold text-center">
+         <h2 className="text-white md:w-full w-[100%] md:text-4xl text-2xl font-bold text-center">
            Seja bem-vindo(a)
          </h2>    
         </div>
@@ -63,22 +71,28 @@ export default function Login() {
           onSubmit={onSubmitLogin}
           className="w-full max-w-md px-6 flex flex-col items-center gap-6"
         >
-          <h2 className="text-2xl font-bold text-white">
-            LOGIN
-          </h2>
+        <div className="flex flex-col items-center gap-1 mb-6"> 
+               <h2 className="text-3xl font-bold text-white">
+                LOGIN
+              </h2>
+              <h1 className="text-xl font-bold text-white/80">
+                Acesso restrito ao Admin
+              </h1>
+        </div>
+          
 
           {/* PERFIL */}
           <div className="flex flex-col w-full">
-            <label className="text-[#ffffff]">Perfil</label>
+            <label className="text-[#ffffff] text-xl md:text-2xl">Email</label>
             <input
               type="text"
               value={perfil}
               onChange={(e) => setPerfil(e.target.value)}
-              placeholder="Insira seu perfil"
+              placeholder="Insira seu email"
               className="
-                w-full h-[48px] px-3
+                w-full h-[50px] px-3
                 rounded-md
-                md:placeholder:text-[16px] placeholder:text-[13px]
+                md:placeholder:text-lg placeholder:text-[13px]
                 bg-[#a9c7ffc9]
                 text-[#2756ac]
                 placeholder:text-[#10377e]/50
@@ -90,7 +104,7 @@ export default function Login() {
 
           {/* SENHA */}
           <div className="flex flex-col w-full">
-            <label className="text-[#ffffff]">Senha</label>
+            <label className="text-[#ffffff] text-xl md:text-2xl">Senha</label>
 
             <div className="relative w-full">
               <input
@@ -99,9 +113,9 @@ export default function Login() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Insira sua senha"
                 className="
-                  w-full h-[48px] px-3
+                  w-full h-[50px] px-3
                   rounded-md
-                  md:placeholder:text-[16px] placeholder:text-[13px]
+                  md:placeholder:text-lg placeholder:text-[13px]
                   bg-[#a9c7ffc9]
                   text-[#2756ac]
                   placeholder:text-[#10377e]/50
@@ -123,8 +137,17 @@ export default function Login() {
           {error && (
             <p className="text-red-600 text-sm text-center">{error}</p>
           )}
+          <label className="flex items-center gap-2 text-white text-sm">
+            <input
+              type="checkbox"
+              checked={remember}
+              onChange={(e) => setRemember(e.target.checked)}
+              className="accent-blue-600"
+            />
+            Lembrar deste computador
+          </label>
 
-          <Button className=" " type="submit" text="Entrar" />
+          <Button  type="submit" text="Entrar" />
         </form>
       </div>
     </div>

@@ -1,10 +1,10 @@
 
 
-export default function Input({ id, title, type = "text", value, onChange, placeholder }) {
+export default function InputRed({ id, title, type = "text", value, onChange, placeholder }) {
 
   return (
-    <div className="flex flex-col  ">
-      <label className="text-lg md:text-2xl font-medium text-gray-700 flex gap-1">
+    <div className="flex flex-col  w-[100%] md:w-full">
+      <label className="text-lg font-medium md:text-2xl text-gray-700 flex gap-1">
       {title}
       <span className="relative group cursor-help text-red-600">
         *
@@ -29,7 +29,7 @@ export default function Input({ id, title, type = "text", value, onChange, place
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className="w-[100%] h-[50px] px-3 placeholder:text-xl  bg-[#e5eeff] outline-none focus:outline-none focus:ring-1 focus:ring-none"
+        className="w-[100%] md:w-full h-[50px] px-3 text-lg text-[#a7a7a7] bg-[#e5eeff] outline-none  focus:outline-none focus:ring-1 focus:ring-none"
       />
     </div>
   );

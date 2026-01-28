@@ -1,17 +1,11 @@
 import { MenuIcon } from "lucide-react";
 import ALink from "./ALink";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default function NavAdminBlue(){
 
      const [openMenu, setOpenMenu] = useState(false);
-        useEffect(() => {
-            const isAuth = localStorage.getItem("auth");
-            if (!isAuth) {
-            window.location.href = "/";
-            }
-        }, []);
-    
+       
          function logoutButton(){
             localStorage.removeItem("auth");
             window.location.href = "/home";
@@ -24,7 +18,7 @@ export default function NavAdminBlue(){
                     {/* LOGO */}
                     <img
                     src="../logos/logo-white.svg"
-                    className="h-10"
+                    className="h-10 md:h-14"
                     alt="Lab Maker Logo"
                     />
 
@@ -36,7 +30,7 @@ export default function NavAdminBlue(){
                     <li className="flex relative justify-center ">
                         <button
                         onClick={() => setOpenMenu(!openMenu)}
-                        className="flex items-center gap-1 text-white font-semibold hover:text-blue-300"
+                        className="flex items-center gap-1 text-white md:text-xl text-md font-semibold hover:text-blue-300"
                         >
                         Menu
                         <MenuIcon
@@ -46,13 +40,14 @@ export default function NavAdminBlue(){
                         </button>
 
                         {openMenu && (
-                        <ul className="absolute items-center mt-10 w-52 bg-white shadow-lg  flex flex-col z-50">
+                        <ul className="absolute items-center mt-12 w-52 bg-white shadow-lg  flex flex-col z-50">
                             <ALink href="/admin">Home</ALink>
-                            <ALink href="/emprestimoadmin">Empréstimo</ALink>
                             <ALink href="/agendaadmin">Agenda</ALink>
+                            <ALink href="/emprestimoadmin">Empréstimo</ALink>
+                            
                             <ALink href="/guardaradmin">Guardar Projetos</ALink>
                             <ALink href="/pedidosadmin">Pedidos</ALink>
-                            <button onClick={logoutButton} className="text-[#1976d2] w-[100%] hover:bg-blue-100 no-underline  font-bold hover:text-blue-700">
+                            <button onClick={logoutButton} className="text-[#1976d2] w-[100%] md:text-xl text-md hover:bg-blue-100 no-underline  font-bold hover:text-blue-700">
                                 Sair
                             </button>
                         </ul>

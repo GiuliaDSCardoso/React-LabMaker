@@ -1,8 +1,10 @@
 import { useState } from "react";
-import Input from "../assets/styles/Input.jsx";
-import Body from "../assets/styles/Body.jsx";
+import InputRed from "../assets/styles/InputRed.jsx";
 
-export default function GuardarAdmin({ onAddGuardarClick }) {
+import { supabase } from "../services/supabase";
+
+
+export default function AddProjetos() {
   const [solicitante, setSolicitante] = useState("");
   const [email, setEmail] = useState("");
   const [cursoETurma, setCursoETurma] = useState("");
@@ -10,187 +12,127 @@ export default function GuardarAdmin({ onAddGuardarClick }) {
   const [enviarArquivo, setEnviarArquivo] = useState(null);
   const [dataSaida, setDataSaida] = useState("");
   const [sobreProjeto, setSobreProjeto] = useState("");
-  const [detalhe, setDetalhe] = useState("");
-  const [isCompleted, setIsCompleted] = useState(false);
+  const [cargo, setCargo] = useState("");
 
-  /* ==========================
-     PROTEÇÃO DE ROTA (ADMIN)
-  ========================== */
- 
-
-
-  function fileToBase64(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = reject;
-    });
-  }
 
   async function handleSubmit() {
-    if (
-      !solicitante ||
-      !email ||
-      !cursoETurma ||
-      !contato ||
-      !sobreProjeto ||
-      !enviarArquivo ||
-      !dataSaida ||
-      !detalhe
-    ) {
-      alert("Por favor, preencha todos os campos!");
+    if (!enviarArquivo) {
+      alert("Envie um arquivo!");
       return;
     }
 
-    const base64 = await fileToBase64(enviarArquivo);
+    const fileName = `${Date.now()}-${enviarArquivo.name}`;
 
-    onAddGuardarClick({
-      solicitante,
-      email,
-      cursoETurma,
-      contato,
-      detalhe,
-      sobreProjeto,
-      arquivo: {
-        nome: enviarArquivo.name,
-        base64,
+    const { error: uploadError } = await supabase.storage
+      .from("projetos")
+      .upload(`arquivos/${fileName}`, enviarArquivo);
+
+    if (uploadError) {
+      alert(uploadError.message);
+      return;
+    }
+
+    const { data } = supabase.storage
+      .from("projetos")
+      .getPublicUrl(`arquivos/${fileName}`);
+
+    const arquivo_url = data.publicUrl;
+
+    const { error } = await supabase.from("projetos").insert([
+      {
+        solicitante,
+        email,
+        cargo,
+        curso_turma: cursoETurma,
+        contato,
+        sobre_projeto: sobreProjeto,
+        data_saida: dataSaida,
+        arquivo_url,
       },
-      dataSaida,
-      isCompleted,
-      historico: [
-        {
-          data: new Date().toLocaleString(),
-          acao: "Solicitação criada",
-        },
-      ],
-    });
+    ]);
 
-    alert("✅ Solicitação enviada com sucesso!");
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
+    alert("✅ Projeto enviado com sucesso!");
 
     setSolicitante("");
     setEmail("");
     setCursoETurma("");
+    setCargo("");
     setContato("");
     setSobreProjeto("");
-    setDetalhe("");
     setEnviarArquivo(null);
     setDataSaida("");
-    setIsCompleted(false);
   }
 
   return (
-    <Body>
-
-      {/* FORMULÁRIO */}
-      <div className="flex flex-col items-center gap-6 px-10">
-        <div className="flex gap-6">
+    
+      <div className="flex  flex-col items-center justify-center mb-20 gap-6 px-4 w-full">
+         <div className="flex md:flex-row flex-col md:justify-center gap-6  w-full">
+        <div className="flex flex-col lg:flex-row gap-6 w-full max-w-6xl">
           {/* COLUNA ESQUERDA */}
           <div className="w-full flex flex-col gap-4">
-            <Input
-              title="Solicitante:"
-              value={solicitante}
-              disabled={isCompleted}
-              placeholder="Insira o seu nome completo"
-              onChange={(e) => setSolicitante(e.target.value)}
-            />
+            <InputRed title="Solicitante:" placeholder="Insira o seu nome completo" value={solicitante} onChange={(e) => setSolicitante(e.target.value)} />
+            <InputRed title="Email:" type="email" placeholder="Insira o seu email" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <InputRed title="Curso e Turma:" placeholder="Insira seu curso e turma" value={cursoETurma} onChange={(e) => setCursoETurma(e.target.value)} />
+            <InputRed title="Telefone:" placeholder="(11) 91234-5678" value={contato} onChange={(e) => setContato(e.target.value)} />
 
-            <Input
-              title="Email:"
-              type="email"
-              value={email}
-              disabled={isCompleted}
-              placeholder="Insira o seu email"
-              onChange={(e) => setEmail(e.target.value)}
-            />
-
-            <Input
-              title="Curso e Turma:"
-              value={cursoETurma}
-              disabled={isCompleted}
-              placeholder="Insira seu curso e turma"
-              onChange={(e) => setCursoETurma(e.target.value)}
-            />
-
-            <Input
-              title="Telefone:"
-              value={contato}
-              placeholder="(11) 91234-5678"
-              disabled={isCompleted}
-              onChange={(e) => setContato(e.target.value)}
-            />
-            
-          <div>
-            <button
-            onClick={handleSubmit}
-            disabled={isCompleted}
-            className={`h-[40px] w-full mt-4
-              ${
-                isCompleted
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-[#0062c4] active:bg-[#0257ac] text-white"
-              }`}
-          >
-            Enviar Solicitação
-          </button>
-          </div>
+           
           </div>
 
           {/* COLUNA DIREITA */}
           <div className="w-full flex flex-col gap-4">
-            <Input
+            <InputRed
               title="Descreva o projeto:"
               value={sobreProjeto}
-              disabled={isCompleted}
               placeholder="Descreva o seu projeto"
               onChange={(e) => setSobreProjeto(e.target.value)}
             />
-
-            <div className="flex flex-col">
-              <label className="text-lg font-medium text-gray-700">
-                Enviar Arquivo do Projeto <span className="text-red-600">*</span>
-              </label>
-
-               <input
-                type="file"
-                disabled={isCompleted}
-                onChange={(e) => setEnviarArquivo(e.target.files[0])}
-                className="
-                  w-[500px] h-[40px] pb-3
-                  text-[#2756ac]
-                  bg-[#e5eeff]
-                  
-                 
-                  file:mr-4 file:py-2 file:px-4
-                  file:h-[42px]
-                  file:border-0
-                  file:text-sm file:font-semibold
-                  file:bg-[#0062c4] file:text-white
-                  hover:file:bg-[#0257ac]
-                  file:cursor-pointer
-                "
-              />
+            <div>
+              <label className="text-lg md:text-2xl font-medium text-gray-700 flex gap-1" htmlFor="cargo">Enviar uma foto do projeto:</label>
+              <input
+              type="file"
+              onChange={(e) => setEnviarArquivo(e.target.files[0])}
+              className="w-[100%] md:w-full text-lg h-[50px] bg-[#e5eeff] file:text-lg
+              file:mr-4 file:py-3 file:px-4 file:border-none file:bg-[#0062c4] text-[#a7a7a7] file:text-white"
+            />
             </div>
-            <Input
+            
+
+            <InputRed
               type="date"
               title="Data de Retirada:"
               value={dataSaida}
-              disabled={isCompleted}
+              placeholder="Selecione a data de retirada"
               onChange={(e) => setDataSaida(e.target.value)}
             />
-
-            <Input
-              title="Detalhe sobre o pedido:"
-              value={detalhe}
-              disabled={isCompleted}
-              placeholder="Cor amarela, tamanho 30x30cm"
-              onChange={(e) => setDetalhe(e.target.value)}
-            />
+            <div>
+              <label className="text-lg md:text-2xl font-medium text-gray-700 flex gap-1" htmlFor="cargo">Cargo:</label>
+            <select
+              value={cargo}
+              onChange={(e) => setCargo(e.target.value)}
+              className="w-[100%] md:w-full text-lg h-[50px] px-3 text-[#616161] bg-[#e5eeff]"
+            >
+              <option value="">Selecione um cargo</option>
+              <option value="Administrativo">Administrativo</option>
+              <option value="Aluno">Aluno</option>
+              <option value="Docente">Docente</option>
+            </select>
+            </div>
           </div>
-        </div>
-
-        
+        </div> 
       </div>
-    </Body>
+     
+        <button
+              onClick={handleSubmit}
+              className="h-[50px] w-[100%] md:w-[500px] mt-4 bg-[#0062c4] text-2xl text-white rounded"
+            >
+              Enviar Solicitação
+            </button>
+      </div>
+  
   );
 }

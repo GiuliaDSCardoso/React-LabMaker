@@ -11,7 +11,7 @@ export default function Nav() {
         {/* LOGO */}
         <img
           src="../logos/logo-azul.svg"
-          className="h-10"
+          className="h-10 md:h-14"
           alt="Lab Maker Logo"
         />
 
@@ -23,7 +23,7 @@ export default function Nav() {
           <li className="flex relative justify-center ">
             <button
               onClick={() => setOpenMenu(!openMenu)}
-              className="flex items-center gap-1 text-[#1976d2] font-semibold hover:text-blue-700"
+              className="flex items-center gap-1 text-[#1976d2] md:text-xl text-md font-semibold hover:text-blue-700"
             >
               Menu
               <MenuIcon
@@ -33,11 +33,12 @@ export default function Nav() {
             </button>
 
             {openMenu && (
-              <ul className="absolute items-center mt-10 w-52 bg-white shadow-lg  flex flex-col z-50">
+              <ul className="absolute items-center  mt-12 w-52 bg-white shadow-lg  flex flex-col z-50">
                 <ALink href="/home">Home</ALink>
                 <ALink href="/contact">Contato</ALink>
-                <ALink href="/emprestimo">Empréstimo</ALink>
                 <ALink href="/agendauso">Agenda</ALink>
+                <ALink href="/emprestimo">Empréstimo</ALink>
+                
                 <ALink href="/guardarprojetos">Guardar Projetos</ALink>
                 <ALink href="/pedidos">Pedidos</ALink>
                 <ALink href="/login">Login</ALink>
