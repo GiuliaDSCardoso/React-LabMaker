@@ -29,7 +29,7 @@ export default function Input({ id, title, type = "text", value, onChange, place
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className="w-[100%] h-[50px] px-3 placeholder:text-lg text-[#a7a7a7] placeholder:text-[#a7a7a7] bg-[#e5eeff] outline-none focus:text-[#4c82e6] focus:outline-none focus:ring-1 focus:ring-none"
+        className="w-[100%] h-[50px] px-3 placeholder:text-lg  placeholder:text-[#000000] placeholder:text-[#a7a7a7] bg-[#e5eeff] outline-none focus:text-[#4c82e6] focus:outline-none focus:ring-1 focus:ring-none"
       />
     </div>
   );

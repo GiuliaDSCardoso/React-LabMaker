@@ -164,7 +164,7 @@ export default function AddProjetos() {
                 type="file"
                 onChange={(e) => setEnviarArquivo(e.target.files[0])}
                 className="w-[100%] md:w-full text-lg h-[50px] bg-[#e5eeff] file:text-lg
-                  file:mr-4 file:py-3 file:px-4 file:border-none file:bg-[#0062c4] text-[#a7a7a7] file:text-white"
+                  file:mr-4 file:py-3 file:px-4 file:border-none file:bg-[#0062c4] placeholder:text-[#000000] file:text-white"
               />
             </div>
 
@@ -198,7 +198,7 @@ export default function AddProjetos() {
               <select
                 value={cargo}
                 onChange={(e) => setCargo(e.target.value)}
-                className="w-[100%] md:w-full text-lg h-[50px] px-3 text-[#616161] bg-[#e5eeff]"
+                className="w-[100%] placeholder:text-[#000000] md:w-full text-lg h-[50px] px-3  bg-[#e5eeff]"
               >
                 <option value="">Selecione um cargo</option>
                 <option value="Administrativo">Administrativo</option>

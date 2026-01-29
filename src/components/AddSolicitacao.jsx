@@ -154,7 +154,7 @@ export default function AddSolicitacao() {
                   disabled={is_completed}
                   placeholder="Digite o componente e a quantidade Ex. 2 Led azul"
                   onChange={(e) => setComponenteInput(e.target.value)}
-                  className="w-[100%] h-[50px] px-3 text-[#2756ac] bg-[#e5eeff] outline-none text-lg focus:ring-1 focus:ring-[#4c82e6]"
+                  className="w-[100%] h-[50px] px-3 placeholder:text-[#000000] bg-[#e5eeff] outline-none text-lg focus:ring-1 focus:ring-[#4c82e6]"
                 />
                 <button
                   type="button"

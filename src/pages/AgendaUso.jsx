@@ -125,13 +125,13 @@ export default function AgendaUso() {
             />
 
             <div className="w-full flex flex-col gap-4">
-              <label className="text-lg md:text-xl font-medium text-gray-700 flex gap-1">
+              <label className="text-lg md:text-xl font-medium placeholder:text-[#000000] flex gap-1">
                 Escolha a arrumação da sala:
                 <span className="relative group cursor-help text-red-600">*</span>
               </label>
 
               <select
-                className="input w-full text-lg text-[#a7a7a7]  h-[40px] px-3 bg-[#e5eeff] outline-none"
+                className="input w-full text-lg placeholder:text-[#000000]  h-[40px] px-3 bg-[#e5eeff] outline-none"
                 onChange={(e) => setArrumacao(e.target.value)}
                 value={arrumacao}
               >
@@ -168,13 +168,13 @@ export default function AgendaUso() {
             </div>
 
             <div className="flex flex-col gap-4">
-              <label className="text-lg md:text-xl font-medium text-gray-700 flex gap-1">
+              <label className="text-lg md:text-xl font-medium placeholder:text-[#000000] flex gap-1">
                 Qual o motivo da alocação?
                 <span className="relative group cursor-help text-red-600">*</span>
               </label>
 
               <textarea
-                className="input w-full resize-none text-lg h-[80px] px-3 pt-2 bg-[#e5eeff] outline-none"
+                className="input w-full resize-none text-lg h-[80px] px-3 pt-2 placeholder:text-[#000000] bg-[#e5eeff] outline-none"
                 placeholder="Motivo"
                 onChange={(e) => setMotivo(e.target.value)}
                 value={motivo}

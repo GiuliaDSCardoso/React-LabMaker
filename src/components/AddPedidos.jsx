@@ -13,7 +13,7 @@ export default function AddPedidos() {
   const [material, setMaterial] = useState("");
   const [sobreProjeto, setSobreProjeto] = useState("");
   const [detalhe, setDetalhe] = useState("");
-  const [isCompleted, setIsCompleted] = useState(false);
+  const [is_completed, setIsCompleted] = useState(false);
   const [error, setError] = useState(""); // <-- mensagem de erro
 
   function prazoMenorQue10Dias(dataEntrega) {
@@ -90,7 +90,7 @@ export default function AddPedidos() {
         sobre_projeto: sobreProjeto,
         detalhe,
         data_entrega: dataEntrega,
-        arquivo_base64: arquivoBase64,
+        arquivo: arquivoBase64,
         is_completed: false,
         historico: [
           {
@@ -136,7 +136,7 @@ export default function AddPedidos() {
             id="solicitante"
             title="Solicitante:"
             value={solicitante}
-            disabled={isCompleted}
+            disabled={is_completed}
             placeholder="Insira o seu nome completo"
             onChange={(e) => setSolicitante(e.target.value)}
           />
@@ -148,9 +148,9 @@ export default function AddPedidos() {
             </label>
             <select
               value={material}
-              disabled={isCompleted}
+              disabled={is_completed}
               onChange={(e) => setMaterial(e.target.value)}
-              className="w-[100%] md:w-full h-[50px] px-3 text-[#a7a7a7] bg-[#e5eeff] outline-none text-lg focus:ring-1 focus:ring-[#4c82e6]"
+              className="w-[100%] focus:ring-1 focus:ring-[#4c82e6] placeholder:text-[#000000] md:w-full h-[50px] px-3  bg-[#e5eeff] outline-none text-lg focus:ring-1 focus:ring-[#4c82e6]"
             >
               <option value="">Selecione um material</option>
               <option value="Impressão 3D">Impressão 3D</option>
@@ -166,7 +166,7 @@ export default function AddPedidos() {
             title="Email:"
             type="email"
             value={email}
-            disabled={isCompleted}
+            disabled={is_completed}
             placeholder="Insira o seu email"
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -175,7 +175,7 @@ export default function AddPedidos() {
             id="cursoETurma"
             title="Curso e Turma:"
             value={cursoETurma}
-            disabled={isCompleted}
+            disabled={is_completed}
             placeholder="Insira seu curso e turma"
             onChange={(e) => setCursoETurma(e.target.value)}
           />
@@ -185,7 +185,7 @@ export default function AddPedidos() {
             title="Telefone:"
             value={contato}
             placeholder="Use esse formato ex: (11)912345678"
-            disabled={isCompleted}
+            disabled={is_completed}
             onChange={(e) => setContato(e.target.value)}
           />
         </div>
@@ -196,7 +196,7 @@ export default function AddPedidos() {
             id="sobreProjeto"
             title="Descreva o projeto:"
             value={sobreProjeto}
-            disabled={isCompleted}
+            disabled={is_completed}
             placeholder="Descreva o seu projeto"
             onChange={(e) => setSobreProjeto(e.target.value)}
           />
@@ -208,9 +208,9 @@ export default function AddPedidos() {
             </label>
             <select
               value={cargo}
-              disabled={isCompleted}
+              disabled={is_completed}
               onChange={(e) => setCargo(e.target.value)}
-              className="w-[100%] md:w-full h-[50px] text-[#a7a7a7] text-lg bg-[#e5eeff]"
+              className="w-[100%] md:w-full h-[50px] focus:ring-1 focus:ring-[#4c82e6] placeholder:text-[#000000] text-lg bg-[#e5eeff]"
             >
               <option value="">Selecione um cargo</option>
               <option value="Administrativo">Administrativo</option>
@@ -226,9 +226,9 @@ export default function AddPedidos() {
             </label>
             <input
               type="file"
-              disabled={isCompleted}
+              disabled={is_completed}
               onChange={(e) => setEnviarArquivo(e.target.files[0])}
-              className="w-[100%] md:w-full h-[50px] text-[#a7a7a7] text-lg bg-[#e5eeff] file:mr-4 file:py-3 file:px-4 file:bg-[#0062c4] file:border-none file:text-white"
+              className="w-[100%] md:w-full h-[50px] placeholder:text-[#000000] text-lg bg-[#e5eeff] file:mr-4 file:py-3 file:px-4 file:bg-[#0062c4] file:border-none file:text-white"
             />
           </div>
 
@@ -236,7 +236,7 @@ export default function AddPedidos() {
             type="date"
             title="Data de Entrega (prazo mínimo 10 dias úteis):"
             value={dataEntrega}
-            disabled={isCompleted}
+            disabled={is_completed}
             onChange={(e) => setDataEntrega(e.target.value)}
           />
 
@@ -244,7 +244,7 @@ export default function AddPedidos() {
             id="componente"
             title="Detalhe sobre o pedido:"
             value={detalhe}
-            disabled={isCompleted}
+            disabled={is_completed}
             placeholder="Cor amarela, tamanho 30x30cm"
             onChange={(e) => setDetalhe(e.target.value)}
           />
@@ -253,7 +253,7 @@ export default function AddPedidos() {
 
       <button
         onClick={handleSubmit}
-        disabled={isCompleted}
+        disabled={is_completed}
         className="h-[50px] w-[100%] md:w-[500px] mt-4 bg-[#0062c4] text-white text-lg md:text-xl rounded"
       >
         Enviar Solicitação

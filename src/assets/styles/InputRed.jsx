@@ -29,7 +29,7 @@ export default function InputRed({ id, title, type = "text", value, onChange, pl
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className="w-[100%] md:w-full h-[50px] px-3 text-lg text-[#a7a7a7] bg-[#e5eeff] outline-none  focus:outline-none focus:ring-1 focus:ring-none"
+        className="w-[100%] md:w-full h-[50px] px-3 text-lg placeholder:text-[#000000] bg-[#e5eeff] outline-none  focus:outline-none focus:ring-1 focus:ring-none"
       />
     </div>
   );
