@@ -117,7 +117,7 @@ export default function EmprestimoAdmin() {
     await supabase.from("emprestimos").delete().eq("id", id);
     carregarSolicitacoes();
   }
-
+  
   return (
     <Body>
       <NavAdminBlue />

@@ -3,9 +3,18 @@ import "../../index.css";
 
 export default function Body(props) {
     return(
-        <div className=" flex flex-col itemns-center mx-0 w-screen mb-30 h-screen ">
-            {props.children}
-        </div>);
+        <div className="flex flex-col items-center min-h-screen w-screen mx-0 mb-30">
+            {/* Conteúdo da página */}
+            <div className="flex-grow w-full">
+                {props.children}
+            </div>
+
+            {/* Footer */}
+            <footer className="w-full bg-blue-100 text-center py-4 text-gray-800 text-sm">
+                Made by Giulia Cardoso
+            </footer>
+        </div>
+    );
 }
 
 Body.propTypes = {
