@@ -15,7 +15,30 @@ export default function AddPedidos() {
   const [detalhe, setDetalhe] = useState("");
   const [is_completed, setIsCompleted] = useState(false);
   const [error, setError] = useState(""); // <-- mensagem de erro
+  function formatarTelefone(valor) {
+      // remove tudo que não for número
+      let numero = valor.replace(/\D/g, "");
 
+      // limita a 11 dígitos (DDD + 9 + 8 números)
+      numero = numero.slice(0, 11);
+
+      if (numero.length <= 2) {
+        return `(${numero}`;
+      }
+
+      if (numero.length <= 3) {
+        return `(${numero.slice(0, 2)}) ${numero.slice(2)}`;
+      }
+
+      if (numero.length <= 7) {
+        return `(${numero.slice(0, 2)}) ${numero.slice(2, 3)} ${numero.slice(3)}`;
+      }
+
+      return `(${numero.slice(0, 2)}) ${numero.slice(2, 3)} ${numero.slice(
+        3,
+        7
+      )}-${numero.slice(7)}`;
+    }
   function prazoMenorQue10Dias(dataEntrega) {
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
@@ -68,6 +91,12 @@ export default function AddPedidos() {
       alert(
         "Use um email válido: @gmail.com, @ba.estudante.senai.br, @fieb.org.br ou @fbest.org.br"
       );
+      return;
+    }
+    const telefoneValido = /^\(\d{2}\) 9 \d{4}-\d{4}$/;
+
+    if (!telefoneValido.test(contato)) {
+      setError("⚠️ Informe um telefone válido no formato (DDD) 9 XXXX-XXXX");
       return;
     }
 
@@ -186,7 +215,7 @@ export default function AddPedidos() {
             value={contato}
             placeholder="Use esse formato ex: (11)912345678"
             disabled={is_completed}
-            onChange={(e) => setContato(e.target.value)}
+            onChange={(e) => setContato(formatarTelefone(e.target.value))}
           />
         </div>
 

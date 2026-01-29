@@ -15,6 +15,30 @@ export default function AddSolicitacao() {
   const [is_completed, setIs_Completed] = useState(false);
   const [error, setError] = useState("");
   const [termosAceitos, setTermosAceitos] = useState(false); // ✅ checkbox
+  function formatarTelefone(valor) {
+  // remove tudo que não for número
+  let numero = valor.replace(/\D/g, "");
+
+  // limita a 11 dígitos (DDD + 9 + 8 números)
+  numero = numero.slice(0, 11);
+
+  if (numero.length <= 2) {
+    return `(${numero}`;
+  }
+
+  if (numero.length <= 3) {
+    return `(${numero.slice(0, 2)}) ${numero.slice(2)}`;
+  }
+
+  if (numero.length <= 7) {
+    return `(${numero.slice(0, 2)}) ${numero.slice(2, 3)} ${numero.slice(3)}`;
+  }
+
+  return `(${numero.slice(0, 2)}) ${numero.slice(2, 3)} ${numero.slice(
+    3,
+    7
+  )}-${numero.slice(7)}`;
+}
 
   function emailValido(email) {
     const dominiosPermitidos = [
@@ -52,6 +76,12 @@ export default function AddSolicitacao() {
       !dataDevolucao
     ) {
       setError("Preencha todos os campos!");
+      return;
+    }
+    const telefoneValido = /^\(\d{2}\) 9 \d{4}-\d{4}$/;
+
+    if (!telefoneValido.test(contato)) {
+      setError("⚠️ Informe um telefone válido no formato (DDD) 9 XXXX-XXXX");
       return;
     }
 
@@ -138,7 +168,7 @@ export default function AddSolicitacao() {
               title="Telefone:"
               placeholder="Use esse formato ex: (11)912345678"
               value={contato}
-              onChange={(e) => setContato(e.target.value)}
+              onChange={(e) => setContato(formatarTelefone(e.target.value))}
             />
           </div>
 

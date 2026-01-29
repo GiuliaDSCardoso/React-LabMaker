@@ -14,6 +14,30 @@ export default function AgendaUso() {
   const [data, setData] = useState("");
   const [horaInicio, setHoraInicio] = useState("08:00");
   const [horaFim, setHoraFim] = useState("09:00");
+  function formatarTelefone(valor) {
+  // remove tudo que não for número
+  let numero = valor.replace(/\D/g, "");
+
+  // limita a 11 dígitos (DDD + 9 + 8 números)
+  numero = numero.slice(0, 11);
+
+  if (numero.length <= 2) {
+    return `(${numero}`;
+  }
+
+  if (numero.length <= 3) {
+    return `(${numero.slice(0, 2)}) ${numero.slice(2)}`;
+  }
+
+  if (numero.length <= 7) {
+    return `(${numero.slice(0, 2)}) ${numero.slice(2, 3)} ${numero.slice(3)}`;
+  }
+
+  return `(${numero.slice(0, 2)}) ${numero.slice(2, 3)} ${numero.slice(
+    3,
+    7
+  )}-${numero.slice(7)}`;
+}
 
   // Função de validação de email
   function emailValido(email) {
@@ -69,6 +93,12 @@ export default function AgendaUso() {
         arrumacaoSala: arrumacao,
       },
     });
+    const telefoneValido = /^\(\d{2}\) 9 \d{4}-\d{4}$/;
+
+    if (!telefoneValido.test(telefone)) {
+      alert("⚠️ Informe um telefone válido no formato (DDD) 9 XXXX-XXXX");
+      return;
+    }
 
     if (error) {
       alert("Erro ao enviar solicitação");
@@ -120,7 +150,7 @@ export default function AgendaUso() {
             <InputRed
               title="Insira seu telefone:"
               placeholder="Use esse formato ex: (11)912345678"
-              onChange={(e) => setTelefone(e.target.value)}
+              onChange={(e) => setTelefone(formatarTelefone(e.target.value))}
               value={telefone}
             />
 

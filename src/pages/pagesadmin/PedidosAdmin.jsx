@@ -9,6 +9,7 @@ export default function PedidosAdmin() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [historicoAberto, setHistoricoAberto] = useState(null);
+    
 
   useEffect(() => {
     carregarPedidos();
