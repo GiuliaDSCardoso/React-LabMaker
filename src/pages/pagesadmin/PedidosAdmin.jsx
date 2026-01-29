@@ -36,32 +36,54 @@ export default function PedidosAdmin() {
   }
 
   async function marcarComoConcluido(id) {
-    const pedido = pedidos.find((p) => p.id === id);
+  const pedido = pedidos.find((p) => p.id === id);
 
-    await supabase
-      .from("pedidos")
-      .update({
-        is_completed: true,
-        historico: [...(pedido.historico || []), novoEvento("Pedido concluído")],
-      })
-      .eq("id", id);
+  await supabase
+    .from("pedidos")
+    .update({
+      is_completed: true,
+      historico: [...(pedido.historico || []), novoEvento("Pedido concluído")],
+    })
+    .eq("id", id);
 
-    carregarPedidos();
-  }
+  // Enviar mensagem via WhatsApp
+  enviarMensagemWhatsApp(pedido.contato, "Concluído");
 
-  async function desmarcarComoConcluido(id) {
-    const pedido = pedidos.find((p) => p.id === id);
+  carregarPedidos();
+}
 
-    await supabase
-      .from("pedidos")
-      .update({
-        is_completed: false,
-        historico: [...(pedido.historico || []), novoEvento("Pedido reaberto")],
-      })
-      .eq("id", id);
+async function desmarcarComoConcluido(id) {
+  const pedido = pedidos.find((p) => p.id === id);
 
-    carregarPedidos();
-  }
+  await supabase
+    .from("pedidos")
+    .update({
+      is_completed: false,
+      historico: [...(pedido.historico || []), novoEvento("Pedido reaberto")],
+    })
+    .eq("id", id);
+
+  // Enviar mensagem via WhatsApp
+  enviarMensagemWhatsApp(pedido.contato, "Reaberto");
+
+  carregarPedidos();
+}
+
+// Função para enviar mensagem
+function enviarMensagemWhatsApp(numeroDestinatario, status) {
+  if (!numeroDestinatario) return;
+
+ 
+  const numeroLimpo = numeroDestinatario.replace(/\D/g, ""); // remove qualquer símbolo
+
+  const mensagem = encodeURIComponent(
+    `Informamos que o status da sua solicitação de pedido mudou! Atual status: ${status}`
+  );
+
+  // Abre o WhatsApp do solicitante com a mensagem pronta
+  window.open(`https://wa.me/${numeroLimpo}?text=${mensagem}`, "_blank");
+}
+
 
   async function excluirPedido(id) {
     if (!window.confirm("Deseja excluir?")) return;
