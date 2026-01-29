@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { supabase } from "../services/supabase";
 import InputRed from "../assets/styles/InputRed";
-import InputNO from "../assets/styles/InputNO.JSX";
+import InputNO from "../assets/styles/InputNO.jsx";
+
 
 export default function AddPedidos() {
   const [solicitante, setSolicitante] = useState("");
@@ -178,7 +179,7 @@ export default function AddPedidos() {
               value={material}
               disabled={is_completed}
               onChange={(e) => setMaterial(e.target.value)}
-              className="w-[100%] focus:ring-1 focus:ring-[#4c82e6] placeholder:text-[#000000] md:w-full h-[50px] px-3  bg-[#e5eeff] outline-none text-lg focus:ring-1 focus:ring-[#4c82e6]"
+              className="w-[100%] placeholder:text-[#000000] md:w-full h-[50px] px-3  bg-[#e5eeff] outline-none text-lg focus:ring-1 focus:ring-[#4c82e6]"
             >
               <option value="">Selecione um material</option>
               <option value="Impressão 3D">Impressão 3D</option>
