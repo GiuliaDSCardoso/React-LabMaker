@@ -9,11 +9,14 @@ export default function Nav() {
         <nav className="flex flex-row  items-center  bg-blue-50 justify-between w-[70%] py-2 ">
   
         {/* LOGO */}
+        <a href="/">
         <img
           src="../logos/logo-azul.svg"
           className="h-10 md:h-14"
           alt="Lab Maker Logo"
         />
+        </a>
+        
 
         {/* MENU */}
         <ul className="flex justify-center md:gap-9 gap-2 items-center relative">

@@ -30,7 +30,7 @@ export default function AgendaUso() {
     );
 
     if (conflito) {
-      alert("Laboratório indisponível nesse horário");
+      alert("Laboratório indisponível nesse horário/dia");
       return;
     }
 
@@ -54,7 +54,7 @@ export default function AgendaUso() {
       return;
     }
 
-    alert("Solicitação enviada!");
+    alert("Solicitação enviada! Envie um email para \"NOA SENAI FEIRA\" <senaifeiranoa@fieb.org.br> ");
   }
 
   return (
@@ -89,8 +89,8 @@ export default function AgendaUso() {
             onChange={(e) => setTelefone(e.target.value)}
           />
 
-          <div className="w-full">
-            <label className="text-lg md:text-2xl font-medium text-gray-700 flex gap-1">
+          <div className="w-full flex flex-col gap-4">
+            <label className="text-lg md:text-xl font-medium text-gray-700 flex gap-1">
               Escolha a arrumação da sala:
               <span className="relative group cursor-help text-red-600">
                 *
@@ -133,8 +133,8 @@ export default function AgendaUso() {
             />
           </div>
 
-          <div>
-            <label className="text-lg md:text-2xl font-medium text-gray-700 flex gap-1">
+          <div className="flex flex-col gap-4">
+            <label className="text-lg md:text-xl font-medium text-gray-700 flex gap-1">
               Qual o motivo da alocação?
               <span className="relative group cursor-help text-red-600">
                 *
@@ -145,7 +145,7 @@ export default function AgendaUso() {
             </label>
 
             <textarea
-              className="input w-full text-lg h-[80px] px-3 pt-2 bg-[#e5eeff] outline-none"
+              className="input w-full resize-none text-lg h-[80px] px-3 pt-2 bg-[#e5eeff] outline-none"
               placeholder="Motivo"
               onChange={(e) => setMotivo(e.target.value)}
             />

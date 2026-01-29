@@ -91,8 +91,8 @@ export default function AddProjetos() {
               placeholder="Descreva o seu projeto"
               onChange={(e) => setSobreProjeto(e.target.value)}
             />
-            <div>
-              <label className="text-lg md:text-2xl font-medium text-gray-700 flex gap-1" htmlFor="cargo">Enviar uma foto do projeto:</label>
+            <div className="flex flex-col gap-4">
+              <label className="text-lg md:text-xl font-medium text-gray-700 flex gap-1" htmlFor="cargo">Enviar uma foto do projeto:</label>
               <input
               type="file"
               onChange={(e) => setEnviarArquivo(e.target.files[0])}
@@ -109,8 +109,8 @@ export default function AddProjetos() {
               placeholder="Selecione a data de retirada"
               onChange={(e) => setDataSaida(e.target.value)}
             />
-            <div>
-              <label className="text-lg md:text-2xl font-medium text-gray-700 flex gap-1" htmlFor="cargo">Cargo:</label>
+            <div className="flex flex-col gap-4">
+              <label className="text-lg md:text-xl font-medium text-gray-700 flex gap-1" htmlFor="cargo">Cargo:</label>
             <select
               value={cargo}
               onChange={(e) => setCargo(e.target.value)}
@@ -128,7 +128,7 @@ export default function AddProjetos() {
      
         <button
               onClick={handleSubmit}
-              className="h-[50px] w-[100%] md:w-[500px] mt-4 bg-[#0062c4] text-2xl text-white rounded"
+              className="h-[50px] w-[100%] md:w-[500px] mt-4 bg-[#0062c4] text-xl text-white rounded"
             >
               Enviar Solicitação
             </button>

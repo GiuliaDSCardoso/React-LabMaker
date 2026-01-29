@@ -122,8 +122,8 @@ export default function AddPedidos() {
         onChange={(e) => setSolicitante(e.target.value)}
       />
 
-      <div className="flex flex-col justify-center ">
-        <label className="text-lg md:text-2xl font-medium text-gray-700 flex gap-1">
+      <div className="flex flex-col gap-4 justify-center ">
+        <label className="text-lg md:text-xl font-medium text-gray-700 flex gap-1">
           Material de confecção:
           <span className="relative group cursor-help text-red-600">*</span>
         </label>
@@ -135,7 +135,7 @@ export default function AddPedidos() {
           className="
             w-[100%] md:w-full h-[50px] px-3
             text-[#a7a7a7] bg-[#e5eeff]
-            outline-none text-lg
+            outline-none text-lg 
             focus:ring-1 focus:ring-[#4c82e6]
           "
         >
@@ -187,8 +187,8 @@ export default function AddPedidos() {
         placeholder="Descreva o seu projeto"
         onChange={(e) => setSobreProjeto(e.target.value)}
       />
-      <div>
-        <label className="text-lg md:text-2xl font-medium text-gray-700 flex gap-1" htmlFor="cargo">Cargo:</label>
+      <div className="flex flex-col gap-4">
+        <label className="text-lg md:text-xl font-medium text-gray-700 flex gap-1" htmlFor="cargo">Cargo:</label>
          <select
         value={cargo}
         disabled={isCompleted}
@@ -203,8 +203,8 @@ export default function AddPedidos() {
       </select>
 
       </div>  
-      <div>
-        <label className="text-lg md:text-2xl font-medium text-gray-700 flex gap-1" htmlFor="Arquivo">Arquivo:</label>
+      <div className="flex flex-col gap-4">
+        <label className="text-lg  md:text-xl font-medium text-gray-700 flex gap-1" htmlFor="Arquivo">Arquivo:</label>
         <input
         type="file"
         disabled={isCompleted}
@@ -237,7 +237,7 @@ export default function AddPedidos() {
   <button
     onClick={handleSubmit}
     disabled={isCompleted}
-    className="h-[50px] w-[100%] md:w-[500px] mt-4 bg-[#0062c4] text-white  text-lg md:text-2xl rounded"
+    className="h-[50px] w-[100%] md:w-[500px] mt-4 bg-[#0062c4] text-white  text-lg md:text-xl rounded"
   >
     Enviar Solicitação
   </button>

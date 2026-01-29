@@ -91,8 +91,8 @@ export default function AddSolicitacao() {
     
               {/* COLUNA DIREITA */}
               <div className="w-full flex flex-col gap-4">
-                 <div className="flex flex-col ">
-            <label className="text-lg md:text-2xl font-medium text-gray-700">
+                 <div className="flex flex-col gap-4 ">
+            <label className="text-lg md:text-xl font-medium text-gray-700">
               Componente(s) a ser(em) emprestado(s):
             </label>
 
@@ -170,7 +170,7 @@ export default function AddSolicitacao() {
     </div>
     <button
                   onClick={handleSubmit}
-                  className="h-[50px] w-[100%] md:w-[500px] mt-4 bg-[#0062c4] text-2xl text-white rounded"
+                  className="h-[50px] w-[100%] md:w-[500px] mt-4 bg-[#0062c4] text-xl text-white rounded"
                 >
                   Enviar Solicitação
         </button>

@@ -26,7 +26,7 @@ export default function GuardarProjetos() {
       <Nav />
 
        <header className="flex items-center bg-gradient-to-r from-[#1976d2] to-blue-800 h-[20%] px-6">
-        <h1 className="sm:text-3xl text-2xl text-white font-bold text-center w-full">
+        <h1 className=" text-lg md:text-3xl text-white font-bold text-center w-full">
           Solicitação de Espaço <br /> para Guardar Projetos
         </h1>
       </header>

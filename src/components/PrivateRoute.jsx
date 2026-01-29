@@ -22,6 +22,7 @@ export default function PrivateRoute({ children }) {
   }
 
   if (!session) {
+    alert("Acesso restrito! Faça login para continuar.");
     return <Navigate to="/login" replace />;
   }
 

@@ -3,8 +3,8 @@
 export default function InputRed({ id, title, type = "text", value, onChange, placeholder }) {
 
   return (
-    <div className="flex flex-col  w-[100%] md:w-full">
-      <label className="text-lg font-medium md:text-2xl text-gray-700 flex gap-1">
+    <div className="flex flex-col gap-4 w-[100%] md:w-full">
+      <label className="text-lg font-medium md:text-xl text-gray-700 flex gap-1">
       {title}
       <span className="relative group cursor-help text-red-600">
         *

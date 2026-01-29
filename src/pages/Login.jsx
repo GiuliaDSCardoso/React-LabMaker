@@ -13,7 +13,7 @@ export default function Login() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
     function onBackClick() {
-      navigate(-1); 
+      navigate("/"); 
   }
   async function onSubmitLogin(e) {
   e.preventDefault();

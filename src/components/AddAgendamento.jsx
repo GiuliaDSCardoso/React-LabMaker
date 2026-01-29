@@ -63,7 +63,7 @@ export default function AddAgendamento({ onAdd }) {
         <div className="flex gap-2">
           <input
             type="time"
-            className="w-full h-[50px] focus:outline-none
+            className="md:w-full w-[48%] h-[50px] focus:outline-none
                 focus:ring-1
                 focus:border-blue-50 px-3 text-lg md:text-xl bg-[#e5eeff]"
             value={horaInicio}
@@ -71,7 +71,7 @@ export default function AddAgendamento({ onAdd }) {
           />
           <input
             type="time"
-            className="w-full h-[50px] focus:outline-none
+            className="md:w-full w-[48%] h-[50px] focus:outline-none
                 focus:ring-1
                 focus:border-blue-50  px-3 text-lg md:text-xl bg-[#e5eeff]"
             value={horaFim}

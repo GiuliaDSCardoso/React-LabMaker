@@ -12,7 +12,7 @@ export default function NavAdmin(){
          const navigate = useNavigate();
              async function logout() {
                  await supabase.auth.signOut();
-                 navigate("/login");
+                 navigate("/");
                  }
     
   return (
@@ -20,11 +20,13 @@ export default function NavAdmin(){
                     <nav className="flex flex-row  items-center  bg-blue-50 justify-between w-[70%] py-2 ">
             
                     {/* LOGO */}
-                    <img
-                    src="../logos/logo-azul.svg"
-                    className="md:h-14 h-10"
-                    alt="Lab Maker Logo"
-                    />
+                    <a href="/admin">
+                        <img
+                        src="../logos/logo-azul.svg"
+                        className="h-10 md:h-14"
+                        alt="Lab Maker Logo"
+                        />
+                        </a>
 
                     {/* MENU */}
                     <ul className="flex justify-center md:gap-9 gap-2 items-center relative">
