@@ -80,7 +80,7 @@ export default function PedidosAdmin() {
         rel="noopener noreferrer"
         className="text-blue-600 underline flex gap-1 justify-center"
       >
-        <FileIcon size={14} /> Abrir
+        <FileIcon size={14} /> Baixar
       </a>
     );
   }
