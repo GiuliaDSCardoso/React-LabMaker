@@ -13,9 +13,9 @@ export default function AddSolicitacao() {
   const [dataEmprestimo, setDataEmprestimo] = useState("");
   const [dataDevolucao, setDataDevolucao] = useState("");
   const [is_completed, setIs_Completed] = useState(false);
-  const [error, setError] = useState(""); // Para mostrar mensagens de erro
+  const [error, setError] = useState("");
+  const [termosAceitos, setTermosAceitos] = useState(false); // ✅ checkbox
 
-  // Função para validar email
   function emailValido(email) {
     const dominiosPermitidos = [
       "@gmail.com",
@@ -39,10 +39,9 @@ export default function AddSolicitacao() {
   }
 
   async function handleSubmit(e) {
-    e.preventDefault(); // Previne envio padrão do formulário
+    e.preventDefault();
     setError("");
 
-    // Validação de campos
     if (
       !solicitante ||
       !email ||
@@ -56,7 +55,6 @@ export default function AddSolicitacao() {
       return;
     }
 
-    // Validação do email
     if (!emailValido(email)) {
       alert(
         "Use um email válido: @gmail.com, @ba.estudante.senai.br, @fieb.org.br ou @fbest.org.br"
@@ -64,8 +62,14 @@ export default function AddSolicitacao() {
       return;
     }
 
-    // Inserção no Supabase
-    const { error: supaError } = await supabase.from("emprestimos").insert({
+    if (!termosAceitos) {
+      setError(
+        "Você precisa aceitar os termos sobre devolução do item emprestado."
+      );
+      return;
+    }
+
+   const { error: supaError } = await supabase.from("emprestimos").insert({
       solicitante,
       email,
       curso_turma: cursoETurma,
@@ -74,6 +78,7 @@ export default function AddSolicitacao() {
       data_saida: dataEmprestimo,
       data_retorno: dataDevolucao,
       is_completed: false,
+      termos_aceitos: termosAceitos, // ✅ salva o valor
       historico: [
         {
           data: new Date().toLocaleString("pt-BR"),
@@ -81,6 +86,7 @@ export default function AddSolicitacao() {
         },
       ],
     });
+
 
     if (supaError) {
       console.error(supaError);
@@ -90,7 +96,6 @@ export default function AddSolicitacao() {
 
     alert("✅ Solicitação enviada com sucesso!");
 
-    // Resetar campos
     setSolicitante("");
     setEmail("");
     setCursoETurma("");
@@ -100,14 +105,13 @@ export default function AddSolicitacao() {
     setDataEmprestimo("");
     setDataDevolucao("");
     setIs_Completed(false);
+    setTermosAceitos(false);
   }
 
   return (
     <div className="flex flex-col items-center justify-center mb-20 gap-6 px-4 w-full">
-      <form
-        onSubmit={handleSubmit} // Importante usar onSubmit do form
-        className="flex flex-col gap-6 w-full max-w-6xl"
-      >
+      <form onSubmit={handleSubmit} className="flex flex-col gap-6 w-full max-w-6xl">
+        {/* COLUNAS de inputs */}
         <div className="flex md:flex-row flex-col md:justify-center gap-6 w-full">
           {/* COLUNA ESQUERDA */}
           <div className="w-full flex flex-col gap-4">
@@ -143,21 +147,6 @@ export default function AddSolicitacao() {
             <div className="flex flex-col gap-4">
               <label className="text-lg md:text-xl font-medium text-gray-700">
                 Componente(s) a ser(em) emprestado(s):
-                <span className="relative group cursor-help text-red-600">
-                    *
-                    <span
-                      className="
-                        absolute left-1/2 -translate-x-1/2 top-6
-                        hidden group-hover:block
-                        bg-black text-white text-xs md:text-sm
-                        px-2 py-1 rounded
-                        whitespace-nowrap
-                        z-50
-                      "
-                    >
-                      item obrigatório
-                    </span>
-                  </span>
               </label>
               <div className="flex gap-2">
                 <input
@@ -165,12 +154,7 @@ export default function AddSolicitacao() {
                   disabled={is_completed}
                   placeholder="Digite o componente e a quantidade Ex. 2 Led azul"
                   onChange={(e) => setComponenteInput(e.target.value)}
-                  className="
-                    w-[100%] h-[50px] px-3
-                    text-[#2756ac] bg-[#e5eeff]
-                    outline-none text-lg
-                    focus:ring-1 focus:ring-[#4c82e6]
-                  "
+                  className="w-[100%] h-[50px] px-3 text-[#2756ac] bg-[#e5eeff] outline-none text-lg focus:ring-1 focus:ring-[#4c82e6]"
                 />
                 <button
                   type="button"
@@ -219,12 +203,26 @@ export default function AddSolicitacao() {
           </div>
         </div>
 
+        {/* Checkbox de termos */}
+        <div className="flex items-start gap-2">
+          <input
+            type="checkbox"
+            id="termos"
+            checked={termosAceitos}
+            onChange={(e) => setTermosAceitos(e.target.checked)}
+            className="mt-1"
+          />
+          <label htmlFor="termos" className="text-gray-700 text-sm">
+            Li e aceito que o item emprestado deve ser devolvido no mesmo estado que foi retirado e que quaisquer danos serão de minha responsabilidade.
+          </label>
+        </div>
+
         {error && (
           <p className="text-red-600 text-center text-lg font-medium">{error}</p>
         )}
 
         <button
-          type="submit" // importante: botão submit
+          type="submit"
           className="h-[50px] w-[100%] md:w-[500px] mt-4 bg-[#0062c4] text-xl text-white rounded"
         >
           Enviar Solicitação

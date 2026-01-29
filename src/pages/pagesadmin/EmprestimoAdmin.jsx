@@ -189,8 +189,11 @@ export default function EmprestimoAdmin() {
                 <th className="border px-2 py-4">Componente</th>
                 <th className="border px-2 py-4">Empréstimo</th>
                 <th className="border px-2 py-4">Devolução</th>
+                <th className="border px-2 py-4">Termos Aceitos</th>
+
                 <th className="border px-2 py-4">Status</th>
                 <th className="border px-2 py-4">Ações</th>
+
               </tr>
             </thead>
 
@@ -213,6 +216,14 @@ export default function EmprestimoAdmin() {
                     </td>
                     <td className="border px-2 py-4">{item.data_saida}</td>
                     <td className="border px-2 py-4">{item.data_retorno}</td>
+                    <td className="border px-2 py-4">
+                      {item.termos_aceitos ? (
+                        <span className="text-green-600 font-semibold">Aceito</span>
+                      ) : (
+                        <span className="text-red-600 font-semibold">Não aceito</span>
+                      )}
+                    </td>
+
                     <td className="border px-2 py-4">
                       {item.is_completed ? (
                         <span className="text-green-600 font-semibold">
