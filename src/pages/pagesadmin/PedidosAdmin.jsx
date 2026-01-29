@@ -196,7 +196,7 @@ function enviarMensagemWhatsApp(numeroDestinatario, status) {
               <tr>
                 <th className="border px-2 py-4">Solicitante</th>
                 <th className="border px-2 py-4">Email</th>
-                <th className="border px-2 py-4">Curso</th>
+                <th className="border px-2 py-4">Curso/Setor</th>
                 <th className="border px-2 py-4">Contato</th>
                 <th className="border px-2 py-4">Detalhe</th>
                 <th className="border px-2 py-4">Sobre</th>

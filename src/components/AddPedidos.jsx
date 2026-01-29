@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { supabase } from "../services/supabase";
 import InputRed from "../assets/styles/InputRed";
+import InputNO from "../assets/styles/InputNO.JSX";
 
 export default function AddPedidos() {
   const [solicitante, setSolicitante] = useState("");
@@ -73,9 +74,7 @@ export default function AddPedidos() {
     if (
       !solicitante ||
       !email ||
-      !cursoETurma ||
       !contato ||
-      !sobreProjeto ||
       !cargo ||
       !enviarArquivo ||
       !dataEntrega ||
@@ -200,12 +199,12 @@ export default function AddPedidos() {
             onChange={(e) => setEmail(e.target.value)}
           />
 
-          <InputRed
+          <InputNO
             id="cursoETurma"
-            title="Curso e Turma:"
+            title="Curso&Turma/Setor:"
             value={cursoETurma}
             disabled={is_completed}
-            placeholder="Insira seu curso e turma"
+            placeholder="Insira seu curso e turma ou o seu setor"
             onChange={(e) => setCursoETurma(e.target.value)}
           />
 
@@ -221,7 +220,7 @@ export default function AddPedidos() {
 
         {/* COLUNA DIREITA */}
         <div className="w-full flex flex-col gap-4">
-          <InputRed
+          <InputNO
             id="sobreProjeto"
             title="Descreva o projeto:"
             value={sobreProjeto}
@@ -233,7 +232,21 @@ export default function AddPedidos() {
           <div className="flex flex-col gap-4">
             <label className="text-lg md:text-xl font-medium text-gray-700 flex gap-1">
               Cargo:
-              <span className="relative group cursor-help text-red-600">*</span>
+              <span className="relative group cursor-help text-red-600">
+        *
+        <span
+          className="
+            absolute left-1/2 -translate-x-1/2 top-6
+            hidden group-hover:block
+            bg-black text-white text-xs md:text-sm
+            px-2 py-1 rounded
+            whitespace-nowrap
+            z-50
+          "
+        >
+          item obrigatório
+        </span>
+      </span>
             </label>
             <select
               value={cargo}
@@ -250,8 +263,22 @@ export default function AddPedidos() {
 
           <div className="flex flex-col gap-4">
             <label className="text-lg md:text-xl font-medium text-gray-700 flex gap-1">
-              Arquivo:
-              <span className="relative group cursor-help text-red-600">*</span>
+              Arquivo do projeto (Envie uma imagem do protótipo):
+             <span className="relative group cursor-help text-red-600">
+        *
+        <span
+          className="
+            absolute left-1/2 -translate-x-1/2 top-6
+            hidden group-hover:block
+            bg-black text-white text-xs md:text-sm
+            px-2 py-1 rounded
+            whitespace-nowrap
+            z-50
+          "
+        >
+          item obrigatório
+        </span>
+      </span>
             </label>
             <input
               type="file"

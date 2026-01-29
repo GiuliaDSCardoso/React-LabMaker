@@ -185,7 +185,7 @@ export default function EmprestimoAdmin() {
                 <th className="border px-2 py-4">Solicitante</th>
                 <th className="border px-2 py-4">Email</th>
                 <th className="border px-2 py-4">Contato</th>
-                <th className="border px-2 py-4">Curso e Turma</th>
+                <th className="border px-2 py-4">Curso/setor</th>
                 <th className="border px-2 py-4">Componente</th>
                 <th className="border px-2 py-4">Empréstimo</th>
                 <th className="border px-2 py-4">Devolução</th>
