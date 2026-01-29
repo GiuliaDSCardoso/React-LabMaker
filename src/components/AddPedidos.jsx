@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { supabase } from "../services/supabase";
 import InputRed from "../assets/styles/InputRed";
-import InputNO from "../assets/styles/InputNO.jsx";
+import InputNO from "../assets/styles/ImputNO";
+
 
 
 export default function AddPedidos() {
