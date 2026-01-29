@@ -20,6 +20,7 @@ export default function AddSolicitacao() {
     const dominiosPermitidos = [
       "@gmail.com",
       "@fieb.org.br",
+      "@ba.estudante.senai.br",
       "@fbest.org.br",
     ];
     return dominiosPermitidos.some((dominio) =>
@@ -58,7 +59,7 @@ export default function AddSolicitacao() {
     // Validação do email
     if (!emailValido(email)) {
       alert(
-        "Use um email válido: @gmail.com, @fieb.org.br ou @fbest.org.br"
+        "Use um email válido: @gmail.com, @ba.estudante.senai.br, @fieb.org.br ou @fbest.org.br"
       );
       return;
     }

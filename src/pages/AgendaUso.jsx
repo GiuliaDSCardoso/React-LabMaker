@@ -17,7 +17,7 @@ export default function AgendaUso() {
 
   // Função de validação de email
   function emailValido(email) {
-    const dominiosPermitidos = ["@gmail.com", "@fieb.org.br", "@fbest.org.br"];
+    const dominiosPermitidos = ["@gmail.com","@ba.estudante.senai.br", "@fieb.org.br", "@fbest.org.br"];
     return dominiosPermitidos.some((dominio) =>
       email.toLowerCase().endsWith(dominio)
     );
@@ -33,7 +33,7 @@ export default function AgendaUso() {
     // Validação do email
     if (!emailValido(email)) {
       alert(
-        "Use um email válido: @gmail.com, @fieb.org.br ou @fbest.org.br"
+        "Use um email válido: @gmail.com, @ba.estudante.senai.br, @fieb.org.br ou @fbest.org.br"
       );
       return;
     }

@@ -36,7 +36,7 @@ export default function AddPedidos() {
 
   // Validação de email
   function emailValido(email) {
-    const dominiosPermitidos = ["@gmail.com", "@fieb.org.br", "@fbest.org.br"];
+    const dominiosPermitidos = ["@gmail.com", "@fieb.org.br","@ba.estudante.senai.br", "@fbest.org.br"];
     return dominiosPermitidos.some((dominio) =>
       email.toLowerCase().endsWith(dominio)
     );
@@ -66,7 +66,7 @@ export default function AddPedidos() {
     // Validação do email
     if (!emailValido(email)) {
       alert(
-        "Use um email válido: @gmail.com, @fieb.org.br ou @fbest.org.br"
+        "Use um email válido: @gmail.com, @ba.estudante.senai.br, @fieb.org.br ou @fbest.org.br"
       );
       return;
     }
