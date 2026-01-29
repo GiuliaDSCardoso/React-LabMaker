@@ -21,7 +21,7 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="w-screen flex-col mt-[2%] md:flex-row flex justify-center items-center gap-3 bg-blue-50">
+      <div className="w-screen flex-col mb-[10%] md:mb-[2%] mt-[10%] md:mt-[4%] md:flex-row flex justify-center items-center gap-3 bg-blue-50">
         <div className="flex flex-col md:flex-row gap-3">
           <CardStyle
             title="Empréstimo de Componentes"

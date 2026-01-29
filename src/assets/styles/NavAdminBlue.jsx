@@ -45,7 +45,7 @@ export default function NavAdminBlue(){
                         </button>
 
                         {openMenu && (
-                        <ul className="absolute items-center mt-12 w-52 bg-white shadow-lg  flex flex-col z-50">
+                        <ul className="absolute items-center mt-10 md:mt-12 w-52 bg-white shadow-lg  flex flex-col z-50">
                             <ALink href="/admin">Home</ALink>
                             <ALink href="/agendaadmin">Agenda</ALink>
                             <ALink href="/emprestimoadmin">Empréstimo</ALink>

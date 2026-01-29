@@ -30,7 +30,7 @@ export default function Admin() {
             </div>
         </div>
         {/* Cards */}
-        <div className="w-full flex-col md:flex-row flex justify-center items-center gap-3 bg-blue-50">
+        <div className="w-full flex-col md:flex-row  mb-[10%] md:mb-[2%] mt-[10%] md:mt-[4%] flex justify-center items-center gap-3 bg-blue-50">
             <div className=" flex flex-col md:flex-row gap-3">
                 <CardStyle
                     title="Empréstimo de Componentes"

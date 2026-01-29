@@ -36,7 +36,7 @@ export default function Nav() {
             </button>
 
             {openMenu && (
-              <ul className="absolute items-center  mt-12 w-52 bg-white shadow-lg  flex flex-col z-50">
+              <ul className="absolute items-center  mt-10 md:mt-12 w-52 bg-white shadow-lg  flex flex-col z-50">
                 <ALink href="/">Home</ALink>
                 <ALink href="/contact">Contato</ALink>
                 <ALink href="/agendauso">Agenda</ALink>
