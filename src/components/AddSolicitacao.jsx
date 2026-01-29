@@ -63,7 +63,7 @@ export default function AddSolicitacao() {
     }
 
     if (!termosAceitos) {
-      setError(
+      alert(
         "Você precisa aceitar os termos sobre devolução do item emprestado."
       );
       return;
