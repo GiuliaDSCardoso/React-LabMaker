@@ -21,6 +21,17 @@ export default function AgendaUso() {
   // ===============================
   // BUSCAR AGENDAMENTOS
   // ===============================
+  async function carregarAgenda() {
+  const { data, error } = await supabase
+    .from("agendamentos")
+    .select("*")
+    .order("data", { ascending: true });
+
+  if (!error) {
+    setAgendamentos(data);
+  }
+}
+
   useEffect(() => {
     async function carregarAgendamentos() {
       const { data } = await supabase
@@ -60,63 +71,91 @@ export default function AgendaUso() {
   }
 
   async function enviar() {
-    if (!nome || !email || !telefone || !motivo || !arrumacao || !data) {
-      alert("Preencha todos os campos!");
-      return;
-    }
-
-    if (!emailValido(email)) {
-      alert("Email inválido");
-      return;
-    }
-
-    const telefoneValido = /^\(\d{2}\) 9 \d{4}-\d{4}$/;
-    if (!telefoneValido.test(telefone)) {
-      alert("Telefone inválido");
-      return;
-    }
-
-    if (horaInicio < "08:00" || horaInicio > "21:00") {
-      alert("Horário permitido: 08h às 21h");
-      return;
-    }
-
-    if (horaFim <= horaInicio || horaFim > "22:00") {
-      alert("Horário final inválido");
-      return;
-    }
-
-    const { error } = await supabase.from("agendamentos").insert({
-      tipo: "USUARIO",
-      data,
-      hora_inicio: horaInicio,
-      hora_fim: horaFim,
-      motivo,
-      status: "pendente",
-      historico: {
-        nome,
-        email,
-        telefone,
-        arrumacaoSala: arrumacao,
-      },
-    });
-
-    if (error) {
-      alert("Erro ao enviar solicitação");
-      return;
-    }
-
-    alert("Solicitação enviada!");
-
-    setNome("");
-    setEmail("");
-    setTelefone("");
-    setMotivo("");
-    setArrumacao("");
-    setData("");
-    setHoraInicio("08:00");
-    setHoraFim("09:00");
+  if (!nome || !email || !telefone || !motivo || !arrumacao || !data) {
+    alert("Preencha todos os campos!");
+    return;
   }
+
+  if (!emailValido(email)) {
+    alert("Email inválido");
+    return;
+  }
+
+  const telefoneValido = /^\(\d{2}\) 9 \d{4}-\d{4}$/;
+  if (!telefoneValido.test(telefone)) {
+    alert("Telefone inválido");
+    return;
+  }
+
+  if (horaInicio < "08:00" || horaInicio > "21:00") {
+    alert("Horário permitido: 08h às 21h");
+    return;
+  }
+
+  if (horaFim <= horaInicio || horaFim > "22:00") {
+    alert("Horário final inválido");
+    return;
+  }
+
+  // ===============================
+  // 🚫 VALIDAÇÃO DE CONFLITO
+  // ===============================
+  const conflitos = agendamentos.filter((ag) => {
+    if (ag.data !== data) return false;
+
+    // Dia inteiro bloqueado pelo admin
+    if (ag.dia_inteiro) return true;
+
+    return (
+      horaInicio < ag.hora_fim &&
+      horaFim > ag.hora_inicio
+    );
+  });
+
+  if (conflitos.length > 0) {
+    alert("❌ Dia/Horário ocupado");
+    return;
+  }
+
+  // ===============================
+  // INSERÇÃO
+  // ===============================
+  const { error } = await supabase.from("agendamentos").insert({
+    tipo: "USUARIO",
+    data,
+    hora_inicio: horaInicio,
+    hora_fim: horaFim,
+    motivo,
+    status: "pendente",
+    historico: {
+      nome,
+      email,
+      telefone,
+      arrumacaoSala: arrumacao,
+    },
+  });
+
+  if (error) {
+    alert("Erro ao enviar solicitação");
+    return;
+  }
+
+  alert("Solicitação enviada!");
+
+  setNome("");
+  setEmail("");
+  setTelefone("");
+  setMotivo("");
+  setArrumacao("");
+  setData("");
+  setHoraInicio("08:00");
+  setHoraFim("09:00");
+
+  if (!error) {
+    await carregarAgenda(); // 👈 atualiza a tela automaticamente
+  }
+}
+
 
   // ===============================
   // AGRUPA AGENDAMENTOS POR DATA
@@ -252,7 +291,8 @@ export default function AgendaUso() {
           {Object.entries(agendaPorDia).map(([dia, itens]) => (
             <div key={dia} className="mb-3 group">
               <div className="font-semibold text-blue-700 cursor-pointer">
-                {new Date(dia).toLocaleDateString("pt-BR")}
+                {dia.split("-").reverse().join("/")}
+
               </div>
 
               <div className="hidden group-hover:block ml-3 text-sm bg-white p-2 rounded shadow space-y-2">

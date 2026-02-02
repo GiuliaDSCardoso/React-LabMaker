@@ -9,24 +9,43 @@ export default function PedidosAdmin() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [historicoAberto, setHistoricoAberto] = useState(null);
-    
 
-  useEffect(() => {
-    carregarPedidos();
+ useEffect(() => {
+    const channel = supabase
+      .channel("realtime-pedidos")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "pedidos",
+        },
+        () => {
+          carregarPedidos(); // 🔄 atualiza automaticamente
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
-
   async function carregarPedidos() {
-    const { data, error } = await supabase
-      .from("pedidos")
-      .select("*")
-      .order("created_at", { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from("pedidos")
+        .select("*")
+        .order("created_at", { ascending: false });
 
-    if (error) {
-      alert("Erro ao carregar pedidos");
-      return;
+      if (error) {
+        console.error("Erro Supabase:", error);
+        return;
+      }
+
+      setPedidos(data || []);
+    } catch (err) {
+      console.error("Erro de fetch:", err);
     }
-
-    setPedidos(data);
   }
 
   function novoEvento(acao) {
@@ -37,54 +56,57 @@ export default function PedidosAdmin() {
   }
 
   async function marcarComoConcluido(id) {
-  const pedido = pedidos.find((p) => p.id === id);
+    const pedido = pedidos.find((p) => p.id === id);
+    if (!pedido) return;
 
-  await supabase
-    .from("pedidos")
-    .update({
-      is_completed: true,
-      historico: [...(pedido.historico || []), novoEvento("Pedido concluído")],
-    })
-    .eq("id", id);
+    await supabase
+      .from("pedidos")
+      .update({
+        is_completed: true,
+        historico: [...(pedido.historico || []), novoEvento("Pedido concluído")],
+      })
+      .eq("id", id);
 
-  // Enviar mensagem via WhatsApp
-  enviarMensagemWhatsApp(pedido.contato, "Concluído");
+    if (
+      pedido.contato &&
+      window.confirm("Deseja avisar o solicitante no WhatsApp?")
+    ) {
+      enviarMensagemWhatsApp(pedido.contato, "Concluído");
+    }
 
-  carregarPedidos();
-}
+    carregarPedidos();
+  }
 
-async function desmarcarComoConcluido(id) {
-  const pedido = pedidos.find((p) => p.id === id);
+  async function desmarcarComoConcluido(id) {
+    const pedido = pedidos.find((p) => p.id === id);
+    if (!pedido) return;
 
-  await supabase
-    .from("pedidos")
-    .update({
-      is_completed: false,
-      historico: [...(pedido.historico || []), novoEvento("Pedido reaberto")],
-    })
-    .eq("id", id);
+    await supabase
+      .from("pedidos")
+      .update({
+        is_completed: false,
+        historico: [...(pedido.historico || []), novoEvento("Pedido reaberto")],
+      })
+      .eq("id", id);
 
-  // Enviar mensagem via WhatsApp
-  enviarMensagemWhatsApp(pedido.contato, "Reaberto");
+    if (
+      pedido.contato &&
+      window.confirm("Deseja avisar o solicitante no WhatsApp?")
+    ) {
+      enviarMensagemWhatsApp(pedido.contato, "Reaberto");
+    }
 
-  carregarPedidos();
-}
+    carregarPedidos();
+  }
 
-// Função para enviar mensagem
-function enviarMensagemWhatsApp(numeroDestinatario, status) {
-  if (!numeroDestinatario) return;
+  function enviarMensagemWhatsApp(numeroDestinatario, status) {
+    const numeroLimpo = numeroDestinatario.replace(/\D/g, "");
+    const mensagem = encodeURIComponent(
+      `Informamos que o status da sua solicitação mudou. Status atual: ${status}`
+    );
 
- 
-  const numeroLimpo = numeroDestinatario.replace(/\D/g, ""); // remove qualquer símbolo
-
-  const mensagem = encodeURIComponent(
-    `Informamos que o status da sua solicitação de pedido mudou! Atual status: ${status}`
-  );
-
-  // Abre o WhatsApp do solicitante com a mensagem pronta
-  window.open(`https://wa.me/${numeroLimpo}?text=${mensagem}`, "_blank");
-}
-
+    window.open(`https://wa.me/55${numeroLimpo}?text=${mensagem}`, "_blank");
+  }
 
   async function excluirPedido(id) {
     if (!window.confirm("Deseja excluir?")) return;
@@ -107,9 +129,12 @@ function enviarMensagemWhatsApp(numeroDestinatario, status) {
       </a>
     );
   }
+
   function abrirWhatsApp(telefone) {
-     const numeroLimpo = telefone.replace(/\D/g, ""); 
-    window.open(`https://wa.me/55${numeroLimpo}`, "_blank"); }
+    if (!telefone) return;
+    const numeroLimpo = telefone.replace(/\D/g, "");
+    window.open(`https://wa.me/55${numeroLimpo}`, "_blank");
+  }
 
   const pedidosFiltrados = pedidos.filter((p) => {
     const texto = search.toLowerCase();
@@ -127,69 +152,45 @@ function enviarMensagemWhatsApp(numeroDestinatario, status) {
     return matchTexto && matchStatus;
   });
 
-
   return (
     <Body>
-      <NavAdminBlue/>
-      <div className="flex flex-col p-10 gap-10">
-        {/* HEADER */}
-        <div className="flex items-center  justify-between">
-          
-          <h1 className="text-2xl font-bold w-[95%] text-[#1976d2]">
-            Solicitações de Confecção
-          </h1>
-        </div>
+      <NavAdminBlue />
 
-        {/* FILTROS */}
+      <div className="flex flex-col p-10 gap-10">
+        <h1 className="text-2xl font-bold text-[#1976d2]">
+          Solicitações de Confecção
+        </h1>
+
         <div className="flex flex-wrap justify-between gap-4">
           <input
             type="text"
             placeholder="Pesquisar pedidos..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-[300px] h-[50px] px-3 py-2 border text-lg
-                focus:outline-none
-                focus:ring-1
-                focus:border-blue-50"
+            className="w-[300px] h-[50px] px-3 py-2 border text-lg"
           />
 
-         
           <div className="flex gap-2">
-            <button
-              onClick={() => setStatusFilter("all")}
-              className={`min-w-[90px] h-9 px-3 rounded text-xl flex items-center justify-center ${
-                statusFilter === "all"
-                   ? "bg-blue-600 text-white"
+            {["all", "pending", "completed"].map((filtro) => (
+              <button
+                key={filtro}
+                onClick={() => setStatusFilter(filtro)}
+                className={`min-w-[90px] h-9 rounded text-xl ${
+                  statusFilter === filtro
+                    ? "bg-blue-600 text-white"
                     : "bg-gray-200 text-gray-700"
-              }`}
-            >
-              Todas
-            </button>
-            <button
-              onClick={() => setStatusFilter("pending")}
-              className={`min-w-[90px] h-9 px-3 rounded text-xl ${
-                statusFilter === "pending"
-                   ? "bg-blue-600 text-white"
-                    : "bg-gray-200 text-gray-700"
-              }`}
-            >
-              Pendentes
-            </button>
-
-            <button
-              onClick={() => setStatusFilter("completed")}
-              className={`min-w-[90px] h-9 px-3 rounded text-xl ${
-                statusFilter === "completed"
-                   ? "bg-blue-600 text-white"
-                    : "bg-gray-200 text-gray-700"
-              }`}
-            >
-              Concluídos
-            </button>
+                }`}
+              >
+                {filtro === "all"
+                  ? "Todas"
+                  : filtro === "pending"
+                  ? "Pendentes"
+                  : "Concluídos"}
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* TABELA */}
         <div className="overflow-x-auto">
           <table className="min-w-full border bg-white text-xl">
             <thead className="bg-blue-100 text-blue-800">
@@ -243,32 +244,31 @@ function enviarMensagemWhatsApp(numeroDestinatario, status) {
                       )}
                     </td>
                     <td className="border px-2 py-4 flex gap-2 justify-center">
-                      {!item.is_completed ? (
-                        <button
-                          onClick={() => marcarComoConcluido(item.id)}
-                          className="bg-green-500 text-white px-2 py-2 rounded text-xl"
-                        >
-                          Concluir
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => desmarcarComoConcluido(item.id)}
-                          className="bg-yellow-500 text-white px-2 py-2 rounded text-xl"
-                        >
-                          Reabrir
-                        </button>
-                      )}
+                      <button
+                        onClick={() =>
+                          item.is_completed
+                            ? desmarcarComoConcluido(item.id)
+                            : marcarComoConcluido(item.id)
+                        }
+                        className={`px-2 py-2 rounded text-xl text-white ${
+                          item.is_completed
+                            ? "bg-yellow-500"
+                            : "bg-green-500"
+                        }`}
+                      >
+                        {item.is_completed ? "Reabrir" : "Concluir"}
+                      </button>
 
                       <button
                         onClick={() => abrirWhatsApp(item.contato)}
-                        className="bg-green-600 text-white px-2 py-2 rounded text-xl"
+                        className="bg-green-600 text-white px-2 py-2 rounded"
                       >
                         <PhoneIcon size={14} />
                       </button>
 
                       <button
                         onClick={() => setHistoricoAberto(item)}
-                        className="bg-blue-500 text-white px-2 py-2 rounded text-xl"
+                        className="bg-blue-500 text-white px-2 py-2 rounded"
                       >
                         Histórico
                       </button>
@@ -288,7 +288,6 @@ function enviarMensagemWhatsApp(numeroDestinatario, status) {
         </div>
       </div>
 
-      {/* MODAL HISTÓRICO */}
       {historicoAberto && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white w-[500px] p-6 rounded shadow">

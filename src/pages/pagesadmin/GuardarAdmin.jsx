@@ -18,7 +18,24 @@ export default function GuardarAdmin() {
   }
 
   useEffect(() => {
-    carregarProjetos();
+    const channel = supabase
+      .channel("realtime-projetos")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "projetos",
+        },
+        () => {
+          carregarProjetos(); // 🔄 atualiza automaticamente
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   async function carregarProjetos() {

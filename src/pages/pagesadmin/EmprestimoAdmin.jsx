@@ -13,8 +13,26 @@ export default function EmprestimoAdmin() {
 
   // 📦 Carregar dados do Supabase
   useEffect(() => {
-    carregarSolicitacoes();
-  }, []);
+  const channel = supabase
+    .channel("realtime-emprestimos")
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "emprestimos",
+      },
+      () => {
+        carregarSolicitacoes(); // 🔄 atualiza automaticamente
+      }
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}, []);
+
 
   async function carregarSolicitacoes() {
     const { data, error } = await supabase
@@ -200,7 +218,7 @@ export default function EmprestimoAdmin() {
             <tbody>
               {solicitacoesFiltradas.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="text-center py-4 text-gray-500">
+                  <td colSpan="7" className="text-center py-4  text-gray-500">
                     Nenhuma solicitação encontrada
                   </td>
                 </tr>

@@ -149,7 +149,7 @@ export default function AgendaAdmin() {
         {aplicarFiltro(todosDados, filtro).map((item) => (
           <div
             key={item.id}
-            className={`md:w-[50%]w-[100%] p-4 rounded shadow space-y-1
+            className={`md:w-[50%] w-[100%] p-4 rounded shadow space-y-1
               ${
                 isExpirado(item)
                   ? "bg-gray-200 text-gray-500 opacity-80"
