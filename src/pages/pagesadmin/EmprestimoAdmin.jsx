@@ -13,25 +13,8 @@ export default function EmprestimoAdmin() {
 
   // 📦 Carregar dados do Supabase
   useEffect(() => {
-  const channel = supabase
-    .channel("realtime-emprestimos")
-    .on(
-      "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: "emprestimos",
-      },
-      () => {
-        carregarSolicitacoes(); // 🔄 atualiza automaticamente
-      }
-    )
-    .subscribe();
-
-  return () => {
-    supabase.removeChannel(channel);
-  };
-}, []);
+    carregarSolicitacoes();
+  }, []);
 
 
   async function carregarSolicitacoes() {
@@ -218,7 +201,7 @@ export default function EmprestimoAdmin() {
             <tbody>
               {solicitacoesFiltradas.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="text-center py-4  text-gray-500">
+                  <td colSpan="10" className="text-center py-6 text-gray-500">
                     Nenhuma solicitação encontrada
                   </td>
                 </tr>
@@ -244,7 +227,7 @@ export default function EmprestimoAdmin() {
 
                     <td className="border px-2 py-4">
                       {item.is_completed ? (
-                        <span className="text-green-600 font-semibold">
+                        <span className="text-green-600  font-semibold">
                           Concluído
                         </span>
                       ) : (
@@ -259,7 +242,7 @@ export default function EmprestimoAdmin() {
                           onClick={() =>
                             marcarComoConcluido(item.id, item.historico)
                           }
-                          className="bg-green-500 text-white px-2 py-2 rounded text-xl"
+                          className="bg-green-500 active:bg-green-800 text-white px-2 py-2 rounded text-xl"
                         >
                           Concluir
                         </button>
@@ -268,7 +251,7 @@ export default function EmprestimoAdmin() {
                           onClick={() =>
                             desmarcarComoConcluido(item.id, item.historico)
                           }
-                          className="bg-yellow-500 text-white px-2 py-2 rounded text-xl"
+                          className="bg-yellow-500 active:bg-yellow-800 text-white px-2 py-2 rounded text-xl"
                         >
                           Desconcluir
                         </button>

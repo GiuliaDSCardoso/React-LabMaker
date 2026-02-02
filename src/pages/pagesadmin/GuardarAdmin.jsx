@@ -18,24 +18,7 @@ export default function GuardarAdmin() {
   }
 
   useEffect(() => {
-    const channel = supabase
-      .channel("realtime-projetos")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "projetos",
-        },
-        () => {
-          carregarProjetos(); // 🔄 atualiza automaticamente
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    carregarProjetos();
   }, []);
 
   async function carregarProjetos() {
@@ -225,14 +208,14 @@ export default function GuardarAdmin() {
                         {!item.is_completed ? (
                           <button
                             onClick={() => marcarComoConcluido(item.id)}
-                            className="bg-green-500 text-white px-2 py-2 rounded text-xl"
+                            className="bg-green-500 active:bg-green-800 text-white px-2 py-2 rounded text-xl"
                           >
                             Concluir
                           </button>
                         ) : (
                           <button
                             onClick={() => desmarcarComoConcluido(item.id)}
-                            className="bg-yellow-500 text-white px-2 py-2 rounded text-xl"
+                            className="bg-yellow-500 active:bg-yellow-800 text-white px-2 py-2 rounded text-xl"
                           >
                             Reabrir
                           </button>

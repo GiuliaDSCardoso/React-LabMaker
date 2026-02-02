@@ -24,9 +24,7 @@ export default function Admin() {
         <div className="w-full flex justify-center items-center bg-gradient-to-r from-[#1976d2] to-blue-800 h-80">
             <div>
             <h2 className="text-white text-center text-3xl font-bold"> Bem-vindo ao Lab Maker</h2>
-            <h3 className="text-white text-center text-lg">
-                Horário de Funcionamento: 10h às 20h
-            </h3>
+            
             </div>
         </div>
         {/* Cards */}

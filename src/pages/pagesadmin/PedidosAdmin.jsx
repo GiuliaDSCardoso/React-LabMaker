@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Body from "../../assets/styles/Body.jsx";
-import { DeleteIcon, PhoneIcon, FileIcon } from "lucide-react";
+import { DeleteIcon, PhoneIcon } from "lucide-react";
 import { supabase } from "../../services/supabase";
 import NavAdminBlue from "../../assets/styles/NavAdminBlue.jsx";
 
@@ -10,42 +10,22 @@ export default function PedidosAdmin() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [historicoAberto, setHistoricoAberto] = useState(null);
 
- useEffect(() => {
-    const channel = supabase
-      .channel("realtime-pedidos")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "pedidos",
-        },
-        () => {
-          carregarPedidos(); // 🔄 atualiza automaticamente
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+  useEffect(() => {
+    carregarPedidos();
   }, []);
+
   async function carregarPedidos() {
-    try {
-      const { data, error } = await supabase
-        .from("pedidos")
-        .select("*")
-        .order("created_at", { ascending: false });
+    const { data, error } = await supabase
+      .from("pedidos")
+      .select("*")
+      .order("created_at", { ascending: false });
 
-      if (error) {
-        console.error("Erro Supabase:", error);
-        return;
-      }
-
-      setPedidos(data || []);
-    } catch (err) {
-      console.error("Erro de fetch:", err);
+    if (error) {
+      alert("Erro ao carregar pedidos");
+      return;
     }
+
+    setPedidos(data || []);
   }
 
   function novoEvento(acao) {
@@ -57,83 +37,53 @@ export default function PedidosAdmin() {
 
   async function marcarComoConcluido(id) {
     const pedido = pedidos.find((p) => p.id === id);
-    if (!pedido) return;
+    const historicoAtual = pedido?.historico || [];
 
-    await supabase
-      .from("pedidos")
-      .update({
-        is_completed: true,
-        historico: [...(pedido.historico || []), novoEvento("Pedido concluído")],
-      })
-      .eq("id", id);
-
-    if (
-      pedido.contato &&
-      window.confirm("Deseja avisar o solicitante no WhatsApp?")
-    ) {
-      enviarMensagemWhatsApp(pedido.contato, "Concluído");
-    }
+    await supabase.from("pedidos").update({
+      is_completed: true,
+      historico: [...historicoAtual, novoEvento("Pedido concluído")],
+    }).eq("id", id);
 
     carregarPedidos();
   }
 
   async function desmarcarComoConcluido(id) {
     const pedido = pedidos.find((p) => p.id === id);
-    if (!pedido) return;
+    const historicoAtual = pedido?.historico || [];
 
-    await supabase
-      .from("pedidos")
-      .update({
-        is_completed: false,
-        historico: [...(pedido.historico || []), novoEvento("Pedido reaberto")],
-      })
-      .eq("id", id);
-
-    if (
-      pedido.contato &&
-      window.confirm("Deseja avisar o solicitante no WhatsApp?")
-    ) {
-      enviarMensagemWhatsApp(pedido.contato, "Reaberto");
-    }
+    await supabase.from("pedidos").update({
+      is_completed: false,
+      historico: [...historicoAtual, novoEvento("Pedido reaberto")],
+    }).eq("id", id);
 
     carregarPedidos();
   }
 
-  function enviarMensagemWhatsApp(numeroDestinatario, status) {
-    const numeroLimpo = numeroDestinatario.replace(/\D/g, "");
-    const mensagem = encodeURIComponent(
-      `Informamos que o status da sua solicitação mudou. Status atual: ${status}`
-    );
-
-    window.open(`https://wa.me/55${numeroLimpo}?text=${mensagem}`, "_blank");
-  }
-
   async function excluirPedido(id) {
-    if (!window.confirm("Deseja excluir?")) return;
+    if (!window.confirm("Deseja excluir este pedido?")) return;
 
     await supabase.from("pedidos").delete().eq("id", id);
     carregarPedidos();
   }
 
-  function renderArquivo(base64) {
-    if (!base64) return "Sem arquivo";
+  function abrirWhatsApp(telefone) {
+    const numeroLimpo = telefone.replace(/\D/g, "");
+    window.open(`https://wa.me/55${numeroLimpo}`, "_blank");
+  }
+
+  function renderArquivo(url) {
+    if (!url) return "Sem arquivo";
 
     return (
       <a
-        href={base64}
+        href={url}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-blue-600 underline flex gap-1 justify-center"
+        className="text-blue-600 underline"
       >
-        <FileIcon size={14} /> Baixar
+        Baixar
       </a>
     );
-  }
-
-  function abrirWhatsApp(telefone) {
-    if (!telefone) return;
-    const numeroLimpo = telefone.replace(/\D/g, "");
-    window.open(`https://wa.me/55${numeroLimpo}`, "_blank");
   }
 
   const pedidosFiltrados = pedidos.filter((p) => {
@@ -161,6 +111,7 @@ export default function PedidosAdmin() {
           Solicitações de Confecção
         </h1>
 
+        {/* FILTROS */}
         <div className="flex flex-wrap justify-between gap-4">
           <input
             type="text"
@@ -171,19 +122,19 @@ export default function PedidosAdmin() {
           />
 
           <div className="flex gap-2">
-            {["all", "pending", "completed"].map((filtro) => (
+            {["all", "pending", "completed"].map((s) => (
               <button
-                key={filtro}
-                onClick={() => setStatusFilter(filtro)}
-                className={`min-w-[90px] h-9 rounded text-xl ${
-                  statusFilter === filtro
+                key={s}
+                onClick={() => setStatusFilter(s)}
+                className={`px-4 h-9 rounded text-xl ${
+                  statusFilter === s
                     ? "bg-blue-600 text-white"
                     : "bg-gray-200 text-gray-700"
                 }`}
               >
-                {filtro === "all"
+                {s === "all"
                   ? "Todas"
-                  : filtro === "pending"
+                  : s === "pending"
                   ? "Pendentes"
                   : "Concluídos"}
               </button>
@@ -191,29 +142,36 @@ export default function PedidosAdmin() {
           </div>
         </div>
 
+        {/* TABELA */}
         <div className="overflow-x-auto">
           <table className="min-w-full border bg-white text-xl">
             <thead className="bg-blue-100 text-blue-800">
               <tr>
-                <th className="border px-2 py-4">Solicitante</th>
-                <th className="border px-2 py-4">Email</th>
-                <th className="border px-2 py-4">Curso/Setor</th>
-                <th className="border px-2 py-4">Contato</th>
-                <th className="border px-2 py-4">Detalhe</th>
-                <th className="border px-2 py-4">Sobre</th>
-                <th className="border px-2 py-4">Cargo</th>
-                <th className="border px-2 py-4">Arquivo</th>
-                <th className="border px-2 py-4">Entrega</th>
-                <th className="border px-2 py-4">Material</th>
-                <th className="border px-2 py-4">Status</th>
-                <th className="border px-2 py-4">Ações</th>
+                {[
+                  "Solicitante",
+                  "Email",
+                  "Curso",
+                  "Contato",
+                  "Detalhe",
+                  "Projeto",
+                  "Cargo",
+                  "Arquivo",
+                  "Entrega",
+                  "Material",
+                  "Status",
+                  "Ações",
+                ].map((h) => (
+                  <th key={h} className="border px-2 py-4">
+                    {h}
+                  </th>
+                ))}
               </tr>
             </thead>
 
             <tbody>
               {pedidosFiltrados.length === 0 ? (
                 <tr>
-                  <td colSpan="12" className="text-center py-4 text-gray-500">
+                  <td colSpan="12" className="py-6 text-center text-gray-500">
                     Nenhum pedido encontrado
                   </td>
                 </tr>
@@ -244,24 +202,25 @@ export default function PedidosAdmin() {
                       )}
                     </td>
                     <td className="border px-2 py-4 flex gap-2 justify-center">
-                      <button
-                        onClick={() =>
-                          item.is_completed
-                            ? desmarcarComoConcluido(item.id)
-                            : marcarComoConcluido(item.id)
-                        }
-                        className={`px-2 py-2 rounded text-xl text-white ${
-                          item.is_completed
-                            ? "bg-yellow-500"
-                            : "bg-green-500"
-                        }`}
-                      >
-                        {item.is_completed ? "Reabrir" : "Concluir"}
-                      </button>
+                      {!item.is_completed ? (
+                        <button
+                          onClick={() => marcarComoConcluido(item.id)}
+                          className="bg-green-500 active:bg-green-800 text-white px-2 py-2 rounded"
+                        >
+                          Concluir
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => desmarcarComoConcluido(item.id)}
+                          className="bg-yellow-500 active:bg-yellow-800 text-white px-2 py-2 rounded"
+                        >
+                          Reabrir
+                        </button>
+                      )}
 
                       <button
                         onClick={() => abrirWhatsApp(item.contato)}
-                        className="bg-green-600 text-white px-2 py-2 rounded"
+                        className="bg-green-600 text-white p-2 rounded "
                       >
                         <PhoneIcon size={14} />
                       </button>
@@ -275,7 +234,7 @@ export default function PedidosAdmin() {
 
                       <button
                         onClick={() => excluirPedido(item.id)}
-                        className="bg-red-500 text-white px-2 py-2 rounded"
+                        className="bg-red-500 text-white p-2 rounded"
                       >
                         <DeleteIcon size={16} />
                       </button>
@@ -288,6 +247,7 @@ export default function PedidosAdmin() {
         </div>
       </div>
 
+      {/* MODAL HISTÓRICO */}
       {historicoAberto && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white w-[500px] p-6 rounded shadow">
@@ -295,7 +255,7 @@ export default function PedidosAdmin() {
               Histórico – {historicoAberto.solicitante}
             </h2>
 
-            <ul className="space-y-2 text-sm">
+            <ul className="space-y-2 text-sm max-h-[300px] overflow-y-auto">
               {historicoAberto.historico?.map((h, i) => (
                 <li key={i} className="border-b pb-1">
                   <strong>{h.data}</strong> — {h.acao}
@@ -305,7 +265,7 @@ export default function PedidosAdmin() {
 
             <button
               onClick={() => setHistoricoAberto(null)}
-              className="mt-4 bg-[#1976d2] text-white px-4 py-2 rounded"
+              className="mt-4 bg-[#1976d2] text-white px-4 py-2 rounded w-full"
             >
               Fechar
             </button>
