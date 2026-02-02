@@ -36,7 +36,7 @@ export default function AddAgendamento({ onAdd }) {
   }
 
   return (
-    <div className="bg-white p-4 w-[100%] rounded-xl shadow space-y-3">
+    <div className="bg-white p-4 md:w-[50%] w-[100%] rounded-xl shadow space-y-3">
       <h2 className="text-lg md:text-xl font-semibold flex gap-2 items-center">
         <AlarmClockPlus /> Bloquear laboratório
       </h2>
