@@ -51,8 +51,6 @@ export default function AgendaUso() {
 
   function emailValido(email) {
     const dominiosPermitidos = [
-      "@gmail.com",
-      "@ba.estudante.senai.br",
       "@fieb.org.br",
       "@fbest.org.br",
     ];
