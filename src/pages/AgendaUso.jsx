@@ -14,47 +14,42 @@ export default function AgendaUso() {
   const [data, setData] = useState("");
   const [horaInicio, setHoraInicio] = useState("08:00");
   const [horaFim, setHoraFim] = useState("09:00");
+
   function formatarTelefone(valor) {
-  // remove tudo que não for número
-  let numero = valor.replace(/\D/g, "");
+    let numero = valor.replace(/\D/g, "");
+    numero = numero.slice(0, 11);
 
-  // limita a 11 dígitos (DDD + 9 + 8 números)
-  numero = numero.slice(0, 11);
+    if (numero.length <= 2) return `(${numero}`;
+    if (numero.length <= 3) return `(${numero.slice(0, 2)}) ${numero.slice(2)}`;
+    if (numero.length <= 7)
+      return `(${numero.slice(0, 2)}) ${numero.slice(2, 3)} ${numero.slice(3)}`;
 
-  if (numero.length <= 2) {
-    return `(${numero}`;
+    return `(${numero.slice(0, 2)}) ${numero.slice(2, 3)} ${numero.slice(
+      3,
+      7
+    )}-${numero.slice(7)}`;
   }
 
-  if (numero.length <= 3) {
-    return `(${numero.slice(0, 2)}) ${numero.slice(2)}`;
-  }
-
-  if (numero.length <= 7) {
-    return `(${numero.slice(0, 2)}) ${numero.slice(2, 3)} ${numero.slice(3)}`;
-  }
-
-  return `(${numero.slice(0, 2)}) ${numero.slice(2, 3)} ${numero.slice(
-    3,
-    7
-  )}-${numero.slice(7)}`;
-}
-
-  // Função de validação de email
   function emailValido(email) {
-    const dominiosPermitidos = ["@gmail.com","@ba.estudante.senai.br", "@fieb.org.br", "@fbest.org.br"];
+    const dominiosPermitidos = [
+      "@gmail.com",
+      "@ba.estudante.senai.br",
+      "@fieb.org.br",
+      "@fbest.org.br",
+    ];
     return dominiosPermitidos.some((dominio) =>
       email.toLowerCase().endsWith(dominio)
     );
   }
 
   async function enviar() {
-    // Validação de campos obrigatórios
+    // Campos obrigatórios
     if (!nome || !email || !telefone || !motivo || !arrumacao || !data) {
       alert("Preencha todos os campos!");
       return;
     }
 
-    // Validação do email
+    // Email
     if (!emailValido(email)) {
       alert(
         "Use um email válido: @gmail.com, @ba.estudante.senai.br, @fieb.org.br ou @fbest.org.br"
@@ -62,6 +57,41 @@ export default function AgendaUso() {
       return;
     }
 
+    // Telefone
+    const telefoneValido = /^\(\d{2}\) 9 \d{4}-\d{4}$/;
+    if (!telefoneValido.test(telefone)) {
+      alert("⚠️ Informe um telefone válido no formato (DDD) 9 XXXX-XXXX");
+      return;
+    }
+
+    // Data (não permitir data passada)
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    const dataSelecionada = new Date(data);
+    dataSelecionada.setHours(0, 0, 0, 0);
+
+    if (dataSelecionada < hoje) {
+      alert("⚠️ Não é permitido agendar para datas anteriores a hoje.");
+      return;
+    }
+
+    // Horário de funcionamento (08h às 22h)
+    if (horaInicio < "08:00" || horaInicio > "21:00") {
+      alert("⚠️ O horário de início deve ser entre 08:00 e 21:00.");
+      return;
+    }
+
+    if (horaFim <= horaInicio) {
+      alert("⚠️ O horário de fim deve ser maior que o horário de início.");
+      return;
+    }
+
+    if (horaFim > "22:00") {
+      alert("⚠️ O laboratório funciona somente até às 22:00.");
+      return;
+    }
+
+    // Verifica bloqueios do admin
     const { data: bloqueios } = await supabase
       .from("agendamentos")
       .select("*")
@@ -79,6 +109,7 @@ export default function AgendaUso() {
       return;
     }
 
+    // Inserção
     const { error } = await supabase.from("agendamentos").insert({
       tipo: "USUARIO",
       data,
@@ -93,12 +124,6 @@ export default function AgendaUso() {
         arrumacaoSala: arrumacao,
       },
     });
-    const telefoneValido = /^\(\d{2}\) 9 \d{4}-\d{4}$/;
-
-    if (!telefoneValido.test(telefone)) {
-      alert("⚠️ Informe um telefone válido no formato (DDD) 9 XXXX-XXXX");
-      return;
-    }
 
     if (error) {
       alert("Erro ao enviar solicitação");
@@ -109,7 +134,7 @@ export default function AgendaUso() {
       'Solicitação enviada! Envie um email para "NOA SENAI FEIRA" <senaifeiranoa@fieb.org.br>'
     );
 
-    // Resetar campos
+    // Reset
     setNome("");
     setEmail("");
     setTelefone("");
@@ -155,13 +180,13 @@ export default function AgendaUso() {
             />
 
             <div className="w-full flex flex-col gap-4">
-              <label className="text-lg md:text-xl font-medium placeholder:text-[#000000] flex gap-1">
+              <label className="text-lg md:text-xl font-medium flex gap-1">
                 Escolha a arrumação da sala:
-                <span className="relative group cursor-help text-red-600">*</span>
+                <span className="text-red-600">*</span>
               </label>
 
               <select
-                className="input w-full text-lg placeholder:text-[#000000]  h-[40px] px-3 bg-[#e5eeff] outline-none"
+                className="input w-full text-lg h-[40px] px-3 bg-[#e5eeff]"
                 onChange={(e) => setArrumacao(e.target.value)}
                 value={arrumacao}
               >
@@ -175,7 +200,7 @@ export default function AgendaUso() {
             <InputRed
               type="date"
               title="Insira a data:"
-              className="w-full"
+              min={new Date().toISOString().split("T")[0]}
               onChange={(e) => setData(e.target.value)}
               value={data}
             />
@@ -184,27 +209,29 @@ export default function AgendaUso() {
               <InputDate
                 type="time"
                 title="Hora de início:"
-                className="w-full"
+                min="08:00"
+                max="21:00"
                 onChange={(e) => setHoraInicio(e.target.value)}
                 value={horaInicio}
               />
               <InputDate
                 type="time"
                 title="Hora de fim:"
-                className="w-full"
+                min="09:00"
+                max="22:00"
                 onChange={(e) => setHoraFim(e.target.value)}
                 value={horaFim}
               />
             </div>
 
             <div className="flex flex-col gap-4">
-              <label className="text-lg md:text-xl font-medium placeholder:text-[#000000] flex gap-1">
+              <label className="text-lg md:text-xl font-medium flex gap-1">
                 Qual o motivo da alocação?
-                <span className="relative group cursor-help text-red-600">*</span>
+                <span className="text-red-600">*</span>
               </label>
 
               <textarea
-                className="input w-full resize-none text-lg h-[80px] px-3 pt-2 placeholder:text-[#000000] bg-[#e5eeff] outline-none"
+                className="input w-full resize-none text-lg h-[80px] px-3 pt-2 bg-[#e5eeff]"
                 placeholder="Motivo"
                 onChange={(e) => setMotivo(e.target.value)}
                 value={motivo}

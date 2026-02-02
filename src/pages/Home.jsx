@@ -1,26 +1,84 @@
 import "../index.css";
 
-import { CalendarSearchIcon, FileBoxIcon, PackagePlusIcon, ReplaceIcon } from "lucide-react";
+import {
+  CalendarSearchIcon,
+  FileBoxIcon,
+  PackagePlusIcon,
+  ReplaceIcon,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 import CardStyle from "../assets/styles/CardStyle.jsx";
 import Body from "../assets/styles/Body.jsx";
 import Nav from "../assets/styles/Nav.jsx";
 
 export default function Home() {
+  // CONFIGURAÇÃO DO HORÁRIO
+  const HORA_ABERTURA = 8;
+  const HORA_FECHAMENTO = 22;
+
+  const [horaAtual, setHoraAtual] = useState(new Date());
+  const [aberto, setAberto] = useState(false);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const agora = new Date();
+      setHoraAtual(agora);
+
+      const hora = agora.getHours();
+      setAberto(hora >= HORA_ABERTURA && hora < HORA_FECHAMENTO);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  function formatarHora(data) {
+    return data.toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+  }
+
   return (
     <Body>
       <Nav />
 
-      <div className="w-screen flex justify-center items-center bg-gradient-to-r from-[#1976d2] to-blue-800 h-80">
-        <div>
-          <h2 className="text-white text-center text-3xl font-bold">
+      {/* TOPO */}
+      <div
+        className={`w-screen flex justify-center items-center h-80 transition-all duration-300 ${
+          aberto
+            ? "bg-gradient-to-r from-[#1976d2] to-blue-800"
+            : "bg-gradient-to-r from-gray-700 to-gray-900"
+        }`}
+      >
+        <div className="text-center space-y-3">
+          <h2 className="text-white text-3xl font-bold">
             Bem-vindo ao Lab Maker
           </h2>
-          <h3 className="text-white text-center text-lg">
-            Horário de Funcionamento: 10h às 20h
-          </h3>
+
+          {/* STATUS */}
+          <span
+            className={`inline-block px-4 py-1 rounded-full text-white text-sm font-semibold ${
+              aberto ? "bg-green-500" : "bg-red-500"
+            }`}
+          >
+            {aberto ? " ABERTO AGORA" : " FECHADO"}
+          </span>
+
+          {/* RELÓGIO DIGITAL */}
+          <div className="mt-3">
+            <p className="text-white text-2xl font-mono">
+              {formatarHora(horaAtual)}
+            </p>
+            <p className="text-white text-sm opacity-90">
+              Funcionamento: {String(HORA_ABERTURA).padStart(2, "0")}:00 às{" "}
+              {String(HORA_FECHAMENTO).padStart(2, "0")}:00
+            </p>
+          </div>
         </div>
       </div>
 
+      {/* CARDS */}
       <div className="w-screen flex-col mb-[10%] md:mb-[2%] mt-[10%] md:mt-[4%] md:flex-row flex justify-center items-center gap-3 bg-blue-50">
         <div className="flex flex-col md:flex-row gap-3">
           <CardStyle

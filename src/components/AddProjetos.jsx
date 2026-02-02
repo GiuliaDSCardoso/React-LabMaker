@@ -11,64 +11,95 @@ export default function AddProjetos() {
   const [dataSaida, setDataSaida] = useState("");
   const [sobreProjeto, setSobreProjeto] = useState("");
   const [cargo, setCargo] = useState("");
-  const [error, setError] = useState(""); // Mensagens de erro
+  const [error, setError] = useState("");
+
+  // ===============================
+  // DATA ATUAL (YYYY-MM-DD)
+  // ===============================
+  const hoje = new Date().toISOString().split("T")[0];
+
   function formatarTelefone(valor) {
-      // remove tudo que não for número
-      let numero = valor.replace(/\D/g, "");
+    let numero = valor.replace(/\D/g, "");
+    numero = numero.slice(0, 11);
 
-      // limita a 11 dígitos (DDD + 9 + 8 números)
-      numero = numero.slice(0, 11);
+    if (numero.length <= 2) return `(${numero}`;
+    if (numero.length <= 3)
+      return `(${numero.slice(0, 2)}) ${numero.slice(2)}`;
+    if (numero.length <= 7)
+      return `(${numero.slice(0, 2)}) ${numero.slice(2, 3)} ${numero.slice(3)}`;
 
-      if (numero.length <= 2) {
-        return `(${numero}`;
-      }
+    return `(${numero.slice(0, 2)}) ${numero.slice(2, 3)} ${numero.slice(
+      3,
+      7
+    )}-${numero.slice(7)}`;
+  }
 
-      if (numero.length <= 3) {
-        return `(${numero.slice(0, 2)}) ${numero.slice(2)}`;
-      }
-
-      if (numero.length <= 7) {
-        return `(${numero.slice(0, 2)}) ${numero.slice(2, 3)} ${numero.slice(3)}`;
-      }
-
-      return `(${numero.slice(0, 2)}) ${numero.slice(2, 3)} ${numero.slice(
-        3,
-        7
-      )}-${numero.slice(7)}`;
-    }
-  // Função para validar email
+  // ===============================
+  // VALIDAÇÃO DE EMAIL
+  // ===============================
   function emailValido(email) {
-    const dominiosPermitidos = ["@gmail.com","@ba.estudante.senai.br", "@fieb.org.br", "@fbest.org.br"];
+    const emailRegex = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i;
+
+    const dominiosPermitidos = [
+      "@gmail.com",
+      "@ba.estudante.senai.br",
+      "@fieb.org.br",
+      "@fbest.org.br",
+    ];
+
+    if (email.length > 60) return false;
+
+    const parteUsuario = email.split("@")[0];
+    if (parteUsuario.length < 3 || parteUsuario.length > 30) return false;
+
+    if (!emailRegex.test(email)) return false;
+
     return dominiosPermitidos.some((dominio) =>
       email.toLowerCase().endsWith(dominio)
     );
   }
 
   async function handleSubmit(e) {
-    e.preventDefault(); // previne reload
+    e.preventDefault();
     setError("");
 
-    // Validação de campos obrigatórios
-    if (!solicitante || !email || !cursoETurma || !contato || !sobreProjeto || !cargo || !dataSaida) {
+    if (
+      !solicitante ||
+      !email ||
+      !cursoETurma ||
+      !contato ||
+      !sobreProjeto ||
+      !cargo ||
+      !dataSaida
+    ) {
       setError("Por favor, preencha todos os campos!");
       return;
     }
 
-    // Validação de email
+    // ===============================
+    // VALIDAÇÃO DE EMAIL
+    // ===============================
     if (!emailValido(email)) {
       alert(
-        "Use um email válido: @gmail.com, @ba.estudante.senai.br, @fieb.org.br ou @fbest.org.br"
+        "Informe um email válido, com até 60 caracteres e domínio permitido."
       );
       return;
     }
-    const telefoneValido = /^\(\d{2}\) 9 \d{4}-\d{4}$/;
 
+    const telefoneValido = /^\(\d{2}\) 9 \d{4}-\d{4}$/;
     if (!telefoneValido.test(contato)) {
-      setError("⚠️ Informe um telefone válido no formato (DDD) 9 XXXX-XXXX");
+      alert("⚠️ Informe um telefone válido no formato (DDD) 9 XXXX-XXXX");
       return;
     }
 
-    // Validação de arquivo
+    // ===============================
+    // VALIDAÇÃO DE DATA
+    // ===============================
+    if (dataSaida < hoje) {
+      alert("A data de retirada não pode ser anterior a hoje.");
+      return;
+    }
+
     if (!enviarArquivo) {
       alert("Envie um arquivo!");
       return;
@@ -76,7 +107,6 @@ export default function AddProjetos() {
 
     const fileName = `${Date.now()}-${enviarArquivo.name}`;
 
-    // Upload do arquivo
     const { error: uploadError } = await supabase.storage
       .from("projetos")
       .upload(`arquivos/${fileName}`, enviarArquivo);
@@ -92,7 +122,6 @@ export default function AddProjetos() {
 
     const arquivo_url = data.publicUrl;
 
-    // Inserção no Supabase
     const { error: insertError } = await supabase.from("projetos").insert([
       {
         solicitante,
@@ -113,7 +142,6 @@ export default function AddProjetos() {
 
     alert("✅ Projeto enviado com sucesso!");
 
-    // Resetar campos
     setSolicitante("");
     setEmail("");
     setCursoETurma("");
@@ -126,13 +154,17 @@ export default function AddProjetos() {
 
   return (
     <div className="flex flex-col items-center justify-center mb-20 gap-6 px-4 w-full">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-6 w-full max-w-6xl">
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col gap-6 w-full max-w-6xl"
+      >
         {error && (
-          <p className="text-red-600 text-center text-lg font-medium">{error}</p>
+          <p className="text-red-600 text-center text-lg font-medium">
+            {error}
+          </p>
         )}
 
         <div className="flex md:flex-row flex-col md:justify-center gap-6 w-full">
-          {/* COLUNA ESQUERDA */}
           <div className="w-full flex flex-col gap-4">
             <InputRed
               title="Solicitante:"
@@ -161,7 +193,6 @@ export default function AddProjetos() {
             />
           </div>
 
-          {/* COLUNA DIREITA */}
           <div className="w-full flex flex-col gap-4">
             <InputRed
               title="Descreva o projeto:"
@@ -171,29 +202,20 @@ export default function AddProjetos() {
             />
 
             <div className="flex flex-col gap-4">
-               <label className="text-lg font-medium md:text-xl text-gray-700 flex gap-1">
-                  Enviar foto do projeto:
-                  <span className="relative group cursor-help text-red-600">
-                    *
-                    <span
-                      className="
-                        absolute left-1/2 -translate-x-1/2 top-6
-                        hidden group-hover:block
-                        bg-black text-white text-xs md:text-sm
-                        px-2 py-1 rounded
-                        whitespace-nowrap
-                        z-50
-                      "
-                    >
-                      item obrigatório
-                    </span>
+              <label className="text-lg font-medium md:text-xl text-gray-700 flex gap-1">
+                Enviar foto do projeto:
+                <span className="relative group cursor-help text-red-600">
+                  *
+                  <span className="absolute left-1/2 -translate-x-1/2 top-6 hidden group-hover:block bg-black text-white text-xs md:text-sm px-2 py-1 rounded whitespace-nowrap z-50">
+                    item obrigatório
                   </span>
-                </label>
+                </span>
+              </label>
               <input
                 type="file"
                 onChange={(e) => setEnviarArquivo(e.target.files[0])}
                 className="w-[100%] md:w-full text-lg h-[50px] bg-[#e5eeff] file:text-lg
-                  file:mr-4 file:py-3 file:px-4 file:border-none file:bg-[#0062c4] placeholder:text-[#000000] file:text-white"
+                file:mr-4 file:py-3 file:px-4 file:border-none file:bg-[#0062c4] placeholder:text-[#000000] file:text-white"
               />
             </div>
 
@@ -201,6 +223,7 @@ export default function AddProjetos() {
               type="date"
               title="Data de Retirada:"
               value={dataSaida}
+              min={hoje}
               placeholder="Selecione a data de retirada"
               onChange={(e) => setDataSaida(e.target.value)}
             />
@@ -209,25 +232,16 @@ export default function AddProjetos() {
               <label className="text-lg md:text-xl font-medium text-gray-700 flex gap-1">
                 Cargo:
                 <span className="relative group cursor-help text-red-600">
-                    *
-                    <span
-                      className="
-                        absolute left-1/2 -translate-x-1/2 top-6
-                        hidden group-hover:block
-                        bg-black text-white text-xs md:text-sm
-                        px-2 py-1 rounded
-                        whitespace-nowrap
-                        z-50
-                      "
-                    >
-                      item obrigatório
-                    </span>
+                  *
+                  <span className="absolute left-1/2 -translate-x-1/2 top-6 hidden group-hover:block bg-black text-white text-xs md:text-sm px-2 py-1 rounded whitespace-nowrap z-50">
+                    item obrigatório
                   </span>
+                </span>
               </label>
               <select
                 value={cargo}
                 onChange={(e) => setCargo(e.target.value)}
-                className="w-[100%] placeholder:text-[#000000] md:w-full text-lg h-[50px] px-3  bg-[#e5eeff]"
+                className="w-[100%] placeholder:text-[#000000] md:w-full text-lg h-[50px] px-3 bg-[#e5eeff]"
               >
                 <option value="">Selecione um cargo</option>
                 <option value="Administrativo">Administrativo</option>

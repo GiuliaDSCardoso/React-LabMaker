@@ -3,8 +3,6 @@ import { supabase } from "../services/supabase";
 import InputRed from "../assets/styles/InputRed";
 import InputNO from "../assets/styles/ImputNO";
 
-
-
 export default function AddPedidos() {
   const [solicitante, setSolicitante] = useState("");
   const [email, setEmail] = useState("");
@@ -17,31 +15,29 @@ export default function AddPedidos() {
   const [sobreProjeto, setSobreProjeto] = useState("");
   const [detalhe, setDetalhe] = useState("");
   const [is_completed, setIsCompleted] = useState(false);
-  const [error, setError] = useState(""); // <-- mensagem de erro
+  const [error] = useState("");
+
+  // ===============================
+  // DATA ATUAL (YYYY-MM-DD)
+  // ===============================
+  const hoje = new Date().toISOString().split("T")[0];
+
   function formatarTelefone(valor) {
-      // remove tudo que não for número
-      let numero = valor.replace(/\D/g, "");
+    let numero = valor.replace(/\D/g, "");
+    numero = numero.slice(0, 11);
 
-      // limita a 11 dígitos (DDD + 9 + 8 números)
-      numero = numero.slice(0, 11);
+    if (numero.length <= 2) return `(${numero}`;
+    if (numero.length <= 3)
+      return `(${numero.slice(0, 2)}) ${numero.slice(2)}`;
+    if (numero.length <= 7)
+      return `(${numero.slice(0, 2)}) ${numero.slice(2, 3)} ${numero.slice(3)}`;
 
-      if (numero.length <= 2) {
-        return `(${numero}`;
-      }
+    return `(${numero.slice(0, 2)}) ${numero.slice(2, 3)} ${numero.slice(
+      3,
+      7
+    )}-${numero.slice(7)}`;
+  }
 
-      if (numero.length <= 3) {
-        return `(${numero.slice(0, 2)}) ${numero.slice(2)}`;
-      }
-
-      if (numero.length <= 7) {
-        return `(${numero.slice(0, 2)}) ${numero.slice(2, 3)} ${numero.slice(3)}`;
-      }
-
-      return `(${numero.slice(0, 2)}) ${numero.slice(2, 3)} ${numero.slice(
-        3,
-        7
-      )}-${numero.slice(7)}`;
-    }
   function prazoMenorQue10Dias(dataEntrega) {
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
@@ -60,9 +56,26 @@ export default function AddPedidos() {
     });
   }
 
-  // Validação de email
+  // ===============================
+  // VALIDAÇÃO DE EMAIL
+  // ===============================
   function emailValido(email) {
-    const dominiosPermitidos = ["@gmail.com", "@fieb.org.br","@ba.estudante.senai.br", "@fbest.org.br"];
+    const emailRegex = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i;
+
+    const dominiosPermitidos = [
+      "@gmail.com",
+      "@fieb.org.br",
+      "@ba.estudante.senai.br",
+      "@fbest.org.br",
+    ];
+
+    if (email.length > 60) return false;
+
+    const parteUsuario = email.split("@")[0];
+    if (parteUsuario.length < 3 || parteUsuario.length > 30) return false;
+
+    if (!emailRegex.test(email)) return false;
+
     return dominiosPermitidos.some((dominio) =>
       email.toLowerCase().endsWith(dominio)
     );
@@ -70,9 +83,8 @@ export default function AddPedidos() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setError("");
+    alert("");
 
-    // Validação de campos obrigatórios
     if (
       !solicitante ||
       !email ||
@@ -83,27 +95,36 @@ export default function AddPedidos() {
       !material ||
       !detalhe
     ) {
-      setError("Preencha todos os campos!");
+      alert("Preencha todos os campos!");
       return;
     }
 
-    // Validação do email
+    // ===============================
+    // VALIDAÇÃO DE EMAIL
+    // ===============================
     if (!emailValido(email)) {
       alert(
-        "Use um email válido: @gmail.com, @ba.estudante.senai.br, @fieb.org.br ou @fbest.org.br"
+        "Informe um email válido, com até 60 caracteres e domínio permitido."
       );
       return;
     }
-    const telefoneValido = /^\(\d{2}\) 9 \d{4}-\d{4}$/;
 
+    const telefoneValido = /^\(\d{2}\) 9 \d{4}-\d{4}$/;
     if (!telefoneValido.test(contato)) {
-      setError("⚠️ Informe um telefone válido no formato (DDD) 9 XXXX-XXXX");
+      alert("⚠️ Informe um telefone válido no formato (DDD) 9 XXXX-XXXX");
       return;
     }
 
-    // Validação de prazo mínimo
+    // ===============================
+    // VALIDAÇÃO DE DATA
+    // ===============================
+    if (dataEntrega < hoje) {
+      alert("A data de entrega não pode ser anterior a hoje.");
+      return;
+    }
+
     if (prazoMenorQue10Dias(dataEntrega)) {
-      setError("⚠️ Prazo mínimo de 10 dias.");
+      alert("⚠️ Prazo mínimo de 10 dias.");
       return;
     }
 
@@ -139,7 +160,6 @@ export default function AddPedidos() {
 
     alert("✅ Pedido enviado com sucesso!");
 
-    // Resetar campos
     setSolicitante("");
     setEmail("");
     setCursoETurma("");
@@ -156,11 +176,12 @@ export default function AddPedidos() {
   return (
     <div className="flex flex-col items-center justify-center mb-20 gap-6 px-4 w-full">
       {error && (
-        <p className="text-red-600 text-center text-lg font-medium">{error}</p>
+        <p className="text-red-600 text-center text-lg font-medium">
+          {error}
+        </p>
       )}
 
       <div className="flex flex-col lg:flex-row gap-6 w-full max-w-6xl">
-        {/* COLUNA ESQUERDA */}
         <div className="w-full flex flex-col gap-4">
           <InputRed
             id="solicitante"
@@ -180,7 +201,7 @@ export default function AddPedidos() {
               value={material}
               disabled={is_completed}
               onChange={(e) => setMaterial(e.target.value)}
-              className="w-[100%] placeholder:text-[#000000] md:w-full h-[50px] px-3  bg-[#e5eeff] outline-none text-lg focus:ring-1 focus:ring-[#4c82e6]"
+              className="w-[100%] md:w-full h-[50px] px-3 bg-[#e5eeff] outline-none text-lg focus:ring-1 focus:ring-[#4c82e6]"
             >
               <option value="">Selecione um material</option>
               <option value="Impressão 3D">Impressão 3D</option>
@@ -220,7 +241,6 @@ export default function AddPedidos() {
           />
         </div>
 
-        {/* COLUNA DIREITA */}
         <div className="w-full flex flex-col gap-4">
           <InputNO
             id="sobreProjeto"
@@ -234,27 +254,13 @@ export default function AddPedidos() {
           <div className="flex flex-col gap-4">
             <label className="text-lg md:text-xl font-medium text-gray-700 flex gap-1">
               Cargo:
-              <span className="relative group cursor-help text-red-600">
-        *
-        <span
-          className="
-            absolute left-1/2 -translate-x-1/2 top-6
-            hidden group-hover:block
-            bg-black text-white text-xs md:text-sm
-            px-2 py-1 rounded
-            whitespace-nowrap
-            z-50
-          "
-        >
-          item obrigatório
-        </span>
-      </span>
+              <span className="relative group cursor-help text-red-600">*</span>
             </label>
             <select
               value={cargo}
               disabled={is_completed}
               onChange={(e) => setCargo(e.target.value)}
-              className="w-[100%] md:w-full h-[50px] focus:ring-1 focus:ring-[#4c82e6] placeholder:text-[#000000] text-lg bg-[#e5eeff]"
+              className="w-[100%] md:w-full h-[50px] text-lg bg-[#e5eeff]"
             >
               <option value="">Selecione um cargo</option>
               <option value="Administrativo">Administrativo</option>
@@ -265,28 +271,14 @@ export default function AddPedidos() {
 
           <div className="flex flex-col gap-4">
             <label className="text-lg md:text-xl font-medium text-gray-700 flex gap-1">
-              Arquivo do projeto (Envie uma imagem do protótipo):
-             <span className="relative group cursor-help text-red-600">
-        *
-        <span
-          className="
-            absolute left-1/2 -translate-x-1/2 top-6
-            hidden group-hover:block
-            bg-black text-white text-xs md:text-sm
-            px-2 py-1 rounded
-            whitespace-nowrap
-            z-50
-          "
-        >
-          item obrigatório
-        </span>
-      </span>
+              Arquivo do projeto:
+              <span className="relative group cursor-help text-red-600">*</span>
             </label>
             <input
               type="file"
               disabled={is_completed}
               onChange={(e) => setEnviarArquivo(e.target.files[0])}
-              className="w-[100%] md:w-full h-[50px] placeholder:text-[#000000] text-lg bg-[#e5eeff] file:mr-4 file:py-3 file:px-4 file:bg-[#0062c4] file:border-none file:text-white"
+              className="w-[100%] md:w-full h-[50px] text-lg bg-[#e5eeff] file:mr-4 file:py-3 file:px-4 file:bg-[#0062c4] file:border-none file:text-white"
             />
           </div>
 
@@ -294,6 +286,7 @@ export default function AddPedidos() {
             type="date"
             title="Data de Entrega (prazo mínimo 10 dias úteis):"
             value={dataEntrega}
+            min={hoje}
             disabled={is_completed}
             onChange={(e) => setDataEntrega(e.target.value)}
           />

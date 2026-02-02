@@ -13,40 +13,47 @@ export default function AddSolicitacao() {
   const [dataEmprestimo, setDataEmprestimo] = useState("");
   const [dataDevolucao, setDataDevolucao] = useState("");
   const [is_completed, setIs_Completed] = useState(false);
-  const [error, setError] = useState("");
-  const [termosAceitos, setTermosAceitos] = useState(false); // ✅ checkbox
+  const [error] = useState("");
+  const [termosAceitos, setTermosAceitos] = useState(false);
+
+  // ===============================
+  // DATA ATUAL (YYYY-MM-DD)
+  // ===============================
+  const hoje = new Date().toISOString().split("T")[0];
+
   function formatarTelefone(valor) {
-  // remove tudo que não for número
-  let numero = valor.replace(/\D/g, "");
+    let numero = valor.replace(/\D/g, "");
+    numero = numero.slice(0, 11);
 
-  // limita a 11 dígitos (DDD + 9 + 8 números)
-  numero = numero.slice(0, 11);
+    if (numero.length <= 2) return `(${numero}`;
+    if (numero.length <= 3)
+      return `(${numero.slice(0, 2)}) ${numero.slice(2)}`;
+    if (numero.length <= 7)
+      return `(${numero.slice(0, 2)}) ${numero.slice(2, 3)} ${numero.slice(3)}`;
 
-  if (numero.length <= 2) {
-    return `(${numero}`;
+    return `(${numero.slice(0, 2)}) ${numero.slice(2, 3)} ${numero.slice(
+      3,
+      7
+    )}-${numero.slice(7)}`;
   }
-
-  if (numero.length <= 3) {
-    return `(${numero.slice(0, 2)}) ${numero.slice(2)}`;
-  }
-
-  if (numero.length <= 7) {
-    return `(${numero.slice(0, 2)}) ${numero.slice(2, 3)} ${numero.slice(3)}`;
-  }
-
-  return `(${numero.slice(0, 2)}) ${numero.slice(2, 3)} ${numero.slice(
-    3,
-    7
-  )}-${numero.slice(7)}`;
-}
 
   function emailValido(email) {
+    const emailRegex = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i;
+
     const dominiosPermitidos = [
       "@gmail.com",
       "@fieb.org.br",
       "@ba.estudante.senai.br",
       "@fbest.org.br",
     ];
+
+    if (email.length > 60) return false;
+
+    const parteUsuario = email.split("@")[0];
+    if (parteUsuario.length < 3 || parteUsuario.length > 30) return false;
+
+    if (!emailRegex.test(email)) return false;
+
     return dominiosPermitidos.some((dominio) =>
       email.toLowerCase().endsWith(dominio)
     );
@@ -64,7 +71,7 @@ export default function AddSolicitacao() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setError("");
+    alert("");
 
     if (
       !solicitante ||
@@ -75,19 +82,19 @@ export default function AddSolicitacao() {
       !dataEmprestimo ||
       !dataDevolucao
     ) {
-      setError("Preencha todos os campos!");
+      alert("Preencha todos os campos!");
       return;
     }
-    const telefoneValido = /^\(\d{2}\) 9 \d{4}-\d{4}$/;
 
+    const telefoneValido = /^\(\d{2}\) 9 \d{4}-\d{4}$/;
     if (!telefoneValido.test(contato)) {
-      setError("⚠️ Informe um telefone válido no formato (DDD) 9 XXXX-XXXX");
+      alert("⚠️ Informe um telefone válido no formato (DDD) 9 XXXX-XXXX");
       return;
     }
 
     if (!emailValido(email)) {
       alert(
-        "Use um email válido: @gmail.com, @ba.estudante.senai.br, @fieb.org.br ou @fbest.org.br"
+        "Informe um email válido, com até 60 caracteres e domínio permitido."
       );
       return;
     }
@@ -99,7 +106,22 @@ export default function AddSolicitacao() {
       return;
     }
 
-   const { error: supaError } = await supabase.from("emprestimos").insert({
+    // ===============================
+    // VALIDAÇÃO DE DATAS
+    // ===============================
+    if (dataEmprestimo < hoje) {
+      alert("A data do empréstimo não pode ser anterior a hoje.");
+      return;
+    }
+
+    if (dataDevolucao < dataEmprestimo) {
+      alert(
+        "A data de devolução não pode ser anterior à data do empréstimo."
+      );
+      return;
+    }
+
+    const { error: supaError } = await supabase.from("emprestimos").insert({
       solicitante,
       email,
       curso_turma: cursoETurma,
@@ -108,7 +130,7 @@ export default function AddSolicitacao() {
       data_saida: dataEmprestimo,
       data_retorno: dataDevolucao,
       is_completed: false,
-      termos_aceitos: termosAceitos, // ✅ salva o valor
+      termos_aceitos: termosAceitos,
       historico: [
         {
           data: new Date().toLocaleString("pt-BR"),
@@ -117,10 +139,9 @@ export default function AddSolicitacao() {
       ],
     });
 
-
     if (supaError) {
       console.error(supaError);
-      setError("Erro ao enviar solicitação");
+      alert("Erro ao enviar solicitação");
       return;
     }
 
@@ -140,10 +161,11 @@ export default function AddSolicitacao() {
 
   return (
     <div className="flex flex-col items-center justify-center mb-20 gap-6 px-4 w-full">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-6 w-full max-w-6xl">
-        {/* COLUNAS de inputs */}
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col gap-6 w-full max-w-6xl"
+      >
         <div className="flex md:flex-row flex-col md:justify-center gap-6 w-full">
-          {/* COLUNA ESQUERDA */}
           <div className="w-full flex flex-col gap-4">
             <InputRed
               title="Solicitante:"
@@ -168,11 +190,12 @@ export default function AddSolicitacao() {
               title="Telefone:"
               placeholder="Use esse formato ex: (11)912345678"
               value={contato}
-              onChange={(e) => setContato(formatarTelefone(e.target.value))}
+              onChange={(e) =>
+                setContato(formatarTelefone(e.target.value))
+              }
             />
           </div>
 
-          {/* COLUNA DIREITA */}
           <div className="w-full flex flex-col gap-4">
             <div className="flex flex-col gap-4">
               <label className="text-lg md:text-xl font-medium text-gray-700">
@@ -194,6 +217,7 @@ export default function AddSolicitacao() {
                   <Plus size={18} />
                 </button>
               </div>
+
               {componentes.length > 0 && (
                 <ul className="mt-2 space-y-1">
                   {componentes.map((item, index) => (
@@ -219,6 +243,7 @@ export default function AddSolicitacao() {
               title="Data do empréstimo:"
               type="date"
               value={dataEmprestimo}
+              min={hoje}
               disabled={is_completed}
               onChange={(e) => setDataEmprestimo(e.target.value)}
             />
@@ -227,13 +252,13 @@ export default function AddSolicitacao() {
               title="Data de devolução:"
               type="date"
               value={dataDevolucao}
+              min={dataEmprestimo || hoje}
               disabled={is_completed}
               onChange={(e) => setDataDevolucao(e.target.value)}
             />
           </div>
         </div>
 
-        {/* Checkbox de termos */}
         <div className="flex items-start gap-2">
           <input
             type="checkbox"
@@ -243,12 +268,16 @@ export default function AddSolicitacao() {
             className="mt-1"
           />
           <label htmlFor="termos" className="text-gray-700 text-sm">
-            Li e aceito que o item emprestado deve ser devolvido no mesmo estado que foi retirado e que quaisquer danos serão de minha responsabilidade.
+            Li e aceito que o item emprestado deve ser devolvido no mesmo estado
+            que foi retirado e que quaisquer danos serão de minha
+            responsabilidade.
           </label>
         </div>
 
         {error && (
-          <p className="text-red-600 text-center text-lg font-medium">{error}</p>
+          <p className="text-red-600 text-center text-lg font-medium">
+            {error}
+          </p>
         )}
 
         <button
