@@ -247,6 +247,7 @@ export default function AddProjetos() {
                 <option value="Administrativo">Administrativo</option>
                 <option value="Aluno">Aluno</option>
                 <option value="Docente">Docente</option>
+                <option value="Estagiário">Estagiário</option>
               </select>
             </div>
           </div>

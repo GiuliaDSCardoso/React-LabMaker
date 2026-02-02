@@ -13,7 +13,7 @@ export default function AddSolicitacao() {
   const [dataEmprestimo, setDataEmprestimo] = useState("");
   const [dataDevolucao, setDataDevolucao] = useState("");
   const [is_completed, setIs_Completed] = useState(false);
-  const [error] = useState("");
+  const [error, setError] = useState("");
   const [termosAceitos, setTermosAceitos] = useState(false);
 
   // ===============================
@@ -71,7 +71,7 @@ export default function AddSolicitacao() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    alert("");
+    setError("");
 
     if (
       !solicitante ||

@@ -15,7 +15,7 @@ export default function AddPedidos() {
   const [sobreProjeto, setSobreProjeto] = useState("");
   const [detalhe, setDetalhe] = useState("");
   const [is_completed, setIsCompleted] = useState(false);
-  const [error] = useState("");
+  const [error, setError] = useState("");
 
   // ===============================
   // DATA ATUAL (YYYY-MM-DD)
@@ -83,7 +83,7 @@ export default function AddPedidos() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    alert("");
+    setError("");
 
     if (
       !solicitante ||
@@ -266,6 +266,7 @@ export default function AddPedidos() {
               <option value="Administrativo">Administrativo</option>
               <option value="Aluno">Aluno</option>
               <option value="Docente">Docente</option>
+              <option value="Estagiário">Estagiário</option>
             </select>
           </div>
 
