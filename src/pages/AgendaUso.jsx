@@ -16,11 +16,17 @@ export default function AgendaUso() {
   const [horaInicio, setHoraInicio] = useState("08:00");
   const [horaFim, setHoraFim] = useState("09:00");
 
-  // 🔹 NOVOS ESTADOS
   const [diaInteiro, setDiaInteiro] = useState(false);
   const [turno, setTurno] = useState("manha");
 
   const [agendamentos, setAgendamentos] = useState([]);
+
+  // 🔹 LISTA DE DATAS
+  const [datasSelecionadas, setDatasSelecionadas] = useState([]);
+
+  // 🔹 MODO DE HORÁRIO
+  const [modoHorario, setModoHorario] = useState("igual");
+  // "igual" | "diferente"
 
   // ===============================
   // BUSCAR AGENDAMENTOS
@@ -39,7 +45,7 @@ export default function AgendaUso() {
   }, []);
 
   // ===============================
-  // TURNOS (SEM MEXER NOS INPUTS)
+  // TURNOS
   // ===============================
   function aplicarTurno(t) {
     setTurno(t);
@@ -48,12 +54,10 @@ export default function AgendaUso() {
       setHoraInicio("07:00");
       setHoraFim("12:00");
     }
-
     if (t === "tarde") {
       setHoraInicio("13:00");
       setHoraFim("17:00");
     }
-
     if (t === "noite") {
       setHoraInicio("18:00");
       setHoraFim("21:40");
@@ -85,10 +89,63 @@ export default function AgendaUso() {
   }
 
   // ===============================
+  // ➕ ADICIONAR DATA
+  // ===============================
+  function adicionarData() {
+    if (!data) {
+      alert("Selecione uma data");
+      return;
+    }
+
+    if (modoHorario === "igual") {
+      if (datasSelecionadas.includes(data)) {
+        alert("Data já adicionada");
+        return;
+      }
+
+      setDatasSelecionadas([...datasSelecionadas, data]);
+    } else {
+      const existe = datasSelecionadas.some((d) => d.data === data);
+      if (existe) {
+        alert("Data já adicionada");
+        return;
+      }
+
+      setDatasSelecionadas([
+        ...datasSelecionadas,
+        {
+          data,
+          diaInteiro,
+          turno,
+          horaInicio,
+          horaFim,
+        },
+      ]);
+    }
+
+    setData("");
+  }
+
+  function removerData(valor) {
+    if (modoHorario === "igual") {
+      setDatasSelecionadas(datasSelecionadas.filter((d) => d !== valor));
+    } else {
+      setDatasSelecionadas(datasSelecionadas.filter((d) => d.data !== valor));
+    }
+  }
+
+  // ===============================
   // ENVIAR
   // ===============================
   async function enviar() {
-    if (!nome || !email || !telefone || !motivo || !arrumacao || !data) {
+    if (
+      !nome ||
+      !email ||
+      !telefone ||
+      !motivo ||
+      !arrumacao ||
+      datasSelecionadas.length === 0
+    ) {
       alert("Preencha todos os campos!");
       return;
     }
@@ -105,55 +162,79 @@ export default function AgendaUso() {
     }
 
     // ===============================
-    // 🚫 CONFLITO
+    // 🔴 VALIDA CONFLITOS
     // ===============================
-    const conflitos = agendamentos.filter((ag) => {
-      if (ag.data !== data) return false;
-      if (ag.dia_inteiro) return true;
+    for (const item of datasSelecionadas) {
+      const d = modoHorario === "igual" ? item : item.data;
+      const hi = modoHorario === "igual" ? horaInicio : item.horaInicio;
+      const hf = modoHorario === "igual" ? horaFim : item.horaFim;
+      const di = modoHorario === "igual" ? diaInteiro : item.diaInteiro;
 
-      if (diaInteiro) return true;
+      const conflito = agendamentos.some((ag) => {
+        if (ag.data !== d) return false;
+        if (ag.dia_inteiro || di) return true;
+        return hi < ag.hora_fim && hf > ag.hora_inicio;
+      });
 
-      return horaInicio < ag.hora_fim && horaFim > ag.hora_inicio;
-    });
-
-    if (conflitos.length > 0) {
-      alert("❌ Dia ou horário ocupado");
-      return;
+      if (conflito) {
+        alert(`❌ Conflito na data ${d.split("-").reverse().join("/")}`);
+        return;
+      }
     }
 
     // ===============================
     // INSERÇÃO
     // ===============================
-    const { error } = await supabase.from("agendamentos").insert({
-      tipo: "USUARIO",
-      data,
-      hora_inicio: diaInteiro ? "00:00" : horaInicio,
-      hora_fim: diaInteiro ? "23:59" : horaFim,
-      dia_inteiro: diaInteiro,
-      motivo,
-      status: "pendente",
-      historico: {
-        nome,
-        email,
-        telefone,
-        arrumacaoSala: arrumacao,
-        turno: diaInteiro ? "integral" : turno,
-      },
-    });
+    const inserts =
+      modoHorario === "igual"
+        ? datasSelecionadas.map((d) => ({
+            tipo: "USUARIO",
+            data: d,
+            hora_inicio: diaInteiro ? "08:00" : horaInicio,
+            hora_fim: diaInteiro ? "21:59" : horaFim,
+            dia_inteiro: diaInteiro,
+            motivo,
+            status: "pendente",
+            historico: {
+              nome,
+              email,
+              telefone,
+              arrumacaoSala: arrumacao,
+              turno: diaInteiro ? "integral" : turno,
+            },
+          }))
+        : datasSelecionadas.map((d) => ({
+            tipo: "USUARIO",
+            data: d.data,
+            hora_inicio: d.diaInteiro ? "00:00" : d.horaInicio,
+            hora_fim: d.diaInteiro ? "23:59" : d.horaFim,
+            dia_inteiro: d.diaInteiro,
+            motivo,
+            status: "pendente",
+            historico: {
+              nome,
+              email,
+              telefone,
+              arrumacaoSala: arrumacao,
+              turno: d.diaInteiro ? "integral" : d.turno,
+            },
+          }));
+
+    const { error } = await supabase.from("agendamentos").insert(inserts);
 
     if (error) {
-      alert("Erro ao enviar solicitação");
+      alert("Erro ao enviar solicitações");
       return;
     }
 
-    alert("Solicitação enviada!");
+    alert("Solicitações enviadas!");
 
     setNome("");
     setEmail("");
     setTelefone("");
     setMotivo("");
     setArrumacao("");
-    setData("");
+    setDatasSelecionadas([]);
     setDiaInteiro(false);
     aplicarTurno("manha");
 
@@ -185,7 +266,6 @@ export default function AgendaUso() {
       <div className="flex flex-col lg:flex-row mt-10 mb-20 gap-20 px-4 w-full justify-center">
         {/* FORMULÁRIO */}
         <div className="md:w-[40%] w-full space-y-4">
-          {/* 🔒 TODOS OS INPUTS ABAIXO ESTÃO IGUAIS */}
           <InputRed
             title="Solicitante:"
             placeholder="Digite seu nome completo"
@@ -223,6 +303,27 @@ export default function AgendaUso() {
             </select>
           </div>
 
+          {/* 🔘 MODO DE HORÁRIO */}
+          <div className="flex flex-col gap-2">
+            <label className="flex items-center gap-2">
+              <input
+                type="radio"
+                checked={modoHorario === "igual"}
+                onChange={() => setModoHorario("igual")}
+              />
+              Mesmo horário para todas as datas
+            </label>
+
+            <label className="flex items-center gap-2">
+              <input
+                type="radio"
+                checked={modoHorario === "diferente"}
+                onChange={() => setModoHorario("diferente")}
+              />
+              Horários diferentes por data
+            </label>
+          </div>
+
           <InputRed
             type="date"
             title="Data do agendamento:"
@@ -231,7 +332,50 @@ export default function AgendaUso() {
             onChange={(e) => setData(e.target.value)}
           />
 
-          {/* 🔹 BLOCO NOVO (SEM MEXER NOS INPUTS EXISTENTES) */}
+          <button
+            type="button"
+            onClick={adicionarData}
+            className="bg-[#e5eeff] h-[45px] rounded text-lg"
+          >
+            ➕ Adicionar data à lista
+          </button>
+
+          {datasSelecionadas.length > 0 && (
+            <div className="bg-white p-3 rounded shadow space-y-2">
+              <h4 className="font-semibold">📋 Datas selecionadas</h4>
+
+              {datasSelecionadas.map((item, idx) => (
+                <div
+                  key={idx}
+                  className="flex justify-between items-center border-b pb-1"
+                >
+                  <span>
+                    {modoHorario === "igual"
+                      ? item.split("-").reverse().join("/")
+                      : `${item.data.split("-").reverse().join("/")} — ${
+                          item.diaInteiro
+                            ? "Dia inteiro"
+                            : `${item.horaInicio}–${item.horaFim}`
+                        }`}
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      removerData(
+                        modoHorario === "igual" ? item : item.data
+                      )
+                    }
+                    className="text-red-600"
+                  >
+                    ✖
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* DIA INTEIRO + TURNO */}
           <div className="flex flex-wrap items-center gap-4">
             <label className="flex items-center gap-2 text-lg">
               <input
@@ -262,7 +406,6 @@ export default function AgendaUso() {
             )}
           </div>
 
-          {/* ⏰ INPUTS ORIGINAIS DE HORA (NÃO MEXIDOS) */}
           <div className="flex gap-2">
             <InputDate
               type="time"
@@ -311,10 +454,20 @@ export default function AgendaUso() {
 
               <div className="hidden group-hover:block ml-3 text-sm bg-white p-2 rounded shadow space-y-2">
                 {itens.map((i, idx) => (
-                 <div key={idx} className="border-b last:border-none pb-1" > <p> ⏰ {i.hora_inicio} - {i.hora_fim}{" "} 
-                 {i.tipo === "ADMIN" ? "🔴 ADMIN" : "🟡 USUÁRIO"} </p> 
-                 {i.historico?.nome && ( <p className="text-gray-700"> 👤 <strong>{i.historico.nome}</strong> </p> )}
-                  {i.motivo && ( <p className="text-gray-600 italic"> 📝 {i.motivo} </p> )} </div>
+                  <div key={idx} className="border-b last:border-none pb-1">
+                    <p>
+                      ⏰ {i.hora_inicio} - {i.hora_fim}{" "}
+                      {i.tipo === "ADMIN" ? "🔴 ADMIN" : "🟡 USUÁRIO"}
+                    </p>
+                    {i.historico?.nome && (
+                      <p className="text-gray-700">
+                        👤 <strong>{i.historico.nome}</strong>
+                      </p>
+                    )}
+                    {i.motivo && (
+                      <p className="text-gray-600 italic">📝 {i.motivo}</p>
+                    )}
+                  </div>
                 ))}
               </div>
             </div>
