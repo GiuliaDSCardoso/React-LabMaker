@@ -352,7 +352,7 @@ export default function AgendaUso() {
                     key={t}
                     type="button"
                     onClick={() => aplicarTurno(t)}
-                    className={`px-3 py-1 rounded ${
+                    className={`px-3 py-1rounded ${
                       turno === t
                         ? "bg-[#2756ac] text-white"
                         : "bg-[#e5eeff]"

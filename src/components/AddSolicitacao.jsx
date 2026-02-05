@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, X } from "lucide-react";
+import {  PlusIcon, X } from "lucide-react";
 import { supabase } from "../services/supabase";
 import InputRed from "../assets/styles/InputRed";
 
@@ -212,9 +212,9 @@ export default function AddSolicitacao() {
                 <button
                   type="button"
                   onClick={adicionarComponente}
-                  className="w-[40px] h-[50px] bg-[#0062c4] text-white flex items-center justify-center rounded hover:bg-[#0257ac]"
+                  className="w-[55px] h-[50px] bg-[#0062c4] text-white flex items-center justify-center rounded hover:bg-[#0257ac]"
                 >
-                  <Plus size={18} />
+                  <PlusIcon className="w-10 font-bold"/>
                 </button>
               </div>
 
