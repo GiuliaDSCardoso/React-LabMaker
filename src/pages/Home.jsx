@@ -17,7 +17,12 @@ export default function Home() {
   const HORA_FECHAMENTO = 22;
 
   const [horaAtual, setHoraAtual] = useState(new Date());
-  const [aberto, setAberto] = useState(false);
+
+  const [aberto, setAberto] = useState(() => {
+    const agora = new Date();
+    const hora = agora.getHours();
+    return hora >= HORA_ABERTURA && hora < HORA_FECHAMENTO;
+  });
 
   useEffect(() => {
     const timer = setInterval(() => {
