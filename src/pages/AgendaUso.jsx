@@ -4,6 +4,7 @@ import Body from "../assets/styles/Body";
 import Nav from "../assets/styles/Nav";
 import { supabase } from "../services/supabase";
 import InputRed from "../assets/styles/InputRed";
+import { PlusIcon } from "lucide-react";
 
 export default function AgendaUso() {
   const [nome, setNome] = useState("");
@@ -304,7 +305,7 @@ export default function AgendaUso() {
           </div>
 
           {/* 🔘 MODO DE HORÁRIO */}
-          <div className="flex flex-col gap-2">
+          <div className="flex  gap-2">
             <label className="flex items-center gap-2">
               <input
                 type="radio"
@@ -332,49 +333,7 @@ export default function AgendaUso() {
             onChange={(e) => setData(e.target.value)}
           />
 
-          <button
-            type="button"
-            onClick={adicionarData}
-            className="bg-[#e5eeff] h-[45px] rounded text-lg"
-          >
-            ➕ Adicionar data à lista
-          </button>
-
-          {datasSelecionadas.length > 0 && (
-            <div className="bg-white p-3 rounded shadow space-y-2">
-              <h4 className="font-semibold">📋 Datas selecionadas</h4>
-
-              {datasSelecionadas.map((item, idx) => (
-                <div
-                  key={idx}
-                  className="flex justify-between items-center border-b pb-1"
-                >
-                  <span>
-                    {modoHorario === "igual"
-                      ? item.split("-").reverse().join("/")
-                      : `${item.data.split("-").reverse().join("/")} — ${
-                          item.diaInteiro
-                            ? "Dia inteiro"
-                            : `${item.horaInicio}–${item.horaFim}`
-                        }`}
-                  </span>
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      removerData(
-                        modoHorario === "igual" ? item : item.data
-                      )
-                    }
-                    className="text-red-600"
-                  >
-                    ✖
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-
+         
           {/* DIA INTEIRO + TURNO */}
           <div className="flex flex-wrap items-center gap-4">
             <label className="flex items-center gap-2 text-lg">
@@ -424,6 +383,48 @@ export default function AgendaUso() {
               onChange={(e) => setHoraFim(e.target.value)}
             />
           </div>
+             <button
+            type="button"
+            onClick={adicionarData}
+            className="bg-[#2756ac] flex gap-2 text-white items-center justify-center pr-4 pl-2 h-[45px] rounded text-lg"
+          >
+            <PlusIcon className="w-5 font-bold"/> Adicionar data à lista
+          </button>
+
+          {datasSelecionadas.length > 0 && (
+            <div className="bg-white p-3 rounded shadow space-y-2">
+              <h4 className="font-semibold">📋 Datas selecionadas</h4>
+
+              {datasSelecionadas.map((item, idx) => (
+                <div
+                  key={idx}
+                  className="flex justify-between items-center border-b pb-1"
+                >
+                  <span>
+                    {modoHorario === "igual"
+                      ? item.split("-").reverse().join("/")
+                      : `${item.data.split("-").reverse().join("/")} — ${
+                          item.diaInteiro
+                            ? "Dia inteiro"
+                            : `${item.horaInicio}–${item.horaFim}`
+                        }`}
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      removerData(
+                        modoHorario === "igual" ? item : item.data
+                      )
+                    }
+                    className="text-red-600"
+                  >
+                    ✖
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
 
           <InputRed
             type="text"
