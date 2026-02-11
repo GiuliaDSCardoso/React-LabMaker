@@ -5,7 +5,7 @@ import { useState } from "react";
 export default function Nav() {
   const [openMenu, setOpenMenu] = useState(false);
     return (
-    <div className="flex justify-center">
+    <div className="flex h-[5vh] justify-center">
         <nav className="flex flex-row  items-center  bg-blue-50 justify-between w-[70%] py-2 ">
   
         {/* LOGO */}

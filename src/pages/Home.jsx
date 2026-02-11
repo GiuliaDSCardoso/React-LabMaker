@@ -50,21 +50,28 @@ export default function Home() {
 
       {/* TOPO */}
       <div
-        className={`w-screen flex justify-center items-center h-80 transition-all duration-300 ${
+        
+        className={`rounded-xl mx-2 flex justify-center items-center h-[40vh]  transition-all duration-300 ${
           aberto
-            ? "bg-gradient-to-r from-[#1976d2] to-blue-800"
-            : "bg-gradient-to-r from-gray-700 to-gray-900"
+            ? "  bg-cover bg-center"
+            : " bg-cover bg-center"
         }`}
+        style={
+          aberto
+            ? { backgroundImage: "url(../public/logos/BgMaker4.jpeg)" }
+            : { backgroundImage: "url(../public/logos/BgMaker4.jpeg)"}
+        }
       >
+        
         <div className="text-center space-y-3">
-          <h2 className="text-white text-3xl font-bold">
+          <h2 className="text-white text-2xl md:text-3xl font-bold">
             Bem-vindo ao Lab Maker
           </h2>
 
           {/* STATUS */}
           <span
-            className={`inline-block px-4 py-1 rounded-full text-white text-sm font-semibold ${
-              aberto ? "bg-green-500" : "bg-red-500"
+            className={`inline-block px-4 py-1 rounded-full text-white text-sm font-bold ${
+              aberto ? "bg-[#48ff00]/40" : "bg-[#ff0000]/40"
             }`}
           >
             {aberto ? " ABERTO AGORA" : " FECHADO"}
@@ -75,7 +82,7 @@ export default function Home() {
             <p className="text-white text-2xl font-mono">
               {formatarHora(horaAtual)}
             </p>
-            <p className="text-white text-sm opacity-90">
+            <p className="text-white text-sm  font-bold opacity-90">
               Funcionamento: {String(HORA_ABERTURA).padStart(2, "0")}:00 às{" "}
               {String(HORA_FECHAMENTO).padStart(2, "0")}:00
             </p>

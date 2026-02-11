@@ -22,7 +22,12 @@ export default function Contact() {
     <Body>
       <Nav />
 
-      <header className="flex items-center bg-gradient-to-r from-[#1976d2] to-blue-800 h-40 px-6">
+      <header
+        className="relative flex rounded-xl mx-2 flex-col justify-center h-[30vh] items-center  px-6 bg-cover bg-center"
+        style={{
+          backgroundImage: "url(/logos/BgMaker4.jpeg)",
+        }}
+      >
         <h1 className="text-3xl text-white font-bold text-center w-full">
           Entre em contato!
         </h1>

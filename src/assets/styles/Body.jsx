@@ -3,7 +3,7 @@ import "../../index.css";
 
 export default function Body(props) {
     return(
-        <div className="flex flex-col items-center min-h-screen w-screen mx-0 mb-30">
+        <div className="flex flex-col items-center min-h-screen mx-0 mb-30">
             {/* Conteúdo da página */}
             <div className="flex-grow w-full">
                 {props.children}

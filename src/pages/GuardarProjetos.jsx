@@ -25,7 +25,12 @@ export default function GuardarProjetos() {
     <Body>
       <Nav />
 
-       <header className="flex items-center bg-gradient-to-r from-[#1976d2] to-blue-800 h-64 px-6">
+      <header
+        className="relative flex rounded-xl mx-2 flex-col justify-center h-[30vh] items-center  px-6 bg-cover bg-center"
+        style={{
+          backgroundImage: "url(/logos/BgMaker4.jpeg)",
+        }}
+      >
         <h1 className=" text-lg md:text-3xl text-white font-bold text-center w-full">
           Solicitação de Espaço <br /> para Guardar Projetos
         </h1>

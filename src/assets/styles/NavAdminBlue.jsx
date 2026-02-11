@@ -15,7 +15,7 @@ export default function NavAdminBlue(){
                           }
     
   return (
-            <div className="flex justify-center bg-[#1976d2] w-[100%]">
+            <div className="flex h-[5vh] justify-center bg-[#1976d2] w-[100%]">
                     <nav className="flex flex-row  items-center   justify-between w-[70%]  py-2 ">
             
                     {/* LOGO */}

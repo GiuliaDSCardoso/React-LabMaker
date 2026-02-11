@@ -4,7 +4,9 @@ import Body from "../assets/styles/Body";
 import Nav from "../assets/styles/Nav";
 import { supabase } from "../services/supabase";
 import InputRed from "../assets/styles/InputRed";
-import { PlusIcon } from "lucide-react";
+import CalendarAgenda from "../components/CalendarAgenda";
+
+import { PlusIcon} from "lucide-react";
 
 export default function AgendaUso() {
   const [nome, setNome] = useState("");
@@ -245,17 +247,18 @@ export default function AgendaUso() {
   // ===============================
   // AGRUPA POR DATA
   // ===============================
-  const agendaPorDia = agendamentos.reduce((acc, item) => {
-    if (!acc[item.data]) acc[item.data] = [];
-    acc[item.data].push(item);
-    return acc;
-  }, {});
+
 
   return (
     <Body>
       <Nav />
 
-      <header className="flex flex-col justify-center items-center bg-gradient-to-r from-[#1976d2] to-blue-800 md:h-64 px-6">
+      <header
+        className="relative flex rounded-xl mx-2 flex-col justify-center h-[30vh] items-center  px-6 bg-cover bg-center"
+        style={{
+          backgroundImage: "url(/logos/BgMaker4.jpeg)",
+        }}
+      >
         <h1 className="text-2xl sm:text-3xl text-white font-bold text-center w-full">
           Solicitação de agendamento <br /> do Laboratório Maker
         </h1>
@@ -444,36 +447,10 @@ export default function AgendaUso() {
         </div>
 
         {/* AGENDA */}
-        <aside className="md:w-[35%] w-full bg-[#f4f7ff] p-4 rounded shadow h-fit sticky top-6">
-          <h3 className="text-xl font-bold mb-4">📅 Agenda ocupada</h3>
-
-          {Object.entries(agendaPorDia).map(([dia, itens]) => (
-            <div key={dia} className="mb-3 group">
-              <div className="font-semibold text-blue-700 cursor-pointer">
-                {dia.split("-").reverse().join("/")}
-              </div>
-
-              <div className="hidden group-hover:block ml-3 text-sm bg-white p-2 rounded shadow space-y-2">
-                {itens.map((i, idx) => (
-                  <div key={idx} className="border-b last:border-none pb-1">
-                    <p>
-                      ⏰ {i.hora_inicio} - {i.hora_fim}{" "}
-                      {i.tipo === "ADMIN" ? "🔴 ADMIN" : "🟡 USUÁRIO"}
-                    </p>
-                    {i.historico?.nome && (
-                      <p className="text-gray-700">
-                        👤 <strong>{i.historico.nome}</strong>
-                      </p>
-                    )}
-                    {i.motivo && (
-                      <p className="text-gray-600 italic">📝 {i.motivo}</p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
+        <aside className="lg:w-[40%] w-full bg-[#2756ac] p-6 rounded-xl shadow h-fit sticky top-6">
+          <CalendarAgenda agendamentos={agendamentos} />
         </aside>
+
       </div>
     </Body>
   );

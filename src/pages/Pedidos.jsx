@@ -33,7 +33,12 @@ export default function Pedidos() {
       {/* Nav */}
        <Nav/>
       {/* HEADER */}
-      <header className="flex items-center bg-gradient-to-r from-[#1976d2] to-blue-800 h-64 px-6">
+      <header
+        className="relative flex rounded-xl mx-2 flex-col justify-center h-[30vh] items-center  px-6 bg-cover bg-center"
+        style={{
+          backgroundImage: "url(/logos/BgMaker4.jpeg)",
+        }}
+      >
 
         <h1 className=" text-2xl sm:text-3xl text-white font-bold text-center w-full">
           Solicitação de Pedido <br /> de confecção
