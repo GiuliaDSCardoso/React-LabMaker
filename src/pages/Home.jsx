@@ -58,8 +58,8 @@ export default function Home() {
         }`}
         style={
           aberto
-            ? { backgroundImage: "url(../public/logos/BgMaker4.jpeg)" }
-            : { backgroundImage: "url(../public/logos/BgMaker4.jpeg)"}
+            ? { backgroundImage: "url(../../public/logos/BgMaker4.jpeg)" }
+            : { backgroundImage: "url(../../public/logos/BgMaker4.jpeg)"}
         }
       >
         
