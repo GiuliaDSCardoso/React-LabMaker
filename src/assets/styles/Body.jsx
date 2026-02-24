@@ -9,6 +9,11 @@ export default function Body(props) {
   });
 
   useEffect(() => {
+<<<<<<< Updated upstream
+=======
+    document.documentElement.classList.add("theme-transition");
+
+>>>>>>> Stashed changes
     if (darkMode) {
       document.documentElement.classList.add("dark");
       localStorage.setItem("theme", "dark");
@@ -16,10 +21,21 @@ export default function Body(props) {
       document.documentElement.classList.remove("dark");
       localStorage.setItem("theme", "light");
     }
+<<<<<<< Updated upstream
   }, [darkMode]);
 
   return (
     <div className="flex flex-col min-h-screen overflow-x-hidden">
+=======
+
+    setTimeout(() => {
+      document.documentElement.classList.remove("theme-transition");
+    }, 1000);
+  }, [darkMode]);
+
+  return (
+    <div className="flex flex-col min-h-screen overflow-x-hidden transition-colors duration-800">
+>>>>>>> Stashed changes
       
       <div className="fixed top-0 left-0 w-full h-2 bg-[#0E4194] dark:bg-[#E84B13] z-[100]" />
 
@@ -33,26 +49,43 @@ export default function Body(props) {
           rounded-full
           transition-all duration-500 ease-in-out
           transform hover:scale-110 active:scale-95
+<<<<<<< Updated upstream
           bg-[#327ef8] shadow-md dark:shadow-[#000e24] shadow-[#0245b16e]
+=======
+          bg-[#327ef8] shadow-md dark:shadow-[#000e24] focus:outline-none focus:ring-0 shadow-[#0245b16e]
+>>>>>>> Stashed changes
           dark:bg-[#0041a3]
           text-white
         "
       >
+<<<<<<< Updated upstream
         <div className="transition-transform duration-500">
+=======
+        <div className="transition-transform duration-800">
+>>>>>>> Stashed changes
           {darkMode ? <CloudSun /> : <CloudMoon />}
         </div>
       </button>
 
       {/* CONTEÚDO */}
+<<<<<<< Updated upstream
       <div
         className="
           flex-grow
           w-full
           transition-all duration-300
+=======
+     <div
+        className="
+          flex-grow
+          w-full
+          transition-colors duration-800
+>>>>>>> Stashed changes
           md:ml-1
           lg:ml-2
         "
       >
+<<<<<<< Updated upstream
         {
           React.Children.map(props.children, (child) =>
             React.isValidElement(child)
@@ -61,6 +94,14 @@ export default function Body(props) {
           )
         }
       </div>
+=======
+      {React.Children.map(props.children, (child) =>
+        React.isValidElement(child) && typeof child.type !== "string"
+          ? React.cloneElement(child, { darkMode })
+          : child
+      )}
+    </div>
+>>>>>>> Stashed changes
 
       {/* FOOTER */}
       <footer

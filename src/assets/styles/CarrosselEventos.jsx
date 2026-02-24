@@ -17,25 +17,41 @@ export default function CarrosselEventos() {
     {
       imgLight: "/logos/Eventos/Evento3.svg",
       imgDark: "/logos/Eventos/Evento3Dark.svg",
+<<<<<<< Updated upstream
       link: "/evento3",
+=======
+      link: "https://labmakerfsa.vercel.app/",
+>>>>>>> Stashed changes
     },
     {
       imgLight: "/logos/Eventos/Evento4.svg",
       imgDark: "/logos/Eventos/Evento4Dark.svg",
+<<<<<<< Updated upstream
       link: "/evento4",
+=======
+      link: "https://plataforma.gpinovacao.senai.br/plataforma/desafio/2061",
+>>>>>>> Stashed changes
     },
   ];
 
   const [indexAtual, setIndexAtual] = useState(0);
+<<<<<<< Updated upstream
+=======
+  const [isDark, setIsDark] = useState(false);
+>>>>>>> Stashed changes
 
   const proximo = () => {
     setIndexAtual((prev) => (prev + 1) % imagens.length);
   };
 
   const anterior = () => {
+<<<<<<< Updated upstream
     setIndexAtual((prev) =>
       prev === 0 ? imagens.length - 1 : prev - 1
     );
+=======
+    setIndexAtual((prev) => (prev === 0 ? imagens.length - 1 : prev - 1));
+>>>>>>> Stashed changes
   };
 
   // AUTO PLAY
@@ -47,6 +63,23 @@ export default function CarrosselEventos() {
     return () => clearInterval(intervalo);
   }, []);
 
+<<<<<<< Updated upstream
+=======
+  // VERIFICA DARK MODE
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    });
+
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+
+    // Inicial
+    setIsDark(document.documentElement.classList.contains("dark"));
+
+    return () => observer.disconnect();
+  }, []);
+
+>>>>>>> Stashed changes
   return (
     <div className="w-full max-w-7xl mx-auto mt-5 relative overflow-visible">
       
@@ -55,6 +88,7 @@ export default function CarrosselEventos() {
         
         {/* SLIDES */}
         <div
+<<<<<<< Updated upstream
           className="flex transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
           style={{
             transform: `translateX(-${indexAtual * 100}%)`,
@@ -81,6 +115,19 @@ export default function CarrosselEventos() {
                   className="w-full h-full rounded-3xl object-cover hover:scale-[1.02] transition-transform duration-300 cursor-pointer hidden dark:block"
                 />
 
+=======
+            className="flex transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform"
+            style={{ transform: `translate3d(-${indexAtual * 100}%, 0, 0)` }}
+          >
+          {imagens.map((item, i) => (
+            <div key={i} className="min-w-full h-[260px]  md:h-[420px]">
+              <a href={item.link} target="_blank" className="block w-full h-full relative">
+                <img
+                  src={isDark ? item.imgDark : item.imgLight}
+                  alt={`Evento ${i + 1}`}
+                  className="w-full h-full rounded-4xl md:rounded-3xl object-contain md:object-cover hover:scale-[1.02] transition-transform duration-300 cursor-pointer"
+                />
+>>>>>>> Stashed changes
               </a>
             </div>
           ))}
@@ -131,7 +178,10 @@ export default function CarrosselEventos() {
           />
         ))}
       </div>
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
     </div>
   );
 }

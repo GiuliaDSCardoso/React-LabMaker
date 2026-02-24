@@ -2,12 +2,17 @@ import AddSolicitacao from "../components/AddSolicitacao";
 
 import Body from "../assets/styles/Body.jsx";
 import MenuLateral from "../assets/styles/MenuLateral.jsx";
+<<<<<<< Updated upstream
+=======
+import Header from "../assets/styles/Header.jsx";
+>>>>>>> Stashed changes
 
 export default function Emprestimo() {
   return (
     <Body>
       <MenuLateral />
 
+<<<<<<< Updated upstream
       <header
         className="
             w-full
@@ -28,6 +33,11 @@ export default function Emprestimo() {
           Solicitação de empréstimo <br /> de componentes
         </h1>
       </header>
+=======
+      <Header
+      title="Empréstimo de Componentes"
+      />
+>>>>>>> Stashed changes
 
       <div className="mt-16 mb-10 flex px-4 justify-center">
         <AddSolicitacao />

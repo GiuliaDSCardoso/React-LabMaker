@@ -1,8 +1,30 @@
-export default function Header( props) {
+export default function Header( {title, descricao}) {
     return(
-        <header className="flex items-center bg-gradient-to-r from-[#1976d2] to-blue-800 h-[20vh] px-6">
-            <h1 className="text-2xl font-bold w-[95%] text-white text-center mx-auto">
-            {props.children}
-          </h1>
-        </header>);
+      <div>
+        <header
+            className="
+                w-full
+                max-w-7xl
+                mx-auto
+                mt-24
+                md:mt-5
+                rounded-xl
+                flex-col flex justify-center items-center
+                h-[18vh]
+                bg-[#0E4194]
+                dark:bg-[#001941]
+                bg-cover bg-center
+              "
+          
+          >
+            <h1 className="sm:text-3xl text-2xl text-white font-bold text-center w-full">
+              {title}
+            </h1>
+            <h2 className="text-lg sm:text-xl text-[#90adff] font-bold text-center w-full">
+              {descricao}
+            </h2>
+      </header>
+      </div>
+        
+    )
 }

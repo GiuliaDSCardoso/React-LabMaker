@@ -1,12 +1,16 @@
 import { useEffect, useState } from "react";
 import InputDate from "../assets/styles/InputDate";
 import Body from "../assets/styles/Body";
-import Nav from "../assets/styles/Nav";
+
 import { supabase } from "../services/supabase";
 import InputRed from "../assets/styles/InputRed";
 import CalendarAgenda from "../components/CalendarAgenda";
 
 import { PlusIcon} from "lucide-react";
+import MenuLateral from "../assets/styles/MenuLateral";
+import Header from "../assets/styles/Header";
+import InputSelect from "../assets/styles/InputSelect";
+import DatePickerInput from "../assets/styles/DataPickerInput";
 
 export default function AgendaUso() {
   const [nome, setNome] = useState("");
@@ -14,7 +18,7 @@ export default function AgendaUso() {
   const [telefone, setTelefone] = useState("");
   const [motivo, setMotivo] = useState("");
   const [arrumacao, setArrumacao] = useState("");
-  const [data, setData] = useState("");
+  const [data, setData] = useState(null);
 
   const [horaInicio, setHoraInicio] = useState("08:00");
   const [horaFim, setHoraFim] = useState("09:00");
@@ -251,23 +255,15 @@ export default function AgendaUso() {
 
   return (
     <Body>
-      <Nav />
+      <MenuLateral/>
 
-      <header
-        className="relative flex rounded-xl mx-2 flex-col justify-center h-[30vh] items-center  px-6 bg-cover bg-center"
-        style={{
-          backgroundImage: "url(/logos/BgMaker4.jpeg)",
-        }}
-      >
-        <h1 className="text-2xl sm:text-3xl text-white font-bold text-center w-full">
-          Solicitação de agendamento <br /> do Laboratório Maker
-        </h1>
-        <h2 className="text-lg sm:text-xl text-[#90adff] font-bold text-center w-full">
-          * Restrito a colaboradores
-        </h2>
-      </header>
+      <Header
+        title="Solicitação de agendamento do Laboratório Maker"
+        descricao="* Restrito a colaboradores"
+        
+      />
 
-      <div className="flex flex-col lg:flex-row mt-10 mb-20 gap-20 px-4 w-full justify-center">
+      <div className="flex flex-col lg:flex-row mt-10 mb-20 gap-20  w-full max-w-6xl mx-auto justify-center">
         {/* FORMULÁRIO */}
         <div className="md:w-[40%] w-full space-y-4">
           <InputRed
@@ -290,22 +286,18 @@ export default function AgendaUso() {
             value={telefone}
             onChange={(e) => setTelefone(formatarTelefone(e.target.value))}
           />
-
-          <div className="flex flex-col gap-4 w-full">
-            <label className="text-lg font-medium md:text-xl text-gray-700">
-              Arrumação da sala:
-            </label>
-            <select
-              className="input w-full text-lg h-[50px] px-3 bg-[#e5eeff]"
-              value={arrumacao}
-              onChange={(e) => setArrumacao(e.target.value)}
-            >
-              <option value="">Arrumação da sala</option>
-              <option>Mesas em formato reunião</option>
-              <option>Mesas em ilhas</option>
-              <option>Mesa em U</option>
-            </select>
-          </div>
+          {/*Implementar input de capacidade max:40 pessoas */}
+          <InputSelect
+            title="Arrumação da sala:"
+            value={arrumacao}
+            onChange={(e) => setArrumacao(e.target.value)}
+            placeholder="Arrumação da sala"
+            options={[
+              "Mesas em formato reunião",
+              "Mesas em ilhas",
+              "Mesa em U"
+            ]}
+          />
 
           {/* 🔘 MODO DE HORÁRIO */}
           <div className="flex  gap-2">
@@ -328,12 +320,10 @@ export default function AgendaUso() {
             </label>
           </div>
 
-          <InputRed
-            type="date"
+          <DatePickerInput
             title="Data do agendamento:"
-            min={new Date().toISOString().split("T")[0]}
-            value={data}
-            onChange={(e) => setData(e.target.value)}
+            selected={data}
+            onChange={(date) => setData(date)}
           />
 
          
@@ -355,10 +345,10 @@ export default function AgendaUso() {
                     key={t}
                     type="button"
                     onClick={() => aplicarTurno(t)}
-                    className={`px-3 py-1rounded ${
+                    className={`px-3 py-1  rounded ${
                       turno === t
-                        ? "bg-[#2756ac] text-white"
-                        : "bg-[#e5eeff]"
+                        ? "bg-[#2756ac] text-white dark:bg-[#001438]"
+                        : "bg-[#e5eeff] dark:bg-[#001438]/40"
                     }`}
                   >
                     {t.charAt(0).toUpperCase() + t.slice(1)}
@@ -386,10 +376,10 @@ export default function AgendaUso() {
               onChange={(e) => setHoraFim(e.target.value)}
             />
           </div>
-             <button
+          <button
             type="button"
             onClick={adicionarData}
-            className="bg-[#2756ac] flex gap-2 text-white items-center justify-center pr-4 pl-2 h-[45px] rounded text-lg"
+            className="bg-[#2756ac] hover:bg-[#001438] flex gap-2 text-white items-center w-full justify-center pr-4 pl-2 h-[45px] rounded text-lg"
           >
             <PlusIcon className="w-5 font-bold"/> Adicionar data à lista
           </button>
@@ -440,7 +430,7 @@ export default function AgendaUso() {
 
           <button
             onClick={enviar}
-            className="bg-[#2756ac] text-white h-[50px] text-lg rounded w-full"
+            className="bg-[#2756ac] hover:bg-[#001438] text-white h-[50px] text-lg rounded w-full"
           >
             Enviar solicitação
           </button>

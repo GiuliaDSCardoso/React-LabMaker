@@ -1,6 +1,8 @@
 import { useState } from "react";
 import InputRed from "../assets/styles/InputRed.jsx";
 import { supabase } from "../services/supabase";
+import InputFile from "../assets/styles/InputFile.jsx";
+import InputSelect from "../assets/styles/InputSelect.jsx";
 
 export default function AddProjetos() {
   const [solicitante, setSolicitante] = useState("");
@@ -175,7 +177,7 @@ export default function AddProjetos() {
             <InputRed
               title="Email:"
               type="email"
-              placeholder="Insira o seu email"
+              placeholder="Insira o seu email institucional"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
@@ -187,7 +189,7 @@ export default function AddProjetos() {
             />
             <InputRed
               title="Telefone:"
-              placeholder="Use esse formato ex: (11)912345678"
+              placeholder="Insira o seu telefone Ex.: (DDD) 9 00000000"
               value={contato}
               onChange={(e) => setContato(formatarTelefone(e.target.value))}
             />
@@ -201,23 +203,12 @@ export default function AddProjetos() {
               onChange={(e) => setSobreProjeto(e.target.value)}
             />
 
-            <div className="flex flex-col gap-4">
-              <label className="text-lg font-medium md:text-xl text-gray-700 flex gap-1">
-                Enviar foto do projeto:
-                <span className="relative group cursor-help text-red-600">
-                  *
-                  <span className="absolute left-1/2 -translate-x-1/2 top-6 hidden group-hover:block bg-black text-white text-xs md:text-sm px-2 py-1 rounded whitespace-nowrap z-50">
-                    item obrigatório
-                  </span>
-                </span>
-              </label>
-              <input
-                type="file"
-                onChange={(e) => setEnviarArquivo(e.target.files[0])}
-                className="w-[100%] md:w-full text-lg h-[50px] bg-[#e5eeff] file:text-lg
-                file:mr-4 file:py-3 file:px-4 file:border-none file:bg-[#0062c4] placeholder:text-[#000000] file:text-white"
-              />
-            </div>
+            <InputFile
+                title="Anexar arquivo"
+                accept=".pdf,.png,.jpg,.jpeg"
+                onChange={setEnviarArquivo}
+               
+            />
 
             <InputRed
               type="date"
@@ -228,34 +219,26 @@ export default function AddProjetos() {
               onChange={(e) => setDataSaida(e.target.value)}
             />
 
-            <div className="flex flex-col gap-4">
-              <label className="text-lg md:text-xl font-medium text-gray-700 flex gap-1">
-                Cargo:
-                <span className="relative group cursor-help text-red-600">
-                  *
-                  <span className="absolute left-1/2 -translate-x-1/2 top-6 hidden group-hover:block bg-black text-white text-xs md:text-sm px-2 py-1 rounded whitespace-nowrap z-50">
-                    item obrigatório
-                  </span>
-                </span>
-              </label>
-              <select
-                value={cargo}
-                onChange={(e) => setCargo(e.target.value)}
-                className="w-[100%] placeholder:text-[#000000] md:w-full text-lg h-[50px] px-3 bg-[#e5eeff]"
-              >
-                <option value="">Selecione um cargo</option>
-                <option value="Administrativo">Administrativo</option>
-                <option value="Aluno">Aluno</option>
-                <option value="Docente">Docente</option>
-                <option value="Estagiário">Estagiário</option>
-              </select>
-            </div>
+            <InputSelect
+              title="Cargo:"
+              value={cargo}
+              onChange={(e) =>
+                setCargo(e.target.value)
+              }
+              options={[
+                "Administrativo",
+                "Aluno",
+                "Docente",
+                "Estagiário",
+              ]}
+            
+            />
           </div>
         </div>
 
         <button
           type="submit"
-          className="h-[50px] w-[100%] md:w-[500px] mt-4 bg-[#0062c4] text-xl text-white rounded"
+          className="h-[50px] w-[100%] hover:bg-[#001438]  md:w-[500px] mt-4 bg-[#0062c4] text-xl text-white rounded"
         >
           Enviar Solicitação
         </button>

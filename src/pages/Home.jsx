@@ -18,7 +18,12 @@ export default function Home() {
   const HORA_ABERTURA = 8;
   const HORA_FECHAMENTO = 22;
 
+<<<<<<< Updated upstream
  
+=======
+
+
+>>>>>>> Stashed changes
   const [aberto, setAberto] = useState(() => {
     const agora = new Date();
     const hora = agora.getHours();
@@ -28,7 +33,11 @@ export default function Home() {
   useEffect(() => {
     const timer = setInterval(() => {
       const agora = new Date();
+<<<<<<< Updated upstream
       
+=======
+
+>>>>>>> Stashed changes
 
       const hora = agora.getHours();
       setAberto(hora >= HORA_ABERTURA && hora < HORA_FECHAMENTO);
@@ -37,9 +46,18 @@ export default function Home() {
     return () => clearInterval(timer);
   }, []);
 
+<<<<<<< Updated upstream
   return (
     <Body>
       {/* LINHA AZUL SUPERIOR */}
+=======
+  
+
+  return (
+    <Body>
+      {/* LINHA AZUL SUPERIOR */}
+      
+>>>>>>> Stashed changes
 
       {/* MENU LATERAL */}
       <MenuLateral />
@@ -47,11 +65,21 @@ export default function Home() {
       {/* CONTAINER PRINCIPAL (DESCONTA MENU) */}
       <div
         className="
+<<<<<<< Updated upstream
           mt-5
           px-6
           transition-all duration-300
           md:ml-12
           lg:ml-16
+=======
+          mt-28
+          px-6
+          transition-all duration-300
+          md:ml-12
+          md:mt-5
+          lg:ml-16
+          lg:mt-5
+>>>>>>> Stashed changes
         "
       >
         {/* TOPO / BANNER */}
@@ -60,6 +88,7 @@ export default function Home() {
             w-full
             max-w-7xl
             mx-auto
+<<<<<<< Updated upstream
             mt-24
             md:mt-0
             rounded-xl
@@ -67,6 +96,13 @@ export default function Home() {
             h-[18vh]
             bg-[#0E4194]
             dark:bg-[#001941]
+=======
+            rounded-xl
+            flex justify-center items-center
+            h-[18vh]
+            bg-[#0c54c7]
+            dark:bg-[#033a91]
+>>>>>>> Stashed changes
             bg-cover bg-center
           "
         >
@@ -76,6 +112,7 @@ export default function Home() {
             </h2>
 
             {/* STATUS */}
+<<<<<<< Updated upstream
 
             {/* RELÓGIO DIGITAL */}
             <div className="mt-3 flex-col flex gap-2">
@@ -96,6 +133,32 @@ export default function Home() {
 
         <CarrosselEventos />
         {/* CARDS */}
+=======
+          
+            {/* RELÓGIO DIGITAL */}
+            <div className="mt-3 flex-col flex gap-2">
+              <p className="text-white text-sm font-bold opacity-90">
+                Funcionamento:{" "}
+                {String(HORA_ABERTURA).padStart(2, "0")}:00 às{" "}
+                {String(HORA_FECHAMENTO).padStart(2, "0")}:00
+              </p>
+             <span
+              className={`inline-block px-4 py-1 rounded-full text-white text-sm font-bold ${
+                aberto ? "bg-[#0199ff]/30" : "bg-[#ff0000]"
+              }`}
+            >
+              {aberto ? " ABERTO" : " FECHADO"}
+            </span>
+              
+            </div>  
+            
+
+          </div>
+        </div>
+   
+        <CarrosselEventos/>
+
+>>>>>>> Stashed changes
         <div
           className="
             w-full

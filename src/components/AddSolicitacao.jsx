@@ -134,7 +134,11 @@ export default function AddSolicitacao() {
                 <InputRed
                   title="Telefone:"
                   value={contato}
+<<<<<<< Updated upstream
                   placeholder="Ex.: (11) 9 1234-5678"
+=======
+                  placeholder="Insira o seu telefone Ex.: (DDD) 9 00000000"
+>>>>>>> Stashed changes
                   onChange={(e) => setContato(formatarTelefone(e.target.value))}
                   error={errors.contato}
                 />
@@ -144,7 +148,11 @@ export default function AddSolicitacao() {
             <button
               type="button"
               onClick={() => validarStep1() && setStep(2)}
+<<<<<<< Updated upstream
               className="h-[50px] bg-[#0E4194] text-white rounded mt-4"
+=======
+              className="h-[50px] hover:bg-[#001438] bg-[#0E4194] text-white rounded mt-4"
+>>>>>>> Stashed changes
             >
               Próximo
             </button>
@@ -240,10 +248,17 @@ export default function AddSolicitacao() {
             </div>
 
             <div className="flex gap-4">
+<<<<<<< Updated upstream
               <button type="button" onClick={() => setStep(1)} className="h-[50px] w-full bg-blue-300 rounded">
                 Voltar
               </button>
               <button type="submit" className="h-[50px] w-full bg-[#0E4194] text-white rounded">
+=======
+              <button type="button" onClick={() => setStep(1)} className="h-[50px] hover:bg-blue-50 w-full bg-blue-300 rounded">
+                Voltar
+              </button>
+              <button type="submit" className="h-[50px] hover:bg-[#001438] w-full bg-[#0E4194] text-white rounded">
+>>>>>>> Stashed changes
                 Enviar
               </button>
             </div>
