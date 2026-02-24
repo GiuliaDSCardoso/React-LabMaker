@@ -6,18 +6,19 @@ import {
   PackagePlusIcon,
   ReplaceIcon,
 } from "lucide-react";
+
 import { useEffect, useState } from "react";
 import CardStyle from "../assets/styles/CardStyle.jsx";
 import Body from "../assets/styles/Body.jsx";
-import Nav from "../assets/styles/Nav.jsx";
+import MenuLateral from "../assets/styles/MenuLateral.jsx";
+import CarrosselEventos from "../assets/styles/CarrosselEventos.jsx";
 
 export default function Home() {
   // CONFIGURAÇÃO DO HORÁRIO
   const HORA_ABERTURA = 8;
   const HORA_FECHAMENTO = 22;
 
-  const [horaAtual, setHoraAtual] = useState(new Date());
-
+ 
   const [aberto, setAberto] = useState(() => {
     const agora = new Date();
     const hora = agora.getHours();
@@ -27,7 +28,7 @@ export default function Home() {
   useEffect(() => {
     const timer = setInterval(() => {
       const agora = new Date();
-      setHoraAtual(agora);
+      
 
       const hora = agora.getHours();
       setAberto(hora >= HORA_ABERTURA && hora < HORA_FECHAMENTO);
@@ -36,94 +37,113 @@ export default function Home() {
     return () => clearInterval(timer);
   }, []);
 
-  function formatarHora(data) {
-    return data.toLocaleTimeString("pt-BR", {
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-    });
-  }
-
   return (
     <Body>
-      <Nav />
+      {/* LINHA AZUL SUPERIOR */}
 
-      {/* TOPO */}
+      {/* MENU LATERAL */}
+      <MenuLateral />
+
+      {/* CONTAINER PRINCIPAL (DESCONTA MENU) */}
       <div
-        
-        className={`rounded-xl mx-2 flex justify-center items-center h-[40vh]  transition-all duration-300 ${
-          aberto
-            ? "  bg-cover bg-center"
-            : " bg-cover bg-center"
-        }`}
-        style={
-          aberto
-            ? { backgroundImage: "url(/logos/BgMaker4.jpeg)" }
-            : { backgroundImage: "url(/logos/BgMaker4.jpeg)"}
-        }
+        className="
+          mt-5
+          px-6
+          transition-all duration-300
+          md:ml-12
+          lg:ml-16
+        "
       >
-        
-        <div className="text-center space-y-3">
-          <h2 className="text-white text-2xl md:text-3xl font-bold">
-            Bem-vindo ao Lab Maker
-          </h2>
+        {/* TOPO / BANNER */}
+        <div
+          className="
+            w-full
+            max-w-7xl
+            mx-auto
+            mt-24
+            md:mt-0
+            rounded-xl
+            flex justify-center items-center
+            h-[18vh]
+            bg-[#0E4194]
+            dark:bg-[#001941]
+            bg-cover bg-center
+          "
+        >
+          <div className="text-center space-y-1">
+            <h2 className="text-white text-2xl md:text-3xl font-bold">
+              Bem-vindo ao Lab Maker
+            </h2>
 
-          {/* STATUS */}
-          <span
-            className={`inline-block px-4 py-1 rounded-full text-white text-sm font-bold ${
-              aberto ? "bg-[#48ff00]/40" : "bg-[#ff0000]/40"
-            }`}
-          >
-            {aberto ? " ABERTO AGORA" : " FECHADO"}
-          </span>
+            {/* STATUS */}
 
-          {/* RELÓGIO DIGITAL */}
-          <div className="mt-3">
-            <p className="text-white text-2xl font-mono">
-              {formatarHora(horaAtual)}
-            </p>
-            <p className="text-white text-sm  font-bold opacity-90">
-              Funcionamento: {String(HORA_ABERTURA).padStart(2, "0")}:00 às{" "}
-              {String(HORA_FECHAMENTO).padStart(2, "0")}:00
-            </p>
+            {/* RELÓGIO DIGITAL */}
+            <div className="mt-3 flex-col flex gap-2">
+              <p className="text-white text-sm font-bold opacity-90">
+                Funcionamento: {String(HORA_ABERTURA).padStart(2, "0")}:00 às{" "}
+                {String(HORA_FECHAMENTO).padStart(2, "0")}:00
+              </p>
+              <span
+                className={`inline-block px-4 py-1 rounded-full text-white text-sm font-bold ${
+                  aberto ? "bg-[#0199ff]/30" : "bg-[#E84B13]"
+                }`}
+              >
+                {aberto ? " ABERTO" : " FECHADO"}
+              </span>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* CARDS */}
-      <div className="w-screen flex-col mb-[10%] md:mb-[2%] mt-[10%] md:mt-[4%] md:flex-row flex justify-center items-center gap-3 bg-blue-50">
-        <div className="flex flex-col md:flex-row gap-3">
-          <CardStyle
-            title="Empréstimo de Componentes"
-            description="Registro e controle de Materiais"
-            icon={<ReplaceIcon />}
-            href="/emprestimo"
-            color="yellow"
-          />
-          <CardStyle
-            title="Agenda de Uso"
-            description="Reserva do espaço Maker"
-            icon={<CalendarSearchIcon />}
-            href="/agendauso"
-            color="red"
-          />
-        </div>
+        <CarrosselEventos />
+        {/* CARDS */}
+        <div
+          className="
+            w-full
+            max-w-7xl
+            mx-auto
+            flex flex-col
+            md:flex-row
+            justify-center
+            items-center
+            gap-8
+            mt-7
+          "
+        >
+          <div className="flex flex-col md:flex-row gap-8">
+            <CardStyle
+              title="Empréstimo de Componentes"
+              description="Registro e controle de Materiais"
+              icon={<ReplaceIcon />}
+              href="/emprestimo"
+              color="yellow"
+            />
 
-        <div className="flex flex-col md:flex-row gap-3">
-          <CardStyle
-            title="Guardar Projetos"
-            description="Projetos armazenados no Maker"
-            icon={<FileBoxIcon />}
-            href="/guardarprojetos"
-            color="blue"
-          />
-          <CardStyle
-            title="Pedidos LabMaker"
-            description="Solicitação de confecção"
-            icon={<PackagePlusIcon />}
-            href="/pedidos"
-            color="green"
-          />
+            <CardStyle
+              title="Agenda de Uso"
+              description="Reserva do espaço Maker *Exclusivo para funcionários"
+              icon={<CalendarSearchIcon />}
+              href="/agendauso"
+              color="red"
+            />
+          </div>
+
+          <div className="flex flex-col md:flex-row gap-8">
+            <CardStyle
+              title="Guardar Projetos"
+              description="Projetos armazenados no Maker"
+              icon={<FileBoxIcon />}
+              href="/guardarprojetos"
+              color="blue"
+            />
+
+            <CardStyle
+              title="Pedidos LabMaker"
+              description="Solicitação de confecção"
+              icon={<PackagePlusIcon />}
+              href="/pedidos"
+              color="green"
+            />
+          </div>
         </div>
       </div>
     </Body>

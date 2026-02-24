@@ -2,10 +2,27 @@
 @tailwind components;
 @tailwind utilities;
 
+* {
+  transition:
+    background-color 0.4s ease,
+    color 0.4s ease,
+    border-color 0.4s ease,
+    box-shadow 0.4s ease;
+}
+html {
+  scroll-behavior: smooth;
+}
+
 body{
     min-width: 240px;
     font-family: 'DM Sans', sans-serif;
-    background-color: #ebf4ff;
+    color: #0E4194;
+    background: radial-gradient(
+    ellipse at top,
+    #ffffff 0%,
+    #e5efff 70%
+    );
+
 }
 
 .logo{
@@ -14,4 +31,13 @@ body{
 }
 #root {
   min-width: 240px;
+}
+
+.dark body {
+  color: white;
+  background: radial-gradient(
+    ellipse at top,
+    #0E4194 0%,
+    #001537 70%
+    );
 }

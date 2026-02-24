@@ -1,22 +1,84 @@
-import PropTypes from 'prop-types';
+import React, { useEffect, useState } from "react";
+import PropTypes from "prop-types";
 import "../../index.css";
+import { CloudMoon, CloudSun } from "lucide-react";
 
 export default function Body(props) {
-    return(
-        <div className="flex flex-col items-center min-h-screen mx-0 mb-30">
-            {/* Conteúdo da página */}
-            <div className="flex-grow w-full">
-                {props.children}
-            </div>
+  const [darkMode, setDarkMode] = useState(() => {
+    return localStorage.getItem("theme") === "dark";
+  });
 
-            {/* Footer */}
-            <footer className="w-full bg-blue-100 text-center py-4 text-gray-800 text-sm">
-                Made by Giulia Cardoso
-            </footer>
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+  }, [darkMode]);
+
+  return (
+    <div className="flex flex-col min-h-screen overflow-x-hidden">
+      
+      <div className="fixed top-0 left-0 w-full h-2 bg-[#0E4194] dark:bg-[#E84B13] z-[100]" />
+
+      {/* BOTÃO TOGGLE */}
+      <button
+        onClick={() => setDarkMode(!darkMode)}
+        className="
+          fixed top-20 right-12 z-[200]
+          md:top-6 md:right-12
+          p-3
+          rounded-full
+          transition-all duration-500 ease-in-out
+          transform hover:scale-110 active:scale-95
+          bg-[#327ef8] shadow-md dark:shadow-[#000e24] shadow-[#0245b16e]
+          dark:bg-[#0041a3]
+          text-white
+        "
+      >
+        <div className="transition-transform duration-500">
+          {darkMode ? <CloudSun /> : <CloudMoon />}
         </div>
-    );
+      </button>
+
+      {/* CONTEÚDO */}
+      <div
+        className="
+          flex-grow
+          w-full
+          transition-all duration-300
+          md:ml-1
+          lg:ml-2
+        "
+      >
+        {
+          React.Children.map(props.children, (child) =>
+            React.isValidElement(child)
+              ? React.cloneElement(child, { darkMode })
+              : child
+          )
+        }
+      </div>
+
+      {/* FOOTER */}
+      <footer
+        className="
+          w-full
+          transition-all duration-300
+          md:ml-12
+          lg:ml-16
+        "
+      >
+        <div className="max-w-full mx-auto text-center text-blue-900 text-sm bg-blue-100/50 dark:bg-[#001028]/50 dark:text-blue-600 rounded-t-xl">
+          Made by Giulia Cardoso
+        </div>
+      </footer>
+    </div>
+  );
 }
 
 Body.propTypes = {
-    children: PropTypes.node
+  children: PropTypes.node,
 };
