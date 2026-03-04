@@ -49,13 +49,8 @@ export default function InputRed({
           focus:ring-blue-400/60
           dark:focus:ring-blue-900/60
           focus:ring-2
-<<<<<<< Updated upstream
-          dark:placeholder:text-white/50
-          placeholder:text-blue-800/50
-=======
           dark:placeholder:text-white
           placeholder:text-blue-800
->>>>>>> Stashed changes
           dark:focus:text-white
           transition-all
           ${
@@ -67,11 +62,7 @@ export default function InputRed({
       />
 
       {error && (
-<<<<<<< Updated upstream
-        <p className="text-red-500 text-sm mt-1">{error}</p>
-=======
         <p className="text-red-500 text-sm -mt-1">{error}</p>
->>>>>>> Stashed changes
       )}
     </div>
   );

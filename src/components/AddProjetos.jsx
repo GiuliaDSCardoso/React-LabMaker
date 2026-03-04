@@ -3,26 +3,25 @@ import InputRed from "../assets/styles/InputRed.jsx";
 import { supabase } from "../services/supabase";
 import InputFile from "../assets/styles/InputFile.jsx";
 import InputSelect from "../assets/styles/InputSelect.jsx";
-
+import DatePickerInput from "../assets/styles/DatePickerInput";
 export default function AddProjetos() {
+  const [step, setStep] = useState(1);
+  const [errors, setErrors] = useState({});
+
   const [solicitante, setSolicitante] = useState("");
   const [email, setEmail] = useState("");
   const [cursoETurma, setCursoETurma] = useState("");
   const [contato, setContato] = useState("");
+  const [cargo, setCargo] = useState("");
+
   const [enviarArquivo, setEnviarArquivo] = useState(null);
   const [dataSaida, setDataSaida] = useState("");
   const [sobreProjeto, setSobreProjeto] = useState("");
-  const [cargo, setCargo] = useState("");
-  const [error, setError] = useState("");
 
-  // ===============================
-  // DATA ATUAL (YYYY-MM-DD)
-  // ===============================
   const hoje = new Date().toISOString().split("T")[0];
 
   function formatarTelefone(valor) {
-    let numero = valor.replace(/\D/g, "");
-    numero = numero.slice(0, 11);
+    let numero = valor.replace(/\D/g, "").slice(0, 11);
 
     if (numero.length <= 2) return `(${numero}`;
     if (numero.length <= 3)
@@ -36,9 +35,6 @@ export default function AddProjetos() {
     )}-${numero.slice(7)}`;
   }
 
-  // ===============================
-  // VALIDAÇÃO DE EMAIL
-  // ===============================
   function emailValido(email) {
     const emailRegex = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i;
 
@@ -61,51 +57,51 @@ export default function AddProjetos() {
     );
   }
 
-  async function handleSubmit(e) {
-    e.preventDefault();
-    setError("");
+  function validarStep1() {
+    const newErrors = {};
 
-    if (
-      !solicitante ||
-      !email ||
-      !cursoETurma ||
-      !contato ||
-      !sobreProjeto ||
-      !cargo ||
-      !dataSaida
-    ) {
-      setError("Por favor, preencha todos os campos!");
-      return;
-    }
+    if (!solicitante) newErrors.solicitante = "Informe o nome completo.";
+    if (!email) newErrors.email = "Informe o email.";
+    if (!cursoETurma) newErrors.cursoETurma = "Informe curso e turma.";
+    if (!contato) newErrors.contato = "Informe o telefone.";
+    if (!cargo) newErrors.cargo = "Selecione o cargo.";
 
-    // ===============================
-    // VALIDAÇÃO DE EMAIL
-    // ===============================
-    if (!emailValido(email)) {
-      alert(
-        "Informe um email válido, com até 60 caracteres e domínio permitido."
-      );
-      return;
+    if (email && !emailValido(email)) {
+      newErrors.email =
+        "Informe um email válido com domínio permitido.";
     }
 
     const telefoneValido = /^\(\d{2}\) 9 \d{4}-\d{4}$/;
-    if (!telefoneValido.test(contato)) {
-      alert("⚠️ Informe um telefone válido no formato (DDD) 9 XXXX-XXXX");
-      return;
+    if (contato && !telefoneValido.test(contato)) {
+      newErrors.contato =
+        "Telefone inválido. Use (DDD) 9 XXXX-XXXX";
     }
 
-    // ===============================
-    // VALIDAÇÃO DE DATA
-    // ===============================
-    if (dataSaida < hoje) {
-      alert("A data de retirada não pode ser anterior a hoje.");
-      return;
-    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  }
 
-    if (!enviarArquivo) {
-      alert("Envie um arquivo!");
-      return;
-    }
+  async function handleSubmit(e) {
+    e.preventDefault();
+
+    const newErrors = {};
+
+    if (!sobreProjeto)
+      newErrors.sobreProjeto = "Descreva o projeto.";
+
+    if (!enviarArquivo)
+      newErrors.enviarArquivo = "Anexe um arquivo.";
+
+    if (!dataSaida)
+      newErrors.dataSaida = "Informe a data de retirada.";
+
+    if (dataSaida && dataSaida < hoje)
+      newErrors.dataSaida =
+        "A data não pode ser anterior a hoje.";
+
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length > 0) return;
 
     const fileName = `${Date.now()}-${enviarArquivo.name}`;
 
@@ -114,7 +110,7 @@ export default function AddProjetos() {
       .upload(`arquivos/${fileName}`, enviarArquivo);
 
     if (uploadError) {
-      alert(uploadError.message);
+      setErrors({ supabase: uploadError.message });
       return;
     }
 
@@ -122,28 +118,29 @@ export default function AddProjetos() {
       .from("projetos")
       .getPublicUrl(`arquivos/${fileName}`);
 
-    const arquivo_url = data.publicUrl;
-
-    const { error: insertError } = await supabase.from("projetos").insert([
-      {
-        solicitante,
-        email,
-        cargo,
-        curso_turma: cursoETurma,
-        contato,
-        sobre_projeto: sobreProjeto,
-        data_saida: dataSaida,
-        arquivo_url,
-      },
-    ]);
+    const { error: insertError } = await supabase
+      .from("projetos")
+      .insert([
+        {
+          solicitante,
+          email,
+          cargo,
+          curso_turma: cursoETurma,
+          contato,
+          sobre_projeto: sobreProjeto,
+          data_saida: dataSaida,
+          arquivo_url: data.publicUrl,
+        },
+      ]);
 
     if (insertError) {
-      alert(insertError.message);
+      setErrors({ supabase: insertError.message });
       return;
     }
 
     alert("✅ Projeto enviado com sucesso!");
 
+    setStep(1);
     setSolicitante("");
     setEmail("");
     setCursoETurma("");
@@ -152,96 +149,144 @@ export default function AddProjetos() {
     setSobreProjeto("");
     setEnviarArquivo(null);
     setDataSaida("");
+    setErrors({});
   }
 
   return (
-    <div className="flex flex-col items-center justify-center mb-20 gap-6 px-4 w-full">
+    <div className="flex flex-col items-center w-full px-4 mb-20">
       <form
         onSubmit={handleSubmit}
         className="flex flex-col gap-6 w-full max-w-6xl"
       >
-        {error && (
+        {errors.supabase && (
           <p className="text-red-600 text-center text-lg font-medium">
-            {error}
+            {errors.supabase}
           </p>
         )}
 
-        <div className="flex md:flex-row flex-col md:justify-center gap-6 w-full">
-          <div className="w-full flex flex-col gap-4">
-            <InputRed
-              title="Solicitante:"
-              placeholder="Insira o seu nome completo"
-              value={solicitante}
-              onChange={(e) => setSolicitante(e.target.value)}
-            />
-            <InputRed
-              title="Email:"
-              type="email"
-              placeholder="Insira o seu email institucional"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <InputRed
-              title="Curso e Turma:"
-              placeholder="Insira seu curso e turma"
-              value={cursoETurma}
-              onChange={(e) => setCursoETurma(e.target.value)}
-            />
-            <InputRed
-              title="Telefone:"
-              placeholder="Insira o seu telefone Ex.: (DDD) 9 00000000"
-              value={contato}
-              onChange={(e) => setContato(formatarTelefone(e.target.value))}
-            />
-          </div>
+        {/* ===== ETAPA 1 ===== */}
+        {step === 1 && (
+          <div className="flex flex-col gap-6">
+            <div className="flex md:flex-row flex-col gap-6">
+              <div className="w-full flex flex-col gap-4">
+                <InputRed
+                  title="Solicitante:"
+                  placeholder="Insira o seu nome completo"
+                  value={solicitante}
+                  onChange={(e) => setSolicitante(e.target.value)}
+                  error={errors.solicitante}
+                />
 
-          <div className="w-full flex flex-col gap-4">
+                <InputRed
+                  title="Email:"
+                  type="email"
+                  placeholder="Insira o seu email institucional"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  error={errors.email}
+                />
+
+                <InputRed
+                  title="Curso e Turma:"
+                  placeholder="Insira seu curso e turma"
+                  value={cursoETurma}
+                  onChange={(e) => setCursoETurma(e.target.value)}
+                  error={errors.cursoETurma}
+                />
+              </div>
+
+              <div className="w-full flex flex-col gap-4">
+                <InputRed
+                  title="Telefone:"
+                  placeholder="Insira o seu telefone Ex.: (DDD) 9 00000000"
+                  value={contato}
+                  onChange={(e) =>
+                    setContato(formatarTelefone(e.target.value))
+                  }
+                  error={errors.contato}
+                />
+
+                <InputSelect
+                  title="Cargo:"
+                  value={cargo}
+                  onChange={(e) => setCargo(e.target.value)}
+                  options={[
+                    "Administrativo",
+                    "Aluno",
+                    "Docente",
+                    "Estagiário",
+                  ]}
+                  error={errors.cargo}
+                />
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() =>
+                validarStep1() && setStep(2)
+              }
+              className="h-[50px] hover:bg-[#001438] bg-[#0E4194] text-white rounded mt-4"
+            >
+              Próximo
+            </button>
+          </div>
+        )}
+
+        {/* ===== ETAPA 2 ===== */}
+        {step === 2 && (
+          <div className="flex flex-col gap-6">
             <InputRed
-              title="Descreva o projeto:"
+              title="Descreva o projeto: "
               value={sobreProjeto}
-              placeholder="Descreva o seu projeto"
-              onChange={(e) => setSobreProjeto(e.target.value)}
+              placeholder="Descreva o seu projeto *Dica: seja breve e objetivo*"
+              onChange={(e) =>
+                setSobreProjeto(e.target.value)
+              }
+              error={errors.sobreProjeto}
             />
 
             <InputFile
-                title="Anexar arquivo"
-                accept=".pdf,.png,.jpg,.jpeg"
-                onChange={setEnviarArquivo}
-               
+              title="Anexar arquivo"
+              accept=".pdf,.png,.jpg,.jpeg"
+              onChange={setEnviarArquivo}
+              error={errors.enviarArquivo}
             />
 
-            <InputRed
-              type="date"
-              title="Data de Retirada:"
-              value={dataSaida}
-              min={hoje}
-              placeholder="Selecione a data de retirada"
-              onChange={(e) => setDataSaida(e.target.value)}
-            />
+           <DatePickerInput
+                title="Data de Retirada:"
+                selected={dataSaida ? new Date(dataSaida) : null}
+                onChange={(date) => {
+                  if (!date) {
+                    setDataSaida("");
+                    return;
+                  }
+                  const ano = date.getFullYear();
+                  const mes = String(date.getMonth() + 1).padStart(2, "0");
+                  const dia = String(date.getDate()).padStart(2, "0");
+                  setDataSaida(`${ano}-${mes}-${dia}`); // ✅ crase para template literal
+                }}
+                minDate={new Date()}
+                error={errors.dataSaida}
+              />
+            <div className="flex gap-4">
+              <button
+                type="button"
+                onClick={() => setStep(1)}
+                className="h-[50px] hover:bg-blue-500 w-full bg-blue-400 rounded"
+              >
+                Voltar
+              </button>
 
-            <InputSelect
-              title="Cargo:"
-              value={cargo}
-              onChange={(e) =>
-                setCargo(e.target.value)
-              }
-              options={[
-                "Administrativo",
-                "Aluno",
-                "Docente",
-                "Estagiário",
-              ]}
-            
-            />
+              <button
+                type="submit"
+                className="h-[50px] w-full bg-[#0E4194] text-white rounded hover:bg-[#001438]"
+              >
+                Enviar
+              </button>
+            </div>
           </div>
-        </div>
-
-        <button
-          type="submit"
-          className="h-[50px] w-[100%] hover:bg-[#001438]  md:w-[500px] mt-4 bg-[#0062c4] text-xl text-white rounded"
-        >
-          Enviar Solicitação
-        </button>
+        )}
       </form>
     </div>
   );

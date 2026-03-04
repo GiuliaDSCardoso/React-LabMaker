@@ -1,8 +1,17 @@
+import { useEffect } from "react";
 import Body from "../assets/styles/Body";
-import Nav from "../assets/styles/Nav";
+import Header from "../assets/styles/Header";
+import MenuLateral from "../assets/styles/MenuLateral";
+
 import { PhoneIcon, InstagramIcon, MailIcon } from "lucide-react";
+import { supabase } from "../services/supabase";
 
 export default function Contact() {
+  useEffect(() => {
+    // Sempre que acessar uma página pública, desloga qualquer sessão
+    supabase.auth.signOut();
+  }, []);
+
   function abrirWhatsApp() {
     const telefone = "557532299138"; // número oficial
     window.open(`https://wa.me/${telefone}`, "_blank");
@@ -20,18 +29,11 @@ export default function Contact() {
 
   return (
     <Body>
-      <Nav />
+      <MenuLateral/>
 
-      <header
-        className="relative flex rounded-xl mx-2 flex-col justify-center h-[30vh] items-center  px-6 bg-cover bg-center"
-        style={{
-          backgroundImage: "url(/logos/BgMaker4.jpeg)",
-        }}
-      >
-        <h1 className="text-3xl text-white font-bold text-center w-full">
-          Entre em contato!
-        </h1>
-      </header>
+      <Header
+            title="Entre em contato conosco!"
+            />
 
       <section className="flex flex-col text-xl items-center py-12 px-4 gap-8">
         {/* FORMULÁRIO */}
@@ -39,14 +41,14 @@ export default function Contact() {
             action="https://formsubmit.co/labmaker.fsa@fieb.org.br"
             method="POST"
             onSubmit={alertaEnvio}
-            className="bg-white w-full max-w-lg p-8 rounded-lg shadow-lg space-y-4"
+            className="bg-white dark:bg-[#002357]  w-full max-w-6xl p-8 rounded-lg shadow-lg space-y-4"
             >
             <input  type="hidden" name="_subject" value="📩 Contato - LabMaker SENAI Feira" />
             <input type="hidden" name="_captcha" value="false" />
             <input type="hidden" name="_template" value="table" />
             <input type="hidden" name="_replyto" value="email" />
           <div>
-            <label className="block text-xl font-semibold text-gray-700">
+            <label className="block text-xl dark:text-white font-semibold text-gray-700">
               Seu e-mail
             </label>
             <input
@@ -56,6 +58,11 @@ export default function Contact() {
               className="w-full mt-1 px-3 py-2 rounded-md  border
                 focus:outline-none
                 focus:ring-1
+                dark:bg-[#001028]/70
+                outline-none
+                border-none
+                dark:focus:border-blue-900/60
+                dark:outline-none
                 focus:border-blue-50
                 resize-none"
               placeholder="seuemail@email.com"
@@ -67,7 +74,7 @@ export default function Contact() {
                 value="http://localhost:5173/contact"
             />
           <div>
-            <label className="block text-xl font-semibold text-gray-700">
+            <label className="block text-xl font-semibold dark:text-white  text-gray-700">
               Assunto
             </label>
             <input
@@ -77,6 +84,10 @@ export default function Contact() {
               className="w-full mt-1 px-3 py-2 rounded-md  border
                 focus:outline-none
                 focus:ring-1
+                border-none
+                dark:bg-[#001028]/70
+                dark:focus:border-blue-900/60
+                dark:outline-none
                 focus:border-blue-50
                 resize-none"
               placeholder="Assunto da mensagem"
@@ -84,7 +95,7 @@ export default function Contact() {
           </div>
 
           <div>
-            <label className="block text-xl font-semibold text-gray-700">
+            <label className="block text-xl font-semibold dark:text-white text-gray-700">
               Mensagem
             </label>
             <textarea
@@ -92,8 +103,10 @@ export default function Contact() {
               required
               rows="5"
               className="w-full mt-1 px-3 py-2 rounded-md  border
-             
-             
+                border-none
+                dark:focus:border-blue-900/60
+                dark:outline-none
+              dark:bg-[#001028]/70
                 focus:outline-none
                 focus:ring-1
                 focus:border-blue-50
@@ -104,7 +117,7 @@ export default function Contact() {
 
           <button
             type="submit"
-            className="w-full bg-[#1976d2] text-white py-2 rounded-md font-semibold hover:bg-blue-700 transition flex items-center justify-center gap-2"
+            className="w-full bg-[#1976d2] dark:bg-[#00183b] dark:hover:bg-[#001028] text-white py-2 rounded-md font-semibold hover:bg-blue-700 transition flex items-center justify-center gap-2"
           >
             <MailIcon size={18} />
             Enviar mensagem

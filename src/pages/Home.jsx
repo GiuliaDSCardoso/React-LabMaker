@@ -12,52 +12,73 @@ import CardStyle from "../assets/styles/CardStyle.jsx";
 import Body from "../assets/styles/Body.jsx";
 import MenuLateral from "../assets/styles/MenuLateral.jsx";
 import CarrosselEventos from "../assets/styles/CarrosselEventos.jsx";
+import { supabase } from "../services/supabase.js";
 
 export default function Home() {
   // CONFIGURAÇÃO DO HORÁRIO
-  const HORA_ABERTURA = 8;
-  const HORA_FECHAMENTO = 22;
+const [horaAbertura, setHoraAbertura] = useState(8);
+const [horaFechamento, setHoraFechamento] = useState(22);
+const [aberto, setAberto] = useState(false);
+useEffect(() => {
+    // Sempre que acessar uma página pública, desloga qualquer sessão
+    supabase.auth.signOut();
+  }, []);
+  
+useEffect(() => {
+  async function carregarHorario() {
+    const { data } = await supabase
+      .from("configuracoes")
+      .select("*")
+      .limit(1)
+      .single();
 
-<<<<<<< Updated upstream
- 
-=======
+    if (data) {
+      setHoraAbertura(data.hora_abertura);
+      setHoraFechamento(data.hora_fechamento);
+    }
+  }
 
+  carregarHorario();
 
->>>>>>> Stashed changes
-  const [aberto, setAberto] = useState(() => {
+  // 🔥 ESCUTAR ALTERAÇÕES EM TEMPO REAL
+  const channel = supabase
+    .channel("configuracoes-realtime")
+    .on(
+      "postgres_changes",
+      {
+        event: "UPDATE",
+        schema: "public",
+        table: "configuracoes",
+      },
+      (payload) => {
+        const novaConfig = payload.new;
+
+        setHoraAbertura(novaConfig.hora_abertura);
+        setHoraFechamento(novaConfig.hora_fechamento);
+      }
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}, []);
+
+useEffect(() => {
+  const timer = setInterval(() => {
     const agora = new Date();
     const hora = agora.getHours();
-    return hora >= HORA_ABERTURA && hora < HORA_FECHAMENTO;
-  });
+    setAberto(hora >= horaAbertura && hora < horaFechamento);
+  }, 1000);
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      const agora = new Date();
-<<<<<<< Updated upstream
-      
-=======
-
->>>>>>> Stashed changes
-
-      const hora = agora.getHours();
-      setAberto(hora >= HORA_ABERTURA && hora < HORA_FECHAMENTO);
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
-
-<<<<<<< Updated upstream
-  return (
-    <Body>
-      {/* LINHA AZUL SUPERIOR */}
-=======
+  return () => clearInterval(timer);
+}, [horaAbertura, horaFechamento]);
   
 
   return (
     <Body>
       {/* LINHA AZUL SUPERIOR */}
       
->>>>>>> Stashed changes
 
       {/* MENU LATERAL */}
       <MenuLateral />
@@ -65,13 +86,6 @@ export default function Home() {
       {/* CONTAINER PRINCIPAL (DESCONTA MENU) */}
       <div
         className="
-<<<<<<< Updated upstream
-          mt-5
-          px-6
-          transition-all duration-300
-          md:ml-12
-          lg:ml-16
-=======
           mt-28
           px-6
           transition-all duration-300
@@ -79,7 +93,6 @@ export default function Home() {
           md:mt-5
           lg:ml-16
           lg:mt-5
->>>>>>> Stashed changes
         "
       >
         {/* TOPO / BANNER */}
@@ -88,21 +101,11 @@ export default function Home() {
             w-full
             max-w-7xl
             mx-auto
-<<<<<<< Updated upstream
-            mt-24
-            md:mt-0
-            rounded-xl
-            flex justify-center items-center
-            h-[18vh]
-            bg-[#0E4194]
-            dark:bg-[#001941]
-=======
             rounded-xl
             flex justify-center items-center
             h-[18vh]
             bg-[#0c54c7]
             dark:bg-[#033a91]
->>>>>>> Stashed changes
             bg-cover bg-center
           "
         >
@@ -112,35 +115,12 @@ export default function Home() {
             </h2>
 
             {/* STATUS */}
-<<<<<<< Updated upstream
-
-            {/* RELÓGIO DIGITAL */}
-            <div className="mt-3 flex-col flex gap-2">
-              <p className="text-white text-sm font-bold opacity-90">
-                Funcionamento: {String(HORA_ABERTURA).padStart(2, "0")}:00 às{" "}
-                {String(HORA_FECHAMENTO).padStart(2, "0")}:00
-              </p>
-              <span
-                className={`inline-block px-4 py-1 rounded-full text-white text-sm font-bold ${
-                  aberto ? "bg-[#0199ff]/30" : "bg-[#E84B13]"
-                }`}
-              >
-                {aberto ? " ABERTO" : " FECHADO"}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <CarrosselEventos />
-        {/* CARDS */}
-=======
           
             {/* RELÓGIO DIGITAL */}
             <div className="mt-3 flex-col flex gap-2">
               <p className="text-white text-sm font-bold opacity-90">
-                Funcionamento:{" "}
-                {String(HORA_ABERTURA).padStart(2, "0")}:00 às{" "}
-                {String(HORA_FECHAMENTO).padStart(2, "0")}:00
+                
+                Funcionamento: {horaAbertura}:00 às {horaFechamento}:00
               </p>
              <span
               className={`inline-block px-4 py-1 rounded-full text-white text-sm font-bold ${
@@ -158,7 +138,6 @@ export default function Home() {
    
         <CarrosselEventos/>
 
->>>>>>> Stashed changes
         <div
           className="
             w-full

@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "../services/supabase";
 import InputRed from "../assets/styles/InputRed";
 import InputSelect from "../assets/styles/InputSelect";
 import InputFile from "../assets/styles/InputFile";
+import DatePickerInput from "../assets/styles/DatePickerInput";
 
 export default function AddPedidos() {
   const [step, setStep] = useState(1);
@@ -12,16 +13,21 @@ export default function AddPedidos() {
   const [email, setEmail] = useState("");
   const [cursoETurma, setCursoETurma] = useState("");
   const [contato, setContato] = useState("");
+  const [centroDeCusto, setCentroDeCusto] = useState("");
 
   const [cargo, setCargo] = useState("");
   const [enviarArquivo, setEnviarArquivo] = useState(null);
-  const [dataEntrega, setDataEntrega] = useState("");
+  const [dataEntrega, setDataEntrega] = useState(null);
   const [material, setMaterial] = useState("");
   const [sobreProjeto, setSobreProjeto] = useState("");
   const [detalhe, setDetalhe] = useState("");
 
-  const hoje = new Date().toISOString().split("T")[0];
+  
 
+  useEffect(() => {
+    // Sempre que acessar uma página pública, desloga qualquer sessão
+    supabase.auth.signOut();
+  }, []);
   // ===============================
   // FORMATA TELEFONE
   // ===============================
@@ -65,22 +71,42 @@ export default function AddPedidos() {
   // VALIDAÇÃO COMPLETA
   // ===============================
   function validarFormulario() {
-    const newErrors = {};
+      const newErrors = {};
 
-    if (!cargo) newErrors.cargo = "Informe o seu Cargo.";
-    if (!material) newErrors.material = "Informe o Material.";
-    if (!sobreProjeto)
-      newErrors.sobreProjeto = "Descreva o projeto.";
-    if (!detalhe)
-      newErrors.detalhe = "Informe detalhes do pedido.";
-    if (!dataEntrega)
-      newErrors.dataEntrega = "Informe a data de entrega.";
-    if (!enviarArquivo)
-      newErrors.enviarArquivo = "Anexe um arquivo.";
+      if (!cargo) newErrors.cargo = "Informe o seu Cargo.";
+      if (!material) newErrors.material = "Informe o Material.";
+      if (!sobreProjeto)
+        newErrors.sobreProjeto = "Descreva o projeto.";
+      if (!detalhe)
+        newErrors.detalhe = "Informe detalhes do pedido.";
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  }
+      // ===============================
+      // Validação da data de entrega
+      // ===============================
+      if (!dataEntrega) {
+        newErrors.dataEntrega = "Informe a data de entrega.";
+      } else {
+        const hojeMais10 = new Date();
+        hojeMais10.setDate(hojeMais10.getDate() + 10);
+
+        // Compara só a data (ignora horário)
+        if (dataEntrega < hojeMais10) {
+          newErrors.dataEntrega =
+            "A data deve ser pelo menos 10 dias a partir de hoje.";
+        }
+      }
+
+      if (!enviarArquivo)
+        newErrors.enviarArquivo = "Anexe um arquivo.";
+
+      // 🔥 NOVA REGRA
+      if (cargo === "Administrativo" && !centroDeCusto) {
+        newErrors.centroDeCusto = "Informe o Centro de Custo.";
+      }
+
+      setErrors(newErrors);
+      return Object.keys(newErrors).length === 0;
+    }
 
   function fileToBase64(file) {
     return new Promise((resolve, reject) => {
@@ -99,20 +125,21 @@ export default function AddPedidos() {
     const arquivoBase64 = await fileToBase64(enviarArquivo);
 
     const { error } = await supabase.from("pedidos").insert([
-      {
-        solicitante,
-        email,
-        curso_turma: cursoETurma,
-        contato,
-        cargo,
-        material,
-        sobre_projeto: sobreProjeto,
-        detalhe,
-        data_entrega: dataEntrega,
-        arquivo: arquivoBase64,
-        is_completed: false,
-      },
-    ]);
+        {
+          solicitante,
+          email,
+          curso_turma: cursoETurma,
+          contato,
+          cargo,
+          centro_custo: cargo === "Administrativo" ? centroDeCusto : null,
+          material,
+          sobre_projeto: sobreProjeto,
+          detalhe,
+             data_entrega: dataEntrega.toISOString().split("T")[0],
+          arquivo: arquivoBase64,
+          is_completed: false,
+        },
+      ]);
 
     if (error) {
       setErrors({
@@ -125,6 +152,15 @@ export default function AddPedidos() {
     setStep(1);
     setErrors({});
   }
+  useEffect(() => {
+      if (cargo !== "Administrativo") {
+        setCentroDeCusto("");
+      }
+    }, [cargo]);
+
+    const hoje = new Date();
+    const dataMinima = new Date();
+    dataMinima.setDate(hoje.getDate() + 10);  
 
   return (
     <div className="flex flex-col items-center w-full px-4">
@@ -173,7 +209,7 @@ export default function AddPedidos() {
                 <InputRed
                   title="Telefone:"
                   value={contato}
-                  placeholder="(DDD) 9 00000000"
+                  placeholder="Insira o seu telefone Ex.: (DDD) 9 00000000"
                   onChange={(e) =>
                     setContato(formatarTelefone(e.target.value))
                   }
@@ -239,25 +275,34 @@ export default function AddPedidos() {
                   ]}
                   error={errors.cargo}
                 />
+                {cargo === "Administrativo" && (
+                <InputRed
+                  title="Centro de Custo:"
+                  value={centroDeCusto}
+                  placeholder="Informe o centro de custo disponível"
+                  onChange={(e) =>
+                    setCentroDeCusto(e.target.value)
+                  }
+                  error={errors.centroDeCusto}
+                />
+              )}
               </div>
+              
 
               <div className="w-full flex flex-col gap-4">
                 <InputFile
                   title="Anexar arquivo"
-                  accept=".pdf,.png,.jpg,.jpeg"
+                  accept=".dxf,.png,.gcode,.3mf,.svg,.pdf,.jpg,.jpeg"
                   onChange={setEnviarArquivo}
                   error={errors.enviarArquivo}
                 />
 
-                <InputRed
-                  type="date"
+               <DatePickerInput
                   title="Data de Entrega:"
-                  value={dataEntrega}
-                  min={hoje}
-                  onChange={(e) =>
-                    setDataEntrega(e.target.value)
-                  }
+                  selected={dataEntrega}
+                  onChange={setDataEntrega}
                   error={errors.dataEntrega}
+                  minDate={dataMinima}
                 />
 
                 <InputRed

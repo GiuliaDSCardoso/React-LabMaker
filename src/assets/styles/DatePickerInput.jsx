@@ -4,7 +4,7 @@ import { ptBR } from "date-fns/locale";
 
 export default function DatePickerInput({ title, selected, error, onChange }) {
   return (
-    <div className="flex flex-col gap-4 w-full">
+    <div className="flex flex-col gap-2 w-full">
       <label className="text-lg font-medium md:text-xl text-gray-700 dark:text-white">
         {title}
       </label>
@@ -14,7 +14,7 @@ export default function DatePickerInput({ title, selected, error, onChange }) {
         onChange={onChange}
         locale={ptBR}
         dateFormat="dd/MM/yyyy"
-        placeholderText="Selecione a data"
+        placeholderText="Toque para selecionar a data"
         className={`
           w-full
           rounded-lg
@@ -27,7 +27,7 @@ export default function DatePickerInput({ title, selected, error, onChange }) {
           text-blue-800
           placeholder:text-blue-800
           dark:text-white
-          
+          dark:placeholder:text-white
           focus:outline-none
           focus:ring-2
           focus:ring-blue-400/60

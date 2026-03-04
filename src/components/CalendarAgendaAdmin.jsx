@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, Trash2, Phone, CircleUser, Timer, MessageCircleQuestion } from "lucide-react";
+import { ChevronLeft, ChevronRight, Trash2, Phone, CircleUser, Timer, MessageCircleQuestion, Armchair } from "lucide-react";
 import { supabase } from "../services/supabase";
 
 export default function CalendarAgendaAdmin({ agendamentos, onRemove }) {
@@ -70,29 +70,29 @@ export default function CalendarAgendaAdmin({ agendamentos, onRemove }) {
   const cores = {
     livre: "bg-green-400 hover:bg-green-500",
     ocupado: "bg-red-400 hover:bg-red-500 cursor-pointer",
-    passado: "bg-gray-300 text-gray-500",
+    passado: "bg-gray-300 text-gray-500 dark:bg-textColor dark:text-white",
   };
 
   return (
-    <div className="bg-white p-4 rounded-xl shadow md:w-[50%] w-full">
+    <div className="bg-white dark:bg-[#001d49] p-4 rounded-xl shadow md:w-[50%] w-full">
 
       {/* HEADER */}
       <div className="flex items-center justify-between mb-4">
-        <button onClick={() => mudarMes(-1)} className="p-1 rounded hover:bg-gray-200">
+        <button onClick={() => mudarMes(-1)} className="p-1 rounded hover:bg-gray-200 dark:hover:bg-[#0010288f]">
           <ChevronLeft />
         </button>
 
-        <h3 className="text-lg font-bold text-[#2756ac]">
+        <h3 className="text-lg font-bold text-[#2756ac] dark:text-white">
           {nomesMes[mes]} de {ano}
         </h3>
 
-        <button onClick={() => mudarMes(1)} className="p-1 rounded hover:bg-gray-200">
+        <button onClick={() => mudarMes(1)} className="p-1 rounded hover:bg-gray-200 dark:hover:bg-[#0010288f]">
           <ChevronRight />
         </button>
       </div>
 
       {/* SEMANA */}
-      <div className="grid grid-cols-7 text-center font-semibold text-sm mb-2">
+      <div className="grid grid-cols-7 text-center font-semibold dark:text-white text-sm mb-2">
         {["D","S","T","Q","Q","S","S"].map((d,i)=>(
           <div key={i}>{d}</div>
         ))}
@@ -132,12 +132,13 @@ export default function CalendarAgendaAdmin({ agendamentos, onRemove }) {
               className="bg-[#21478d] text-white rounded p-2 text-sm space-y-1"
             >
               <p className="flex items-center py-1 gap-2 px-4 "><Timer className="w-4" /> {a.hora_inicio} – {a.hora_fim}</p>
-              <p className="flex items-center py-1 gap-2 px-4 bg-[#2756ac]  rounded-md "><CircleUser className="w-4" /> {a.historico?.nome || "Admin"}</p>
+              <p className="flex items-center py-1 gap-2 px-4 bg-[#2756ac]  rounded-md "><CircleUser className="w-4" /> {a.historico?.nome || a.nome}</p>
               <p className="flex items-center py-1 gap-2 px-4 "><MessageCircleQuestion className="w-4" /> {a.motivo}</p>
-
-              {a.historico?.telefone && (
+              <p className="flex items-center py-1 gap-2 px-4 "><Armchair className="w-4" /> {a.historico?.arrumacaoSala ||a.arrumacao}</p>
+            
+              {a.telefone && (
                 <a
-                  href={`https://wa.me/55${a.historico.telefone.replace(/\D/g,"")}`}
+                  href={`https://wa.me/55${a.telefone.replace(/\D/g,"")}`}
                   target="_blank"
                   className="flex rounded items-center py-1 gap-2 px-4 hover:bg-green-600/70 bg-green-600/50"
                 >

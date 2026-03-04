@@ -61,35 +61,35 @@ export default function CalendarAgenda({ agendamentos }) {
   const cores = {
     livre: "bg-green-400 hover:bg-green-500",
     ocupado: "bg-red-400 hover:bg-red-500 cursor-pointer",
-    passado: "bg-gray-300 text-gray-500 cursor-not-allowed",
+    passado: "bg-[#2756ac] text-gray-500 cursor-not-allowed dark:bg-textColor dark:text-white",
   };
 
   return (
-    <div className="bg-white rounded-xl p-4 shadow">
+    <div className="bg-textColor dark:bg-[#001d49]  rounded-xl p-4 shadow">
 
       {/* HEADER COM NAVEGAÇÃO */}
       <div className="flex items-center text-[#2756ac] justify-between mb-4">
         <button
           onClick={() => mudarMes(-1)}
-          className="p-1 rounded hover:bg-gray-200"
+          className="p-1 rounded text-white hover:bg-[#0027638f] dark:hover:bg-[#0010288f]"
         >
           <ChevronLeft />
         </button>
 
-        <h3 className="text-lg font-bold ">
+        <h3 className="text-lg font-bold text-white ">
           {nomesMes[mes]} de {ano}
         </h3>
 
         <button
           onClick={() => mudarMes(1)}
-          className="p-1 rounded hover:bg-gray-200"
+          className="p-1 rounded text-white hover:bg-[#0027638f] dark:hover:bg-[#0010288f]"
         >
           <ChevronRight />
         </button>
       </div>
 
       {/* DIAS DA SEMANA */}
-      <div className="grid grid-cols-7 text-[#2756ac] text-center font-semibold text-sm mb-2">
+      <div className="grid grid-cols-7 text-center text-white font-semibold text-sm mb-2">
         {["D","S","T","Q","Q","S","S"].map((d, i) => (
           <div key={i}>{d}</div>
         ))}
@@ -146,7 +146,7 @@ export default function CalendarAgenda({ agendamentos }) {
             >
                 
               <p className="flex items-center py-1 gap-2 px-4 "><Timer className="w-4" /> {a.hora_inicio} – {a.hora_fim}</p>
-              <p className="flex items-center py-1 gap-2 px-4 bg-[#2756ac]  rounded-md "><CircleUser className="w-4" /> {a.historico?.nome || "Admin"}</p>
+              <p className="flex items-center py-1 gap-2 px-4 bg-[#2756ac]  rounded-md "><CircleUser className="w-4" /> {a.historico?.nome || a.nome}</p>
               <p className="flex items-center py-1 gap-2 px-4 "><MessageCircleQuestion className="w-4" /> {a.motivo}</p>
             </div>
           ))}

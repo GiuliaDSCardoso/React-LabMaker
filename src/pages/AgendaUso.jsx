@@ -1,16 +1,15 @@
 import { useEffect, useState } from "react";
 import InputDate from "../assets/styles/InputDate";
 import Body from "../assets/styles/Body";
-
 import { supabase } from "../services/supabase";
 import InputRed from "../assets/styles/InputRed";
 import CalendarAgenda from "../components/CalendarAgenda";
-
-import { PlusIcon} from "lucide-react";
+import { PlusIcon } from "lucide-react";
 import MenuLateral from "../assets/styles/MenuLateral";
 import Header from "../assets/styles/Header";
 import InputSelect from "../assets/styles/InputSelect";
-import DatePickerInput from "../assets/styles/DataPickerInput";
+import DatePickerInput from "../assets/styles/DatePickerInput";
+import emailjs from "@emailjs/browser";
 
 export default function AgendaUso() {
   const [nome, setNome] = useState("");
@@ -19,25 +18,29 @@ export default function AgendaUso() {
   const [motivo, setMotivo] = useState("");
   const [arrumacao, setArrumacao] = useState("");
   const [data, setData] = useState(null);
-
   const [horaInicio, setHoraInicio] = useState("08:00");
   const [horaFim, setHoraFim] = useState("09:00");
-
   const [diaInteiro, setDiaInteiro] = useState(false);
   const [turno, setTurno] = useState("manha");
-
   const [agendamentos, setAgendamentos] = useState([]);
-
-  // 🔹 LISTA DE DATAS
+  const [step, setStep] = useState(1);
   const [datasSelecionadas, setDatasSelecionadas] = useState([]);
-
-  // 🔹 MODO DE HORÁRIO
   const [modoHorario, setModoHorario] = useState("igual");
-  // "igual" | "diferente"
+  const [errors, setErrors] = useState({});
 
-  // ===============================
-  // BUSCAR AGENDAMENTOS
-  // ===============================
+  useEffect(() => {
+    // Sempre que acessar uma página pública, desloga qualquer sessão
+    supabase.auth.signOut();
+  }, []);
+
+  function dataEhPassada(date) {
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    const dataSelecionada = new Date(date);
+    dataSelecionada.setHours(0, 0, 0, 0);
+    return dataSelecionada < hoje;
+  }
+
   async function carregarAgenda() {
     const { data, error } = await supabase
       .from("agendamentos")
@@ -51,12 +54,8 @@ export default function AgendaUso() {
     carregarAgenda();
   }, []);
 
-  // ===============================
-  // TURNOS
-  // ===============================
   function aplicarTurno(t) {
     setTurno(t);
-
     if (t === "manha") {
       setHoraInicio("07:00");
       setHoraFim("12:00");
@@ -71,9 +70,6 @@ export default function AgendaUso() {
     }
   }
 
-  // ===============================
-  // FORMATAÇÕES
-  // ===============================
   function formatarTelefone(valor) {
     let numero = valor.replace(/\D/g, "").slice(0, 11);
 
@@ -95,146 +91,154 @@ export default function AgendaUso() {
     );
   }
 
-  // ===============================
-  // ➕ ADICIONAR DATA
-  // ===============================
+  function formatarDataParaISO(date) {
+    if (!date) return null;
+    const d = new Date(date);
+    const ano = d.getFullYear();
+    const mes = String(d.getMonth() + 1).padStart(2, "0");
+    const dia = String(d.getDate()).padStart(2, "0");
+    return `${ano}-${mes}-${dia}`;
+  }
+
   function adicionarData() {
-    if (!data) {
-      alert("Selecione uma data");
+    const newErrors = {};
+
+    if (!data) newErrors.data = "Selecione uma data.";
+    else if (dataEhPassada(data))
+      newErrors.data = "Não é permitido agendar para datas anteriores.";
+
+    const dataFormatada = formatarDataParaISO(data);
+
+    if (modoHorario === "igual") {
+      if (datasSelecionadas.includes(dataFormatada))
+        newErrors.data = "Data já adicionada.";
+    } else {
+      const existe = datasSelecionadas.some(
+        (d) => d.data === dataFormatada
+      );
+      if (existe) newErrors.data = "Data já adicionada.";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
 
+    setErrors({});
+
     if (modoHorario === "igual") {
-      if (datasSelecionadas.includes(data)) {
-        alert("Data já adicionada");
-        return;
-      }
-
-      setDatasSelecionadas([...datasSelecionadas, data]);
+      setDatasSelecionadas([...datasSelecionadas, dataFormatada]);
     } else {
-      const existe = datasSelecionadas.some((d) => d.data === data);
-      if (existe) {
-        alert("Data já adicionada");
-        return;
-      }
-
       setDatasSelecionadas([
         ...datasSelecionadas,
-        {
-          data,
-          diaInteiro,
-          turno,
-          horaInicio,
-          horaFim,
-        },
+        { data: dataFormatada, diaInteiro, turno, horaInicio, horaFim },
       ]);
     }
 
-    setData("");
+    setData(null);
   }
 
   function removerData(valor) {
     if (modoHorario === "igual") {
       setDatasSelecionadas(datasSelecionadas.filter((d) => d !== valor));
     } else {
-      setDatasSelecionadas(datasSelecionadas.filter((d) => d.data !== valor));
+      setDatasSelecionadas(
+        datasSelecionadas.filter((d) => d.data !== valor)
+      );
     }
   }
 
-  // ===============================
-  // ENVIAR
-  // ===============================
   async function enviar() {
-    if (
-      !nome ||
-      !email ||
-      !telefone ||
-      !motivo ||
-      !arrumacao ||
-      datasSelecionadas.length === 0
-    ) {
-      alert("Preencha todos os campos!");
+    const newErrors = {};
+
+    if (!nome) newErrors.nome = "Informe seu nome.";
+    if (!email) newErrors.email = "Informe seu email.";
+    if (!telefone) newErrors.telefone = "Informe seu telefone.";
+    if (!motivo) newErrors.motivo = "Informe o motivo.";
+    if (!arrumacao) newErrors.arrumacao = "Selecione a arrumação.";
+    if (datasSelecionadas.length === 0)
+      newErrors.datas = "Adicione ao menos uma data.";
+
+    if (email && !emailValido(email))
+      newErrors.email = "Email inválido.";
+
+    const telefoneRegex = /^\(\d{2}\) 9 \d{4}-\d{4}$/;
+    if (telefone && !telefoneRegex.test(telefone))
+      newErrors.telefone = "Telefone inválido.";
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
 
-    if (!emailValido(email)) {
-      alert("Email inválido");
-      return;
-    }
+    setErrors({});
 
-    const telefoneValido = /^\(\d{2}\) 9 \d{4}-\d{4}$/;
-    if (!telefoneValido.test(telefone)) {
-      alert("Telefone inválido");
-      return;
-    }
+    const novosRegistros = datasSelecionadas.map((item) => ({
+      nome,
+      email,
+      telefone,
+      motivo,
+      arrumacao,
+      turno,
+      tipo: "USUÁRIO",
+      status: "pendente",
+      historico: [],
+      data: modoHorario === "igual" ? item : item.data,
+      hora_inicio:
+        modoHorario === "igual" ? horaInicio : item.horaInicio,
+      hora_fim:
+        modoHorario === "igual" ? horaFim : item.horaFim,
+      dia_inteiro:
+        modoHorario === "igual" ? diaInteiro : item.diaInteiro,
+    }));
 
-    // ===============================
-    // 🔴 VALIDA CONFLITOS
-    // ===============================
-    for (const item of datasSelecionadas) {
-      const d = modoHorario === "igual" ? item : item.data;
-      const hi = modoHorario === "igual" ? horaInicio : item.horaInicio;
-      const hf = modoHorario === "igual" ? horaFim : item.horaFim;
-      const di = modoHorario === "igual" ? diaInteiro : item.diaInteiro;
-
-      const conflito = agendamentos.some((ag) => {
-        if (ag.data !== d) return false;
-        if (ag.dia_inteiro || di) return true;
-        return hi < ag.hora_fim && hf > ag.hora_inicio;
-      });
-
-      if (conflito) {
-        alert(`❌ Conflito na data ${d.split("-").reverse().join("/")}`);
-        return;
-      }
-    }
-
-    // ===============================
-    // INSERÇÃO
-    // ===============================
-    const inserts =
-      modoHorario === "igual"
-        ? datasSelecionadas.map((d) => ({
-            tipo: "USUARIO",
-            data: d,
-            hora_inicio: diaInteiro ? "08:00" : horaInicio,
-            hora_fim: diaInteiro ? "21:59" : horaFim,
-            dia_inteiro: diaInteiro,
-            motivo,
-            status: "pendente",
-            historico: {
-              nome,
-              email,
-              telefone,
-              arrumacaoSala: arrumacao,
-              turno: diaInteiro ? "integral" : turno,
-            },
-          }))
-        : datasSelecionadas.map((d) => ({
-            tipo: "USUARIO",
-            data: d.data,
-            hora_inicio: d.diaInteiro ? "00:00" : d.horaInicio,
-            hora_fim: d.diaInteiro ? "23:59" : d.horaFim,
-            dia_inteiro: d.diaInteiro,
-            motivo,
-            status: "pendente",
-            historico: {
-              nome,
-              email,
-              telefone,
-              arrumacaoSala: arrumacao,
-              turno: d.diaInteiro ? "integral" : d.turno,
-            },
-          }));
-
-    const { error } = await supabase.from("agendamentos").insert(inserts);
+    const { error } = await supabase
+      .from("agendamentos")
+      .insert(novosRegistros);
 
     if (error) {
-      alert("Erro ao enviar solicitações");
+      alert("Erro ao salvar: " + error.message);
       return;
     }
 
-    alert("Solicitações enviadas!");
+    const datasFormatadas = datasSelecionadas
+      .map((item) => {
+        if (modoHorario === "igual") {
+          return `${item.split("-").reverse().join("/")} - ${
+            diaInteiro
+              ? "Dia inteiro"
+              : `${horaInicio} às ${horaFim}`
+          }`;
+        } else {
+          return `${item.data.split("-").reverse().join("/")} - ${
+            item.diaInteiro
+              ? "Dia inteiro"
+              : `${item.horaInicio} às ${item.horaFim}`
+          }`;
+        }
+      })
+      .join("\n");
+
+    try {
+      await emailjs.send(
+        "service_seiz71a",
+        "template_va5k0hr",
+        {
+          nome,
+          email,
+          telefone,
+          arrumacao,
+          motivo,
+          datas: datasFormatadas,
+        },
+        "SZWf2utdw8nJQKtjZ"
+      );
+
+      alert("Solicitação enviada com sucesso!");
+    } catch (err) {
+      alert("Erro ao enviar email.");
+      console.error(err);
+    }
 
     setNome("");
     setEmail("");
@@ -244,204 +248,286 @@ export default function AgendaUso() {
     setDatasSelecionadas([]);
     setDiaInteiro(false);
     aplicarTurno("manha");
-
-    carregarAgenda();
   }
 
-  // ===============================
-  // AGRUPA POR DATA
-  // ===============================
+  
 
+  function validarEtapa1() {
+  const newErrors = {};
+
+  if (!nome) newErrors.nome = "Informe seu nome.";
+  if (!email) newErrors.email = "Informe seu email.";
+  if (!telefone) newErrors.telefone = "Informe seu telefone.";
+  if (!arrumacao) newErrors.arrumacao = "Selecione a arrumação.";
+
+  if (email && !emailValido(email))
+    newErrors.email = "Email inválido.";
+
+  const telefoneRegex = /^\(\d{2}\) 9 \d{4}-\d{4}$/;
+  if (telefone && !telefoneRegex.test(telefone))
+    newErrors.telefone = "Telefone inválido.";
+
+  if (Object.keys(newErrors).length > 0) {
+    setErrors(newErrors);
+    return false;
+  }
+
+  setErrors({});
+  return true;
+}
 
   return (
-    <Body>
-      <MenuLateral/>
+  <Body>
+    <MenuLateral />
+    <Header
+      title="Agendamento do Laboratório Maker"
+      descricao="* Restrito a colaboradores"
+    />
 
-      <Header
-        title="Solicitação de agendamento do Laboratório Maker"
-        descricao="* Restrito a colaboradores"
-        
-      />
+    <div className="flex flex-col lg:flex-row mt-10 mb-20 gap-20 px-4 w-full max-w-6xl mx-auto justify-center">
 
-      <div className="flex flex-col lg:flex-row mt-10 mb-20 gap-20  w-full max-w-6xl mx-auto justify-center">
-        {/* FORMULÁRIO */}
-        <div className="md:w-[40%] w-full space-y-4">
-          <InputRed
-            title="Solicitante:"
-            placeholder="Digite seu nome completo"
-            value={nome}
-            onChange={(e) => setNome(e.target.value)}
-          />
+      {/* ================= FORMULÁRIO ================= */}
+      <div className="md:w-[40%] w-full space-y-4">
 
-          <InputRed
-            title="Insira seu email:"
-            placeholder="Digite seu email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
+        {/* ===== ETAPA 1 ===== */}
+        {step === 1 && (
+          <>
+            <h2 className="text-xl font-bold">Informações do Usuário</h2>
 
-          <InputRed
-            title="Insira seu telefone:"
-            placeholder="Insira seu número de telefone Ex.:(11) 9 91234-5678"
-            value={telefone}
-            onChange={(e) => setTelefone(formatarTelefone(e.target.value))}
-          />
-          {/*Implementar input de capacidade max:40 pessoas */}
-          <InputSelect
-            title="Arrumação da sala:"
-            value={arrumacao}
-            onChange={(e) => setArrumacao(e.target.value)}
-            placeholder="Arrumação da sala"
-            options={[
-              "Mesas em formato reunião",
-              "Mesas em ilhas",
-              "Mesa em U"
-            ]}
-          />
+            <InputRed
+              title="Solicitante:"
+              placeholder="Digite seu nome completo"
+              value={nome}
+              error={errors.nome}
+              onChange={(e) => setNome(e.target.value)}
+            />
 
-          {/* 🔘 MODO DE HORÁRIO */}
-          <div className="flex  gap-2">
-            <label className="flex items-center gap-2">
-              <input
-                type="radio"
-                checked={modoHorario === "igual"}
-                onChange={() => setModoHorario("igual")}
+            <InputRed
+              title="Insira seu email:"
+              placeholder="Digite seu email"
+              value={email}
+              error={errors.email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+
+            <InputRed
+              title="Insira seu telefone:"
+              placeholder="Insira o seu telefone Ex.: (DDD) 9 00000000"
+              value={telefone}
+              error={errors.telefone}
+              onChange={(e) => setTelefone(formatarTelefone(e.target.value))}
+            />
+
+            <InputSelect
+              title="Arrumação da sala:"
+              value={arrumacao}
+              onChange={(e) => setArrumacao(e.target.value)}
+              placeholder="Arrumação da sala"
+              error={errors.arrumacao}
+              options={[
+                "Mesas em formato reunião",
+                "Mesas em ilhas",
+                "Mesa em U",
+              ]}
+            />
+
+            <button
+              type="button"
+              onClick={() => {
+                if (validarEtapa1()) {
+                  setStep(2);
+                }
+              }}
+              className="bg-[#2756ac] hover:bg-[#001438] text-white h-[50px] text-lg rounded w-full"
+            >
+              Próximo
+            </button>
+          </>
+        )}
+
+        {/* ===== ETAPA 2 ===== */}
+        {step === 2 && (
+          <>
+            <h2 className="text-xl font-bold">
+              Informações do Agendamento
+            </h2>
+
+            {/* 🔘 MODO DE HORÁRIO */}
+            <div className="flex gap-2">
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  checked={modoHorario === "igual"}
+                  onChange={() => setModoHorario("igual")}
+                />
+                Mesmo horário para todas as datas
+              </label>
+
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  checked={modoHorario === "diferente"}
+                  onChange={() => setModoHorario("diferente")}
+                />
+                Horários diferentes por data
+              </label>
+            </div>
+
+            <DatePickerInput
+              title="Data do agendamento:"
+              selected={data}
+              onChange={(date) => setData(date)}
+              minDate={new Date()}
+            />
+
+            {errors.datas && (
+              <p className="text-red-500 text-sm">{errors.datas}</p>
+            )}
+
+            <div className="flex flex-wrap items-center gap-4">
+              <label className="flex items-center gap-2 text-lg">
+                <input
+                  type="checkbox"
+                  checked={diaInteiro}
+                  onChange={(e) => setDiaInteiro(e.target.checked)}
+                />
+                Dia inteiro
+              </label>
+
+              {!diaInteiro && (
+                <div className="flex gap-2">
+                  {["manha", "tarde", "noite"].map((t) => (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => aplicarTurno(t)}
+                      className={`px-3 py-1 rounded ${
+                        turno === t
+                          ? "bg-[#2756ac] text-white dark:bg-[#001438]"
+                          : "bg-[#e5eeff] dark:bg-[#001438]/40"
+                      }`}
+                    >
+                      {t.charAt(0).toUpperCase() + t.slice(1)}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-2">
+              <InputDate
+                type="time"
+                title="Hora Início:"
+                min="08:00"
+                max="21:00"
+                error={errors.horaInicio}
+                value={horaInicio}
+                onChange={(e) => setHoraInicio(e.target.value)}
               />
-              Mesmo horário para todas as datas
-            </label>
 
-            <label className="flex items-center gap-2">
-              <input
-                type="radio"
-                checked={modoHorario === "diferente"}
-                onChange={() => setModoHorario("diferente")}
+              <InputDate
+                type="time"
+                title="Hora Fim:"
+                min="09:00"
+                max="22:00"
+                error={errors.horaFim}
+                value={horaFim}
+                onChange={(e) => setHoraFim(e.target.value)}
               />
-              Horários diferentes por data
-            </label>
-          </div>
+            </div>
 
-          <DatePickerInput
-            title="Data do agendamento:"
-            selected={data}
-            onChange={(date) => setData(date)}
-          />
+            <button
+              type="button"
+              onClick={adicionarData}
+              className="bg-[#2756ac] hover:bg-[#001438] flex gap-2 text-white items-center w-full justify-center pr-4 pl-2 h-[45px] rounded text-lg"
+            >
+              <PlusIcon className="w-5 font-bold" />
+              Adicionar data à lista
+            </button>
 
-         
-          {/* DIA INTEIRO + TURNO */}
-          <div className="flex flex-wrap items-center gap-4">
-            <label className="flex items-center gap-2 text-lg">
-              <input
-                type="checkbox"
-                checked={diaInteiro}
-                onChange={(e) => setDiaInteiro(e.target.checked)}
-              />
-              Dia inteiro
-            </label>
+            {datasSelecionadas.length > 0 && (
+              <div className="bg-white dark:bg-textColor p-3 rounded shadow space-y-2">
+                <h4 className="font-semibold">📋 Datas selecionadas</h4>
 
-            {!diaInteiro && (
-              <div className="flex gap-2">
-                {["manha", "tarde", "noite"].map((t) => (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => aplicarTurno(t)}
-                    className={`px-3 py-1  rounded ${
-                      turno === t
-                        ? "bg-[#2756ac] text-white dark:bg-[#001438]"
-                        : "bg-[#e5eeff] dark:bg-[#001438]/40"
-                    }`}
+                {datasSelecionadas.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="flex justify-between items-center border-b pb-1"
                   >
-                    {t.charAt(0).toUpperCase() + t.slice(1)}
-                  </button>
+                    <span>
+                      {modoHorario === "igual"
+                        ? item.split("-").reverse().join("/")
+                        : `${item.data
+                            .split("-")
+                            .reverse()
+                            .join("/")} — ${
+                            item.diaInteiro
+                              ? "Dia inteiro"
+                              : `${item.horaInicio}–${item.horaFim}`
+                          }`}
+                    </span>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        removerData(
+                          modoHorario === "igual"
+                            ? item
+                            : item.data
+                        )
+                      }
+                      className="text-red-600"
+                    >
+                      ✖
+                    </button>
+                  </div>
                 ))}
               </div>
             )}
-          </div>
 
-          <div className="flex gap-2">
-            <InputDate
-              type="time"
-              title="Hora Início:"
-              min="08:00"
-              max="21:00"
-              value={horaInicio}
-              onChange={(e) => setHoraInicio(e.target.value)}
+            <InputRed
+              type="text"
+              title="Motivo da Solicitação:"
+              className="input w-full resize-none text-lg h-[80px] px-3 pt-2 bg-[#e5eeff]"
+              placeholder="Motivo"
+              value={motivo}
+              error={errors.motivo}
+              onChange={(e) => setMotivo(e.target.value)}
             />
-            <InputDate
-              type="time"
-              title="Hora Fim:"
-              min="09:00"
-              max="22:00"
-              value={horaFim}
-              onChange={(e) => setHoraFim(e.target.value)}
-            />
-          </div>
-          <button
-            type="button"
-            onClick={adicionarData}
-            className="bg-[#2756ac] hover:bg-[#001438] flex gap-2 text-white items-center w-full justify-center pr-4 pl-2 h-[45px] rounded text-lg"
-          >
-            <PlusIcon className="w-5 font-bold"/> Adicionar data à lista
-          </button>
 
-          {datasSelecionadas.length > 0 && (
-            <div className="bg-white p-3 rounded shadow space-y-2">
-              <h4 className="font-semibold">📋 Datas selecionadas</h4>
+            <div className="flex gap-4">
+              <button
+                type="button"
+                onClick={() => setStep(1)}
+                className="h-[50px] hover:bg-blue-500 w-full bg-blue-400 rounded">              
+                Voltar
+              </button>
 
-              {datasSelecionadas.map((item, idx) => (
-                <div
-                  key={idx}
-                  className="flex justify-between items-center border-b pb-1"
-                >
-                  <span>
-                    {modoHorario === "igual"
-                      ? item.split("-").reverse().join("/")
-                      : `${item.data.split("-").reverse().join("/")} — ${
-                          item.diaInteiro
-                            ? "Dia inteiro"
-                            : `${item.horaInicio}–${item.horaFim}`
-                        }`}
-                  </span>
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      removerData(
-                        modoHorario === "igual" ? item : item.data
-                      )
-                    }
-                    className="text-red-600"
-                  >
-                    ✖
-                  </button>
-                </div>
-              ))}
+              <button
+                onClick={enviar}
+                className="bg-[#2756ac] hover:bg-[#001438] text-white h-[50px] text-lg rounded w-full"
+              >
+                Enviar solicitação
+              </button>
             </div>
-          )}
+          </>
+        )}
+      </div>
 
-          <InputRed
-            type="text"
-            title="Motivo da Solicitação:"
-            className="input w-full resize-none text-lg h-[80px] px-3 pt-2 bg-[#e5eeff]"
-            placeholder="Motivo"
-            value={motivo}
-            onChange={(e) => setMotivo(e.target.value)}
-          />
-
-          <button
-            onClick={enviar}
-            className="bg-[#2756ac] hover:bg-[#001438] text-white h-[50px] text-lg rounded w-full"
-          >
-            Enviar solicitação
-          </button>
+      {/* ================= CALENDÁRIO (SEMPRE FIXO) ================= */}
+      <aside className="lg:w-[40%] w-full p-2 rounded-xl shadow h-fit sticky top-6">
+        <div className="flex flex-col mb-2">
+          <h1 className="font-bold text-lg rounded-t-xl">
+            Agenda do Maker
+          </h1>
+          <p className="-mt-1">
+            Veja aqui os dias livres e ocupados do Maker
+          </p>
         </div>
 
-        {/* AGENDA */}
-        <aside className="lg:w-[40%] w-full bg-[#2756ac] p-6 rounded-xl shadow h-fit sticky top-6">
-          <CalendarAgenda agendamentos={agendamentos} />
-        </aside>
-
-      </div>
-    </Body>
-  );
+        <CalendarAgenda agendamentos={agendamentos} />
+      </aside>
+    </div>
+  </Body>
+);
 }

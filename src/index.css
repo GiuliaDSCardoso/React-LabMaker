@@ -13,32 +13,80 @@
 }
 /* Ícone do date e time */
 /* DARK MODE CALENDAR */
+/* DARK MODE CALENDAR */
 .dark .dark-calendar {
-  background-color: #0E4194;
-  border: 1px solid #334155;
+  background-color: #0E4194 !important;
+  border: 1px solid #1e3a8a;
+}
+
+.dark .react-datepicker {
+  background-color: #0E4194 !important;
+  border: 1px solid #1e3a8a;
 }
 
 .dark .react-datepicker__header {
-  background-color: #0E4194;
-  border-bottom: 1px solid #334155;
-}
-
-.dark .react-datepicker__day,
-.dark .react-datepicker__time-name {
-  color: white;
-}
-
-.dark .react-datepicker__day:hover {
-  background-color: #1e293b;
-}
-
-.dark .react-datepicker__day--selected {
-  background-color: #2756ac;
+  background-color: #0E4194 !important;
+  border-bottom: 1px solid #1e3a8a;
 }
 
 .dark .react-datepicker__current-month,
-.dark .react-datepicker-time__header {
-  color: white;
+.dark .react-datepicker__day-name {
+  color: white !important;
+}
+
+.dark .react-datepicker__day {
+  color: white !important;
+}
+
+.dark .react-datepicker__day:hover {
+  background-color: #1e3a8a !important;
+}
+
+.dark .react-datepicker__day--selected {
+  background-color: #2756ac !important;
+  color: white !important;
+}
+
+.dark .react-datepicker__day--keyboard-selected {
+  background-color: #2756ac !important;
+  color: white !important;
+}
+/* ===== TIME PICKER DARK MODE ===== */
+
+.dark .custom-time-picker {
+  background-color: #0E4194 !important;
+  border: 1px solid #1e3a8a !important;
+}
+
+.dark .react-datepicker {
+  background-color: #0E4194 !important;
+  border: 1px solid #1e3a8a !important;
+}
+
+.dark .react-datepicker__header {
+  background-color: #0E4194 !important;
+  border-bottom: 1px solid #1e3a8a !important;
+}
+
+.dark .react-datepicker__time-container {
+  background-color: #0E4194 !important;
+}
+
+.dark .react-datepicker__time-list {
+  background-color: #0E4194 !important;
+}
+
+.dark .react-datepicker__time-list-item {
+  color: white !important;
+}
+
+.dark .react-datepicker__time-list-item:hover {
+  background-color: #1e3a8a !important;
+}
+
+.dark .react-datepicker__time-list-item--selected {
+  background-color: #2756ac !important;
+  color: white !important;
 }
 .theme-transition,
 

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { supabase } from "../services/supabase";
 import InputRed from "../assets/styles/InputRed";
 import ComponenteInput from "../assets/styles/ComponenteInput.jsx";
+import DatePickerInput from "../assets/styles/DatePickerInput.jsx";
 
 export default function AddSolicitacao() {
   const [step, setStep] = useState(1);
@@ -17,9 +18,12 @@ export default function AddSolicitacao() {
   const [dataDevolucao, setDataDevolucao] = useState("");
   const [termosAceitos, setTermosAceitos] = useState(false);
 
-  const hoje = new Date().toISOString().split("T")[0];
+  
   const termosRef = useRef(null); // ref para overlay de termos
-
+  useEffect(() => {
+    // Sempre que acessar uma página pública, desloga qualquer sessão
+    supabase.auth.signOut();
+  }, []);
   // Fecha overlay ao clicar fora
   useEffect(() => {
     function handleClickOutside(event) {
@@ -134,11 +138,7 @@ export default function AddSolicitacao() {
                 <InputRed
                   title="Telefone:"
                   value={contato}
-<<<<<<< Updated upstream
-                  placeholder="Ex.: (11) 9 1234-5678"
-=======
                   placeholder="Insira o seu telefone Ex.: (DDD) 9 00000000"
->>>>>>> Stashed changes
                   onChange={(e) => setContato(formatarTelefone(e.target.value))}
                   error={errors.contato}
                 />
@@ -148,11 +148,7 @@ export default function AddSolicitacao() {
             <button
               type="button"
               onClick={() => validarStep1() && setStep(2)}
-<<<<<<< Updated upstream
-              className="h-[50px] bg-[#0E4194] text-white rounded mt-4"
-=======
               className="h-[50px] hover:bg-[#001438] bg-[#0E4194] text-white rounded mt-4"
->>>>>>> Stashed changes
             >
               Próximo
             </button>
@@ -174,21 +170,45 @@ export default function AddSolicitacao() {
               error={errors.componentes}
             />
 
-            <InputRed
+            <DatePickerInput
               title="Data do empréstimo:"
-              type="date"
-              min={hoje}
-              value={dataEmprestimo}
-              onChange={(e) => setDataEmprestimo(e.target.value)}
+              selected={dataEmprestimo ? new Date(dataEmprestimo) : null}
+              onChange={(date) => {
+                if (!date) {
+                  setDataEmprestimo("");
+                  return;
+                }
+
+                const ano = date.getFullYear();
+                const mes = String(date.getMonth() + 1).padStart(2, "0");
+                const dia = String(date.getDate()).padStart(2, "0");
+
+                setDataEmprestimo(`${ano}-${mes}-${dia}`);
+              }}
+              minDate={new Date()}
               error={errors.dataEmprestimo}
             />
 
-            <InputRed
+            <DatePickerInput
               title="Data de devolução:"
-              type="date"
-              min={dataEmprestimo || hoje}
-              value={dataDevolucao}
-              onChange={(e) => setDataDevolucao(e.target.value)}
+              selected={dataDevolucao ? new Date(dataDevolucao) : null}
+              onChange={(date) => {
+                if (!date) {
+                  setDataDevolucao("");
+                  return;
+                }
+
+                const ano = date.getFullYear();
+                const mes = String(date.getMonth() + 1).padStart(2, "0");
+                const dia = String(date.getDate()).padStart(2, "0");
+
+                setDataDevolucao(`${ano}-${mes}-${dia}`);
+              }}
+              minDate={
+                dataEmprestimo
+                  ? new Date(dataEmprestimo)
+                  : new Date()
+              }
               error={errors.dataDevolucao}
             />
 
@@ -248,17 +268,10 @@ export default function AddSolicitacao() {
             </div>
 
             <div className="flex gap-4">
-<<<<<<< Updated upstream
-              <button type="button" onClick={() => setStep(1)} className="h-[50px] w-full bg-blue-300 rounded">
-                Voltar
-              </button>
-              <button type="submit" className="h-[50px] w-full bg-[#0E4194] text-white rounded">
-=======
-              <button type="button" onClick={() => setStep(1)} className="h-[50px] hover:bg-blue-50 w-full bg-blue-300 rounded">
+              <button type="button" onClick={() => setStep(1)} className="h-[50px] hover:bg-blue-500 w-full bg-blue-400 rounded">
                 Voltar
               </button>
               <button type="submit" className="h-[50px] hover:bg-[#001438] w-full bg-[#0E4194] text-white rounded">
->>>>>>> Stashed changes
                 Enviar
               </button>
             </div>

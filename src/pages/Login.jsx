@@ -3,6 +3,10 @@ import { CornerDownLeft, Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../services/supabase";
 
+import BodyLogin from "../assets/styles/BodyLogin";
+
+import InputLogin from "../assets/styles/InputLogin";
+
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [perfil, setPerfil] = useState("");
@@ -41,13 +45,13 @@ export default function Login() {
   }
 
   return (
-    <div
-      className="h-[100vh] w-[vw] bg-cover bg-center flex items-center justify-center"
-      style={{ backgroundImage: "url('logos/BgMaker4.jpeg')" }}
-    >
+    <BodyLogin>
+    
       {/* Overlay escuro */}
       
+      <div className="flex md:mt-60 mt-40 items-center justify-center">
 
+      
       {/* Card */}
       <form
         onSubmit={onSubmitLogin}
@@ -55,19 +59,32 @@ export default function Login() {
           relative z-10
           w-[90%] max-w-[520px]
           rounded-2xl
-         
-          backdrop-blur-xl
-         border-white/20 border
-          shadow-[0_20px_60px_rgba(0,0,0,0.35)]
           px-10 py-10
           flex flex-col gap-6
-          drop-shadow-lg
+          backdrop-blur-xl
+          border
+          /* 🌞 MODO CLARO */
+          bg-transparent
+          border-white
+          shadow-[0_8px_32px_rgba(31,38,135,0.15)]
+
+          /* 🌙 MODO DARK */
+          dark:bg-[#001028]/10
+          dark:border-none
+          dark:shadow-[-8px_-7px_80px_rgba(0,150,255,0.25),30px_25px_60px_rgba(0,0,20,0.95)]
+
+          transition-all duration-300
         "
       >
         <div className="flex justify-between items-center">
-          
-          <a className=" w-[5%] hover:text-white/60 text-white" href="/"><CornerDownLeft /></a>
-          <h1 className="text-center w-[95%]  text-white text-3xl font-semibold mb-2">
+          <a
+            className="w-[5%] text-gray-700 hover:text-gray-500 dark:text-white dark:hover:text-white/60 transition"
+            href="/"
+          >
+            <CornerDownLeft />
+          </a>
+
+          <h1 className="text-center w-[95%] text-3xl font-semibold mb-2 text-gray-800 dark:text-white">
             LOGIN
           </h1>
         </div>
@@ -76,56 +93,40 @@ export default function Login() {
 
         {/* Email */}
         <div className="flex flex-col gap-1">
-          <label className="text-white text-sm">Email:</label>
-          <input
+         
+          <InputLogin
+          title="Email"
             type="email"
             value={perfil}
             onChange={(e) => setPerfil(e.target.value)}
             placeholder="Dica: Email institucional admin"
-            className="
-              h-12 px-4
-              rounded-full
-              bg-transparent
-              border border-white
-              text-white
-              placeholder:text-white/70
-              outline-none
-              focus:ring-2 focus:ring-white/50
-            "
-          />
+      
+        />
         </div>
 
         {/* Senha */}
         <div className="flex flex-col gap-1">
-          <label className="text-white text-sm">Senha:</label>
+         
+          <InputLogin
+            title="Senha"
+            type={showPassword ? "text" : "password"}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Insira sua senha"
+            rightElement={
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="text-gray-500 hover:text-gray-800 dark:text-white/70 dark:hover:text-white transition"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            }
+          />
 
-          <div className="relative">
-            <input
-              type={showPassword ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Insira sua senha"
-              className="
-                h-12 w-full px-4 pr-12
-                rounded-full
-                bg-transparent
-                border border-white
-                text-white
-                placeholder:text-white/70
-                outline-none
-                focus:ring-2 focus:ring-white/50
-              "
-            />
-
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-white/80 hover:text-white"
-            >
-              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-            </button>
+          
           </div>
-        </div>
+        
 
         {/* Erro */}
         {error && (
@@ -133,45 +134,47 @@ export default function Login() {
         )}
 
         {/* Checkbox */}
-        <label className="flex items-center gap-2 text-white text-sm cursor-pointer">
-        <div className="relative">
-          <input
-            type="checkbox"
-            checked={remember}
-            onChange={(e) => setRemember(e.target.checked)}
-            className="
-              peer
-              appearance-none
-              w-5 h-5
-              rounded-lg
-              border border-white
-              bg-transparent
-              cursor-pointer
-            "
-          />
+        <label className="flex items-center gap-2 text-sm cursor-pointer text-gray-700 dark:text-white">
+          <div className="relative">
+            <input
+              type="checkbox"
+              checked={remember}
+              onChange={(e) => setRemember(e.target.checked)}
+              className="
+                peer
+                appearance-none
+                w-5 h-5
+                rounded-lg
+                border
+                border-gray-400
+                dark:border-white
+                bg-transparent
+                cursor-pointer
+              "
+            />
 
-          {/* CHECK ICON */}
-          <svg
-            className="
-              absolute inset-0
-              w-5 h-5
-              text-white
-              scale-0
-              peer-checked:scale-100
-              transition-transform
-              pointer-events-none
-            "
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="3"
-            viewBox="0 0 24 24"
-          >
-            <path d="M5 13l4 4L19 7" />
-          </svg>
-        </div>
+            <svg
+              className="
+                absolute inset-0
+                w-5 h-5
+                text-blue-600
+                dark:text-white
+                scale-0
+                peer-checked:scale-100
+                transition-transform
+                pointer-events-none
+              "
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="3"
+              viewBox="0 0 24 24"
+            >
+              <path d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
 
-        Desejo lembrar do login neste dispositivo
-      </label>
+          Desejo lembrar do login neste dispositivo
+        </label>
 
         {/* Botão */}
         <button
@@ -179,19 +182,27 @@ export default function Login() {
           className="
             mt-4
             h-11
-            rounded-full
-            bg-white/30
-            border
-            text-white
+            rounded-lg
             font-medium
-            backdrop-blur-md
-            hover:bg-white/40
             transition
+
+            /* 🌞 CLARO */
+            bg-blue-600
+            text-white
+            hover:bg-blue-700
+            shadow-lg
+
+            /* 🌙 DARK */
+            dark:bg-[#134591]
+            dark:text-white
+            dark:hover:bg-[#001028]
+            dark:shadow-[20px_20px_60px_rgba(0,0,0,0.35)]
           "
         >
           Entrar
         </button>
       </form>
-    </div>
+      </div>
+    </BodyLogin>
   );
 }

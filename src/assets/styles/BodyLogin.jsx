@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import "../../index.css";
 import { CloudMoon, CloudSun } from "lucide-react";
 
-export default function Body(props) {
+export default function BodyLogin(props) {
   const [darkMode, setDarkMode] = useState(() => {
     return localStorage.getItem("theme") === "dark";
   });
@@ -55,8 +55,8 @@ export default function Body(props) {
           flex-grow
           w-full
           transition-colors duration-800
-          md:ml-1
-          lg:ml-2
+          items-center justify-center
+         
         "
       >
       {React.Children.map(props.children, (child) =>
@@ -71,8 +71,6 @@ export default function Body(props) {
         className="
           w-full
           transition-all duration-300
-          md:ml-12
-          lg:ml-16
         "
       >
         <div className="max-w-full mx-auto text-center text-blue-900 text-sm bg-blue-100/50 dark:bg-[#001028]/50 dark:text-[#007AF8] rounded-t-xl">
@@ -83,6 +81,6 @@ export default function Body(props) {
   );
 }
 
-Body.propTypes = {
+BodyLogin.propTypes = {
   children: PropTypes.node,
 };
