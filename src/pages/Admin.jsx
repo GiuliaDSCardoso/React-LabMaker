@@ -9,6 +9,7 @@ import Body from "../assets/styles/Body.jsx";
 import { supabase } from "../services/supabase";
 import { useEffect, useState } from "react";
 import MenuLateralAdmin from "../assets/styles/MenuLateralAdmin.jsx";
+import AdminCarrossel from "../assets/styles/AdminCarrossel.jsx";
 
 
 export default function Admin() {
@@ -64,7 +65,7 @@ export default function Admin() {
 
         
         
-        <div className="flex flex-col gap-6">
+        <div className="flex mx-5 justify-center items-center flex-col gap-6">
             {/* Container */}
         <div className="
           w-full
@@ -85,7 +86,7 @@ export default function Admin() {
             <div>
                 <button
                 onClick={() => setModalAberto(true)}
-                className="mt-6 bg-white dark:bg-[#1c5ec9] dark:text-white text-blue-700 font-semibold px-6 py-2 rounded-lg shadow hover:bg-gray-100 transition"
+                className="mt-6 bg-white dark:bg-[#1c5ec9] dark:text-white text-blue-700 font-semibold md:px-6 md:py-2 px-2 py-1 md:mx-0 mx-5 rounded-lg shadow hover:bg-gray-100 transition"
                 >
                 Mudar horário de funcionamento
                 </button>
@@ -93,6 +94,13 @@ export default function Admin() {
             
           
         </div>
+       
+       <div className="flex ">
+         <h1 className="font-black text-lg">Gerencie as imagens do carrossel</h1>
+       </div>
+         
+          <AdminCarrossel/>   
+       
         
         {/* Cards */}
         <div className="w-full flex-col md:flex-row  mb-[10%] md:mb-[2%] mt-[10%] md:mt-[4%] flex justify-center items-center gap-3">

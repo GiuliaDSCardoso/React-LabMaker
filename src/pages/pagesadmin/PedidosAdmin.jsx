@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import Body from "../../assets/styles/Body.jsx";
 import { DeleteIcon, PhoneIcon } from "lucide-react";
 import { supabase } from "../../services/supabase";
-
 import MenuLateralAdmin from "../../assets/styles/MenuLateralAdmin.jsx";
 
 export default function PedidosAdmin() {
@@ -30,39 +29,37 @@ export default function PedidosAdmin() {
   }
 
   function novoEvento(acao) {
-    return {
-      data: new Date().toLocaleString("pt-BR"),
-      acao,
-    };
+    return { data: new Date().toLocaleString("pt-BR"), acao };
   }
 
   async function marcarComoConcluido(id) {
     const pedido = pedidos.find((p) => p.id === id);
     const historicoAtual = pedido?.historico || [];
-
-    await supabase.from("pedidos").update({
-      is_completed: true,
-      historico: [...historicoAtual, novoEvento("Pedido concluído")],
-    }).eq("id", id);
-
+    await supabase
+      .from("pedidos")
+      .update({
+        is_completed: true,
+        historico: [...historicoAtual, novoEvento("Pedido concluído")],
+      })
+      .eq("id", id);
     carregarPedidos();
   }
 
   async function desmarcarComoConcluido(id) {
     const pedido = pedidos.find((p) => p.id === id);
     const historicoAtual = pedido?.historico || [];
-
-    await supabase.from("pedidos").update({
-      is_completed: false,
-      historico: [...historicoAtual, novoEvento("Pedido reaberto")],
-    }).eq("id", id);
-
+    await supabase
+      .from("pedidos")
+      .update({
+        is_completed: false,
+        historico: [...historicoAtual, novoEvento("Pedido reaberto")],
+      })
+      .eq("id", id);
     carregarPedidos();
   }
 
   async function excluirPedido(id) {
     if (!window.confirm("Deseja excluir este pedido?")) return;
-
     await supabase.from("pedidos").delete().eq("id", id);
     carregarPedidos();
   }
@@ -74,14 +71,8 @@ export default function PedidosAdmin() {
 
   function renderArquivo(url) {
     if (!url) return "Sem arquivo";
-
     return (
-      <a
-        href={url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-blue-600 underline"
-      >
+      <a href={url} download target="_blank" className="text-blue-600 underline">
         Baixar
       </a>
     );
@@ -89,7 +80,6 @@ export default function PedidosAdmin() {
 
   const pedidosFiltrados = pedidos.filter((p) => {
     const texto = search.toLowerCase();
-
     const matchTexto =
       p.solicitante?.toLowerCase().includes(texto) ||
       p.email?.toLowerCase().includes(texto) ||

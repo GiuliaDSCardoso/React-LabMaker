@@ -1,81 +1,118 @@
 import { useEffect, useState } from "react";
 import { ChevronRight, ChevronLeft } from "lucide-react";
+import { supabase } from "../../services/supabase";
 
 export default function CarrosselEventos() {
 
-  const imagens = [
-    {
-      imgLight: "/logos/Eventos/Evento1.svg",
-      imgDark: "/logos/Eventos/Evento1Dark.svg",
-      link: "https://plataforma.gpinovacao.senai.br/plataforma/demandas-da-industria/interna/12312",
-    },
-    {
-      imgLight: "/logos/Eventos/Evento2.svg",
-      imgDark: "/logos/Eventos/Evento2Dark.svg",
-      link: "https://www.instagram.com/mobiliza.senaifeira/",
-    },
-    {
-      imgLight: "/logos/Eventos/Evento3.svg",
-      imgDark: "/logos/Eventos/Evento3Dark.svg",
-      link: "https://labmakerfsa.vercel.app/",
-    },
-    {
-      imgLight: "/logos/Eventos/Evento4.svg",
-      imgDark: "/logos/Eventos/Evento4Dark.svg",
-      link: "https://plataforma.gpinovacao.senai.br/plataforma/desafio/2061",
-    },
-  ];
-
+  const [imagens, setImagens] = useState([]);
   const [indexAtual, setIndexAtual] = useState(0);
   const [isDark, setIsDark] = useState(false);
 
+  // 🔹 CARREGA IMAGENS DO BANCO
+  useEffect(() => {
+  async function carregarImagens() {
+    const { data, error } = await supabase
+      .from("carrossel_eventos")
+      .select("*")
+      .order("created_at", { ascending: true });
+
+    if (!error && data) {
+      setImagens(data);
+    }
+  }
+
+  carregarImagens();
+
+  // 🔥 REALTIME
+  const channel = supabase
+    .channel("carrossel-realtime")
+    .on(
+      "postgres_changes",
+      {
+        event: "*", // INSERT, UPDATE, DELETE
+        schema: "public",
+        table: "carrossel_eventos",
+      },
+      () => {
+        carregarImagens(); // recarrega automaticamente
+      }
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}, []);
+
   const proximo = () => {
+    if (imagens.length === 0) return;
     setIndexAtual((prev) => (prev + 1) % imagens.length);
   };
 
   const anterior = () => {
-    setIndexAtual((prev) => (prev === 0 ? imagens.length - 1 : prev - 1));
+    if (imagens.length === 0) return;
+    setIndexAtual((prev) =>
+      prev === 0 ? imagens.length - 1 : prev - 1
+    );
   };
 
-  // AUTO PLAY
+  // 🔹 AUTO PLAY
   useEffect(() => {
+    if (imagens.length === 0) return;
+
     const intervalo = setInterval(() => {
       setIndexAtual((prev) => (prev + 1) % imagens.length);
     }, 7000);
 
     return () => clearInterval(intervalo);
-  }, []);
+  }, [imagens]);
 
-  // VERIFICA DARK MODE
+  // 🔹 VERIFICA DARK MODE
   useEffect(() => {
     const observer = new MutationObserver(() => {
       setIsDark(document.documentElement.classList.contains("dark"));
     });
 
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
 
-    // Inicial
     setIsDark(document.documentElement.classList.contains("dark"));
 
     return () => observer.disconnect();
   }, []);
 
+  // 🔹 SE NÃO HOUVER IMAGENS
+  if (imagens.length === 0) {
+    return (
+      <div className="w-full max-w-7xl mx-auto mt-5 text-center text-gray-500">
+        Nenhum card cadastrado.
+      </div>
+    );
+  }
+
   return (
     <div className="w-full max-w-7xl mx-auto mt-5 relative overflow-visible">
-      
+
       {/* CONTAINER */}
       <div className="relative overflow-hidden rounded-3xl h-[260px] md:h-[420px]">
-        
+
         {/* SLIDES */}
         <div
-            className="flex transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform"
-            style={{ transform: `translate3d(-${indexAtual * 100}%, 0, 0)` }}
-          >
+          className="flex transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform"
+          style={{ transform: `translate3d(-${indexAtual * 100}%, 0, 0)` }}
+        >
           {imagens.map((item, i) => (
-            <div key={i} className="min-w-full h-[260px]  md:h-[420px]">
-              <a href={item.link} target="_blank" className="block w-full h-full relative">
+            <div key={item.id} className="min-w-full h-[260px] md:h-[420px]">
+              <a
+                href={item.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block w-full h-full relative"
+              >
                 <img
-                  src={isDark ? item.imgDark : item.imgLight}
+                  src={isDark ? item.img_dark : item.img_light}
                   alt={`Evento ${i + 1}`}
                   className="w-full h-full rounded-4xl md:rounded-3xl object-contain md:object-cover hover:scale-[1.02] transition-transform duration-300 cursor-pointer"
                 />

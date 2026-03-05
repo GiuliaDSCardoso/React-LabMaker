@@ -18,12 +18,11 @@ export default function AddSolicitacao() {
   const [dataDevolucao, setDataDevolucao] = useState("");
   const [termosAceitos, setTermosAceitos] = useState(false);
 
-  
-  const termosRef = useRef(null); // ref para overlay de termos
   useEffect(() => {
-    // Sempre que acessar uma página pública, desloga qualquer sessão
-    supabase.auth.signOut();
-  }, []);
+  supabase.auth.signOut(); // desloga sempre que acessar página pública
+}, []);
+  const termosRef = useRef(null); // ref para overlay de termos
+  
   // Fecha overlay ao clicar fora
   useEffect(() => {
     function handleClickOutside(event) {
@@ -102,13 +101,13 @@ export default function AddSolicitacao() {
   }
 
   return (
-    <div className="flex flex-col items-center w-full px-4">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-6 w-full max-w-6xl">
+   <div className="w-full max-w-6xl mx-auto px-4 md:px-24 md:justify-center ">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-6 ">
         {/* ===== ETAPA 1 ===== */}
         {step === 1 && (
           <div className="flex flex-col gap-4">
-            <div className="flex flex-col md:flex-row w-full gap-4">
-              <div className="flex flex-col w-full gap-4">
+            <div className="flex flex-col md:flex-row  w-full gap-4">
+              <div className="flex flex-col w-full  gap-4">
                 <InputRed
                   title="Solicitante:"
                   value={solicitante}

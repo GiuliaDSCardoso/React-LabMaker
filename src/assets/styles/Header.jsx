@@ -8,6 +8,7 @@ export default function Header({ title, descricao }) {
           mx-auto
           mt-24
           md:mt-5
+        
           rounded-xl
           flex flex-col justify-center items-center
           h-[18vh]

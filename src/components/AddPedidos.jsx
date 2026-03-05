@@ -14,7 +14,6 @@ export default function AddPedidos() {
   const [cursoETurma, setCursoETurma] = useState("");
   const [contato, setContato] = useState("");
   const [centroDeCusto, setCentroDeCusto] = useState("");
-
   const [cargo, setCargo] = useState("");
   const [enviarArquivo, setEnviarArquivo] = useState(null);
   const [dataEntrega, setDataEntrega] = useState(null);
@@ -22,99 +21,66 @@ export default function AddPedidos() {
   const [sobreProjeto, setSobreProjeto] = useState("");
   const [detalhe, setDetalhe] = useState("");
 
-  
-
   useEffect(() => {
-    // Sempre que acessar uma página pública, desloga qualquer sessão
-    supabase.auth.signOut();
-  }, []);
-  // ===============================
-  // FORMATA TELEFONE
-  // ===============================
+  supabase.auth.signOut(); // desloga sempre que acessar página pública
+}, []); 
   function formatarTelefone(valor) {
     let numero = valor.replace(/\D/g, "").slice(0, 11);
+
     if (numero.length === 0) return "";
     if (numero.length < 3) return `(${numero}`;
-    if (numero.length < 4)
-      return `(${numero.slice(0, 2)}) ${numero.slice(2)}`;
+    if (numero.length < 4) return `(${numero.slice(0, 2)}) ${numero.slice(2)}`;
     if (numero.length < 8)
       return `(${numero.slice(0, 2)}) ${numero.slice(2, 3)} ${numero.slice(3)}`;
+
     return `(${numero.slice(0, 2)}) ${numero.slice(2, 3)} ${numero.slice(
       3,
       7
     )}-${numero.slice(7)}`;
   }
 
-  // ===============================
-  // VALIDAÇÃO STEP 1
-  // ===============================
   function validarStep1() {
     const newErrors = {};
 
-    if (!solicitante)
-      newErrors.solicitante = "Informe o nome completo.";
-
-    if (!email)
-      newErrors.email = "Informe o email.";
-
-    if (!cursoETurma)
-      newErrors.cursoETurma = "Informe curso/turma ou setor.";
-
-    if (!contato)
-      newErrors.contato = "Informe o telefone.";
+    if (!solicitante) newErrors.solicitante = "Informe o nome completo.";
+    if (!email) newErrors.email = "Informe o email.";
+    if (!cursoETurma) newErrors.cursoETurma = "Informe curso/turma ou setor.";
+    if (!contato) newErrors.contato = "Informe o telefone.";
 
     setErrors(newErrors);
+
     return Object.keys(newErrors).length === 0;
   }
 
-  // ===============================
-  // VALIDAÇÃO COMPLETA
-  // ===============================
   function validarFormulario() {
-      const newErrors = {};
+    const newErrors = {};
 
-      if (!cargo) newErrors.cargo = "Informe o seu Cargo.";
-      if (!material) newErrors.material = "Informe o Material.";
-      if (!sobreProjeto)
-        newErrors.sobreProjeto = "Descreva o projeto.";
-      if (!detalhe)
-        newErrors.detalhe = "Informe detalhes do pedido.";
+    if (!cargo) newErrors.cargo = "Informe o seu Cargo.";
+    if (!material) newErrors.material = "Informe o Material.";
+    if (!sobreProjeto) newErrors.sobreProjeto = "Descreva o projeto.";
+    if (!detalhe) newErrors.detalhe = "Informe detalhes do pedido.";
 
-      // ===============================
-      // Validação da data de entrega
-      // ===============================
-      if (!dataEntrega) {
-        newErrors.dataEntrega = "Informe a data de entrega.";
-      } else {
-        const hojeMais10 = new Date();
-        hojeMais10.setDate(hojeMais10.getDate() + 10);
+    if (!dataEntrega) {
+      newErrors.dataEntrega = "Informe a data de entrega.";
+    } else {
+      const hojeMais10 = new Date();
+      hojeMais10.setDate(hojeMais10.getDate() + 10);
 
-        // Compara só a data (ignora horário)
-        if (dataEntrega < hojeMais10) {
-          newErrors.dataEntrega =
-            "A data deve ser pelo menos 10 dias a partir de hoje.";
-        }
+      if (dataEntrega < hojeMais10) {
+        newErrors.dataEntrega =
+          "A data deve ser pelo menos 10 dias a partir de hoje.";
       }
-
-      if (!enviarArquivo)
-        newErrors.enviarArquivo = "Anexe um arquivo.";
-
-      // 🔥 NOVA REGRA
-      if (cargo === "Administrativo" && !centroDeCusto) {
-        newErrors.centroDeCusto = "Informe o Centro de Custo.";
-      }
-
-      setErrors(newErrors);
-      return Object.keys(newErrors).length === 0;
     }
 
-  function fileToBase64(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = reject;
-    });
+    if (!enviarArquivo) newErrors.enviarArquivo = "Anexe um arquivo.";
+
+    if (cargo === "Administrativo" && !centroDeCusto) {
+      newErrors.centroDeCusto = "Informe o Centro de Custo.";
+    }
+
+    setErrors(newErrors);
+
+    return Object.keys(newErrors).length === 0;
   }
 
   async function handleSubmit(e) {
@@ -122,49 +88,100 @@ export default function AddPedidos() {
 
     if (!validarFormulario()) return;
 
-    const arquivoBase64 = await fileToBase64(enviarArquivo);
+    try {
+      const arquivoReal = Array.isArray(enviarArquivo)
+        ? enviarArquivo[0]
+        : enviarArquivo;
 
-    const { error } = await supabase.from("pedidos").insert([
+      if (!arquivoReal) {
+        setErrors({ enviarArquivo: "Selecione um arquivo." });
+        return;
+      }
+
+      const filePath = `${Date.now()}-${arquivoReal.name.replace(
+        /[^a-zA-Z0-9.-]/g,
+        "_"
+      )}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("pedidos")
+        .upload(filePath, arquivoReal, {
+          cacheControl: "3600",
+          upsert: true,
+        });
+
+      if (uploadError) {
+        console.error("Erro upload:", uploadError);
+        setErrors({ supabase: uploadError.message });
+        return;
+      }
+
+      const { data } = supabase.storage
+        .from("pedidos")
+        .getPublicUrl(filePath);
+
+      const { error } = await supabase.from("pedidos").insert([
         {
           solicitante,
           email,
-          curso_turma: cursoETurma,
+          curso_turma: cursoETurma || "",
           contato,
-          cargo,
-          centro_custo: cargo === "Administrativo" ? centroDeCusto : null,
+          cargo: cargo || "",
+          centro_custo: cargo === "Administrativo" ? centroDeCusto || "" : "",
           material,
-          sobre_projeto: sobreProjeto,
+          sobre_projeto: sobreProjeto || "",
           detalhe,
-             data_entrega: dataEntrega.toISOString().split("T")[0],
-          arquivo: arquivoBase64,
+          data_entrega: dataEntrega
+            ? dataEntrega.toISOString().split("T")[0]
+            : null,
+          arquivo: data.publicUrl,
           is_completed: false,
+          historico: [
+            {
+              acao: "Solicitação criada",
+              data: new Date().toLocaleString("pt-BR"),
+            },
+          ],
         },
       ]);
 
-    if (error) {
-      setErrors({
-        supabase: "Erro ao enviar pedido. Tente novamente.",
-      });
-      return;
-    }
-
-    alert("✅ Pedido enviado com sucesso!");
-    setStep(1);
-    setErrors({});
-  }
-  useEffect(() => {
-      if (cargo !== "Administrativo") {
-        setCentroDeCusto("");
+      if (error) {
+        console.error(error);
+        setErrors({ supabase: "Erro ao salvar pedido." });
+        return;
       }
-    }, [cargo]);
 
-    const hoje = new Date();
-    const dataMinima = new Date();
-    dataMinima.setDate(hoje.getDate() + 10);  
+      alert("✅ Pedido enviado com sucesso!");
 
+      setStep(1);
+      setSolicitante("");
+      setEmail("");
+      setCursoETurma("");
+      setContato("");
+      setCentroDeCusto("");
+      setCargo("");
+      setMaterial("");
+      setSobreProjeto("");
+      setDetalhe("");
+      setDataEntrega(null);
+      setEnviarArquivo(null);
+      setErrors({});
+    } catch (err) {
+      console.error(err);
+      setErrors({ supabase: "Erro inesperado." });
+    }
+  }
+
+  useEffect(() => {
+    if (cargo !== "Administrativo") setCentroDeCusto("");
+  }, [cargo]);
+
+  const hoje = new Date();
+  const dataMinima = new Date();
+  dataMinima.setDate(hoje.getDate() + 10);
   return (
-    <div className="flex flex-col items-center w-full px-4">
-      <form className="flex flex-col gap-6 w-full max-w-6xl">
+   <div className="flex flex-col  max-w-6xl mx-auto mt-5  md:px-24 items-center w-full px-4 mb-20">
+      <form className="flex flex-col gap-6 w-full ">
 
         {/* ===== ETAPA 1 ===== */}
         {step === 1 && (

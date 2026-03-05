@@ -35,7 +35,7 @@ export default function Contact() {
             title="Entre em contato conosco!"
             />
 
-      <section className="flex flex-col text-xl items-center py-12 px-4 gap-8">
+      <section className="flex flex-col text-xl items-center py-12 px-4 md:px-48 gap-8">
         {/* FORMULÁRIO */}
         <form
             action="https://formsubmit.co/labmaker.fsa@fieb.org.br"

@@ -41,7 +41,7 @@ export default function InputRed({
           rounded-lg
           border-2
           h-[50px]
-          px-3
+          px-4
           text-lg
           bg-[#f4f8ff]
           dark:bg-textColor/20

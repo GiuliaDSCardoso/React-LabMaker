@@ -30,7 +30,7 @@ export default function AgendaAdmin() {
         title="Agenda Administrativa - LabMaker"
       />
 
-      <div className="flex flex-col justify-center items-center py-10 mb-[5%] px-6 w-full space-y-6">
+      <div className="flex flex-col md:flex-col md:items-center justify-center items-center py-10 mb-[5%] px-6 w-full space-y-6">
         <AddAgendamento onAdd={carregar} />
         <CalendarAgendaAdmin
           agendamentos={todosDados}

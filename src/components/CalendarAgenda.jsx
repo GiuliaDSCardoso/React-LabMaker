@@ -65,7 +65,7 @@ export default function CalendarAgenda({ agendamentos }) {
   };
 
   return (
-    <div className="bg-textColor dark:bg-[#001d49]  rounded-xl p-4 shadow">
+    <div className="bg-textColor dark:bg-[#001d49] lg:mx-0 md:mx-56   rounded-xl p-4 shadow">
 
       {/* HEADER COM NAVEGAÇÃO */}
       <div className="flex items-center text-[#2756ac] justify-between mb-4">
@@ -114,7 +114,7 @@ export default function CalendarAgenda({ agendamentos }) {
               onClick={() =>
                 status === "ocupado" && setDiaSelecionado(dataISO)
               }
-              className={`h-10 flex items-center justify-center rounded-lg text-sm font-bold text-white transition ${cores[status]}`}
+              className={`h-10 flex  items-center justify-center rounded-lg text-sm font-bold text-white transition ${cores[status]}`}
               title={
                 agendaPorData[dataISO]
                   ? agendaPorData[dataISO]
@@ -131,9 +131,9 @@ export default function CalendarAgenda({ agendamentos }) {
 
       {/* DETALHES */}
       {diaSelecionado && (
-        <div className="mt-4 text-[#2756ac] border-t border-[#7ea6f127] pt-3">
+        <div className="mt-4 text-white border-t border-[#7ea6f127] pt-3">
           <h4 className="font-bold  mb-2">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center text-white gap-2">
                 <CalendarDays className="w-5"/> {diaSelecionado.split("-").reverse().join("/")}
             </div>
             

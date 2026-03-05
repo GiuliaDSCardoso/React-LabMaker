@@ -20,9 +20,8 @@ const [horaAbertura, setHoraAbertura] = useState(8);
 const [horaFechamento, setHoraFechamento] = useState(22);
 const [aberto, setAberto] = useState(false);
 useEffect(() => {
-    // Sempre que acessar uma página pública, desloga qualquer sessão
-    supabase.auth.signOut();
-  }, []);
+  supabase.auth.signOut(); // desloga sempre que acessar página pública
+}, []);
   
 useEffect(() => {
   async function carregarHorario() {

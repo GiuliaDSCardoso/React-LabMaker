@@ -78,7 +78,7 @@ export default function InputFile({
           <div className="flex items-center gap-2 truncate">
             <Upload className="w-5 h-5" />
             <span className="truncate">
-              {fileName || "Clique para enviar arquivo"}
+              {fileName || "Clique para enviar arquivo "}
             </span>
           </div>
 

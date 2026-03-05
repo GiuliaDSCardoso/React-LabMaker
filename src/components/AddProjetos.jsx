@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import InputRed from "../assets/styles/InputRed.jsx";
 import { supabase } from "../services/supabase";
 import InputFile from "../assets/styles/InputFile.jsx";
 import InputSelect from "../assets/styles/InputSelect.jsx";
 import DatePickerInput from "../assets/styles/DatePickerInput";
+
 export default function AddProjetos() {
   const [step, setStep] = useState(1);
   const [errors, setErrors] = useState({});
@@ -15,10 +16,12 @@ export default function AddProjetos() {
   const [cargo, setCargo] = useState("");
 
   const [enviarArquivo, setEnviarArquivo] = useState(null);
-  const [dataSaida, setDataSaida] = useState("");
+  const [dataSaida, setDataSaida] = useState(null);
   const [sobreProjeto, setSobreProjeto] = useState("");
 
-  const hoje = new Date().toISOString().split("T")[0];
+  useEffect(() => {
+    supabase.auth.signOut();
+  }, []);
 
   function formatarTelefone(valor) {
     let numero = valor.replace(/\D/g, "").slice(0, 11);
@@ -67,14 +70,12 @@ export default function AddProjetos() {
     if (!cargo) newErrors.cargo = "Selecione o cargo.";
 
     if (email && !emailValido(email)) {
-      newErrors.email =
-        "Informe um email válido com domínio permitido.";
+      newErrors.email = "Informe um email válido com domínio permitido.";
     }
 
     const telefoneValido = /^\(\d{2}\) 9 \d{4}-\d{4}$/;
     if (contato && !telefoneValido.test(contato)) {
-      newErrors.contato =
-        "Telefone inválido. Use (DDD) 9 XXXX-XXXX";
+      newErrors.contato = "Telefone inválido. Use (DDD) 9 XXXX-XXXX";
     }
 
     setErrors(newErrors);
@@ -86,28 +87,35 @@ export default function AddProjetos() {
 
     const newErrors = {};
 
-    if (!sobreProjeto)
-      newErrors.sobreProjeto = "Descreva o projeto.";
+    if (!sobreProjeto) newErrors.sobreProjeto = "Descreva o projeto.";
+    if (!enviarArquivo) newErrors.enviarArquivo = "Anexe um arquivo.";
 
-    if (!enviarArquivo)
-      newErrors.enviarArquivo = "Anexe um arquivo.";
-
-    if (!dataSaida)
+    if (!dataSaida) {
       newErrors.dataSaida = "Informe a data de retirada.";
+    } else {
+      const hoje = new Date();
+      hoje.setHours(0, 0, 0, 0);
 
-    if (dataSaida && dataSaida < hoje)
-      newErrors.dataSaida =
-        "A data não pode ser anterior a hoje.";
+      if (dataSaida < hoje) {
+        newErrors.dataSaida = "A data não pode ser anterior a hoje.";
+      }
+    }
 
     setErrors(newErrors);
-
     if (Object.keys(newErrors).length > 0) return;
 
-    const fileName = `${Date.now()}-${enviarArquivo.name}`;
+    const dataFormatada = dataSaida.toISOString().split("T")[0];
+
+    const fileName = `${Date.now()}-${enviarArquivo.name.replace(
+      /[^a-zA-Z0-9.-]/g,
+      "_"
+    )}`;
 
     const { error: uploadError } = await supabase.storage
       .from("projetos")
-      .upload(`arquivos/${fileName}`, enviarArquivo);
+      .upload(`arquivos_url/${fileName}`, enviarArquivo, {
+        contentType: enviarArquivo.type,
+      });
 
     if (uploadError) {
       setErrors({ supabase: uploadError.message });
@@ -116,22 +124,20 @@ export default function AddProjetos() {
 
     const { data } = supabase.storage
       .from("projetos")
-      .getPublicUrl(`arquivos/${fileName}`);
+      .getPublicUrl(`arquivos_url/${fileName}`);
 
-    const { error: insertError } = await supabase
-      .from("projetos")
-      .insert([
-        {
-          solicitante,
-          email,
-          cargo,
-          curso_turma: cursoETurma,
-          contato,
-          sobre_projeto: sobreProjeto,
-          data_saida: dataSaida,
-          arquivo_url: data.publicUrl,
-        },
-      ]);
+    const { error: insertError } = await supabase.from("projetos").insert([
+      {
+        solicitante,
+        email,
+        cargo,
+        curso_turma: cursoETurma,
+        contato,
+        sobre_projeto: sobreProjeto,
+        data_saida: dataFormatada,
+        arquivo_url: data.publicUrl,
+      },
+    ]);
 
     if (insertError) {
       setErrors({ supabase: insertError.message });
@@ -148,12 +154,12 @@ export default function AddProjetos() {
     setContato("");
     setSobreProjeto("");
     setEnviarArquivo(null);
-    setDataSaida("");
+    setDataSaida(null);
     setErrors({});
   }
 
   return (
-    <div className="flex flex-col items-center w-full px-4 mb-20">
+    <div className="flex flex-col max-w-6xl mx-auto mt-5 md:px-24 items-center w-full px-4 mb-20">
       <form
         onSubmit={handleSubmit}
         className="flex flex-col gap-6 w-full max-w-6xl"
@@ -164,7 +170,6 @@ export default function AddProjetos() {
           </p>
         )}
 
-        {/* ===== ETAPA 1 ===== */}
         {step === 1 && (
           <div className="flex flex-col gap-6">
             <div className="flex md:flex-row flex-col gap-6">
@@ -198,7 +203,7 @@ export default function AddProjetos() {
               <div className="w-full flex flex-col gap-4">
                 <InputRed
                   title="Telefone:"
-                  placeholder="Insira o seu telefone Ex.: (DDD) 9 00000000"
+                  placeholder="Insira o seu telefone Ex.: (DDD) 9 0000-0000"
                   value={contato}
                   onChange={(e) =>
                     setContato(formatarTelefone(e.target.value))
@@ -223,9 +228,7 @@ export default function AddProjetos() {
 
             <button
               type="button"
-              onClick={() =>
-                validarStep1() && setStep(2)
-              }
+              onClick={() => validarStep1() && setStep(2)}
               className="h-[50px] hover:bg-[#001438] bg-[#0E4194] text-white rounded mt-4"
             >
               Próximo
@@ -233,16 +236,13 @@ export default function AddProjetos() {
           </div>
         )}
 
-        {/* ===== ETAPA 2 ===== */}
         {step === 2 && (
           <div className="flex flex-col gap-6">
             <InputRed
-              title="Descreva o projeto: "
+              title="Descreva o projeto:"
               value={sobreProjeto}
               placeholder="Descreva o seu projeto *Dica: seja breve e objetivo*"
-              onChange={(e) =>
-                setSobreProjeto(e.target.value)
-              }
+              onChange={(e) => setSobreProjeto(e.target.value)}
               error={errors.sobreProjeto}
             />
 
@@ -253,22 +253,13 @@ export default function AddProjetos() {
               error={errors.enviarArquivo}
             />
 
-           <DatePickerInput
-                title="Data de Retirada:"
-                selected={dataSaida ? new Date(dataSaida) : null}
-                onChange={(date) => {
-                  if (!date) {
-                    setDataSaida("");
-                    return;
-                  }
-                  const ano = date.getFullYear();
-                  const mes = String(date.getMonth() + 1).padStart(2, "0");
-                  const dia = String(date.getDate()).padStart(2, "0");
-                  setDataSaida(`${ano}-${mes}-${dia}`); // ✅ crase para template literal
-                }}
-                minDate={new Date()}
-                error={errors.dataSaida}
-              />
+            <DatePickerInput
+              title="Data de Retirada:"
+              selected={dataSaida}
+              onChange={setDataSaida}
+              error={errors.dataSaida}
+            />
+
             <div className="flex gap-4">
               <button
                 type="button"

@@ -30,7 +30,7 @@ export default function GuardarProjetos() {
           title="Solicitação de Espaço para Guardar Projetos"
       />
 
-      <div className="mt-10 mb-10 flex justify-center px-4">
+      <div className="mt-16 mb-10 flex justify-center px-4">
         <AddProjetos onAddProjetosClick={handleAddProjetos} />
       </div>
     </Body>
