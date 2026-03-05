@@ -19,11 +19,11 @@ export default function AddSolicitacao() {
   const [termosAceitos, setTermosAceitos] = useState(false);
 
   useEffect(() => {
-  supabase.auth.signOut(); // desloga sempre que acessar página pública
-}, []);
-  const termosRef = useRef(null); // ref para overlay de termos
-  
-  // Fecha overlay ao clicar fora
+    supabase.auth.signOut();
+  }, []);
+
+  const termosRef = useRef(null);
+
   useEffect(() => {
     function handleClickOutside(event) {
       if (termosRef.current && !termosRef.current.contains(event.target)) {
@@ -33,6 +33,27 @@ export default function AddSolicitacao() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  function emailValido(email) {
+    const emailRegex = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i;
+
+    const dominiosPermitidos = [
+      "@ba.estudante.senai.br",
+      "@fieb.org.br",
+      "@fbest.org.br",
+    ];
+
+    if (email.length > 60) return false;
+
+    const parteUsuario = email.split("@")[0];
+    if (parteUsuario.length < 3 || parteUsuario.length > 30) return false;
+
+    if (!emailRegex.test(email)) return false;
+
+    return dominiosPermitidos.some((dominio) =>
+      email.toLowerCase().endsWith(dominio)
+    );
+  }
 
   function formatarTelefone(valor) {
     let numero = valor.replace(/\D/g, "").slice(0, 11);
@@ -61,22 +82,34 @@ export default function AddSolicitacao() {
 
   function validarStep1() {
     const newErrors = {};
+
     if (!solicitante) newErrors.solicitante = "Informe o nome completo.";
-    if (!email) newErrors.email = "Informe o email.";
+
+    if (!email) {
+      newErrors.email = "Informe o email.";
+    } else if (!emailValido(email)) {
+      newErrors.email = "Email inválido ou domínio não permitido.";
+    }
+
     if (!cursoETurma) newErrors.cursoETurma = "Informe curso e turma ou setor.";
     if (!contato) newErrors.contato = "Informe o telefone.";
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
+
     const newErrors = {};
+
     if (componentes.length === 0) newErrors.componentes = "Adicione ao menos um componente.";
     if (!dataEmprestimo) newErrors.dataEmprestimo = "Informe a data do empréstimo.";
     if (!dataDevolucao) newErrors.dataDevolucao = "Informe a data de devolução.";
     if (!termosAceitos) newErrors.termos = "Você precisa aceitar os termos.";
+
     setErrors(newErrors);
+
     if (Object.keys(newErrors).length > 0) return;
 
     const { error } = await supabase.from("emprestimos").insert({
@@ -169,48 +202,65 @@ export default function AddSolicitacao() {
               error={errors.componentes}
             />
 
-            <DatePickerInput
-              title="Data do empréstimo:"
-              selected={dataEmprestimo ? new Date(dataEmprestimo) : null}
-              onChange={(date) => {
-                if (!date) {
-                  setDataEmprestimo("");
-                  return;
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Data do Empréstimo
+              </label>
+              <DatePickerInput
+                selected={
+                  dataEmprestimo ? new Date(dataEmprestimo + "T12:00:00") : null
                 }
+                onChange={(date) => {
+                  if (!date) {
+                    setDataEmprestimo("");
+                    return;
+                  }
 
-                const ano = date.getFullYear();
-                const mes = String(date.getMonth() + 1).padStart(2, "0");
-                const dia = String(date.getDate()).padStart(2, "0");
+                  const dataLocal = new Date(date);
+                  dataLocal.setHours(12, 0, 0, 0);
 
-                setDataEmprestimo(`${ano}-${mes}-${dia}`);
-              }}
-              minDate={new Date()}
-              error={errors.dataEmprestimo}
-            />
+                  const ano = dataLocal.getFullYear();
+                  const mes = String(dataLocal.getMonth() + 1).padStart(2, "0");
+                  const dia = String(dataLocal.getDate()).padStart(2, "0");
 
-            <DatePickerInput
-              title="Data de devolução:"
-              selected={dataDevolucao ? new Date(dataDevolucao) : null}
-              onChange={(date) => {
-                if (!date) {
-                  setDataDevolucao("");
-                  return;
+                  setDataEmprestimo(`${ano}-${mes}-${dia}`);
+                }}
+                dateFormat="dd/MM/yyyy"
+                placeholderText="Selecione a data"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Data de Devolução
+              </label>
+              <DatePickerInput
+                selected={
+                  dataDevolucao ? new Date(dataDevolucao + "T12:00:00") : null
                 }
+                onChange={(date) => {
+                  if (!date) {
+                    setDataDevolucao("");
+                    return;
+                  }
 
-                const ano = date.getFullYear();
-                const mes = String(date.getMonth() + 1).padStart(2, "0");
-                const dia = String(date.getDate()).padStart(2, "0");
+                  const dataLocal = new Date(date);
+                  dataLocal.setHours(12, 0, 0, 0);
 
-                setDataDevolucao(`${ano}-${mes}-${dia}`);
-              }}
-              minDate={
-                dataEmprestimo
-                  ? new Date(dataEmprestimo)
-                  : new Date()
-              }
-              error={errors.dataDevolucao}
-            />
+                  const ano = dataLocal.getFullYear();
+                  const mes = String(dataLocal.getMonth() + 1).padStart(2, "0");
+                  const dia = String(dataLocal.getDate()).padStart(2, "0");
 
+                  setDataDevolucao(`${ano}-${mes}-${dia}`);
+                }}
+                dateFormat="dd/MM/yyyy"
+                placeholderText="Selecione a data"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
             {/* ===== Termos de Responsabilidade ===== */}
             <div className="relative">
               <div className="flex items-center gap-2">
@@ -274,6 +324,9 @@ export default function AddSolicitacao() {
                 Enviar
               </button>
             </div>
+            <h1 className="text-md text-red-600 ">
+              *Aguarde a confirmação da página antes de enviar uma nova Solicitação
+            </h1>
           </div>
         )}
       </form>
