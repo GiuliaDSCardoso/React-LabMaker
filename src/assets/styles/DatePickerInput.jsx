@@ -111,6 +111,21 @@ export default function DatePickerInput({ title, selected, error, onChange }) {
     <div className="flex flex-col gap-2 w-full">
       <label className="text-lg font-medium md:text-xl text-gray-700 dark:text-white">
         {title}
+        <span className="relative group cursor-help text-red-600">
+          *
+          <span
+            className="
+              absolute left-1/2 -translate-x-1/2 top-6
+              hidden group-hover:block
+              bg-textColor/40 dark:bg-textColor text-white text-xs md:text-sm
+              px-2 py-1 rounded
+              whitespace-nowrap
+              z-50
+            "
+          >
+            item obrigatório
+          </span>
+        </span>
       </label>
 
       <DatePicker

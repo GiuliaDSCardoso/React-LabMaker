@@ -27,10 +27,20 @@ export default function AgendaUso() {
   const [datasSelecionadas, setDatasSelecionadas] = useState([]);
   const [modoHorario, setModoHorario] = useState("igual");
   const [errors, setErrors] = useState({});
+  const [enviando, setEnviando] = useState(false);
 
  useEffect(() => {
   supabase.auth.signOut(); // desloga sempre que acessar página pública
 }, []);
+
+  useEffect(() => {
+    if (diaInteiro) {
+      setHoraInicio("00:00");
+      setHoraFim("23:59");
+    } else {
+      aplicarTurno(turno);
+    }
+  }, [diaInteiro, turno]);
   function dataEhPassada(date) {
     if (!date) return true;
     const hoje = new Date();
@@ -71,16 +81,14 @@ export default function AgendaUso() {
 function horarioConflita(data, inicio, fim, diaInteiro) {
   return agendamentos.some((ag) => {
 
-    // se não for a mesma data, ignora
     if (ag.data !== data) return false;
 
-    // se algum dos dois for dia inteiro, já é conflito
+    // se algum dos dois for dia inteiro
     if (ag.dia_inteiro || diaInteiro) return true;
 
-    const inicioExistente = ag.hora_inicio;
-    const fimExistente = ag.hora_fim;
+    const inicioExistente = ag.hora_inicio || "08:00";
+    const fimExistente = ag.hora_fim || "21:59";
 
-    // verifica sobreposição de horários
     return inicio < fimExistente && fim > inicioExistente;
   });
 }
@@ -176,125 +184,152 @@ function horarioConflita(data, inicio, fim, diaInteiro) {
   }
 
   async function enviar() {
-    const newErrors = {};
 
-    if (!nome) newErrors.nome = "Informe seu nome.";
-    if (!email) newErrors.email = "Informe seu email.";
-    if (!telefone) newErrors.telefone = "Informe seu telefone.";
-    if (!motivo) newErrors.motivo = "Informe o motivo.";
-    if (!arrumacao) newErrors.arrumacao = "Selecione a arrumação.";
-    if (datasSelecionadas.length === 0)
-      newErrors.datas = "Adicione ao menos uma data.";
+  if (enviando) return;
+  setEnviando(true);
 
-    if (email && !emailValido(email))
-      newErrors.email = "Email inválido.";
+  const newErrors = {};
 
-    const telefoneRegex = /^\(\d{2}\) 9 \d{4}-\d{4}$/;
-    if (telefone && !telefoneRegex.test(telefone))
-      newErrors.telefone = "Telefone inválido.";
+  if (!nome) newErrors.nome = "Informe seu nome.";
+  if (!email) newErrors.email = "Informe seu email.";
+  if (!telefone) newErrors.telefone = "Informe seu telefone.";
+  if (!motivo) newErrors.motivo = "Informe o motivo.";
+  if (!arrumacao) newErrors.arrumacao = "Selecione a arrumação.";
+  if (datasSelecionadas.length === 0)
+    newErrors.datas = "Adicione ao menos uma data.";
 
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
+  if (email && !emailValido(email))
+    newErrors.email = "Email inválido.";
 
-    setErrors({});
+  const telefoneRegex = /^\(\d{2}\) 9 \d{4}-\d{4}$/;
+  if (telefone && !telefoneRegex.test(telefone))
+    newErrors.telefone = "Telefone inválido.";
 
-    const novosRegistros = datasSelecionadas.map((item) => ({
-      nome,
-      email,
-      telefone,
-      motivo,
-      arrumacao,
-      turno,
-      tipo: "USUÁRIO",
-      status: "pendente",
-      historico: [],
-      data: modoHorario === "igual" ? item.toISOString().split("T")[0] : item.data.toISOString().split("T")[0],
-      hora_inicio:
-        modoHorario === "igual" ? horaInicio : item.horaInicio,
-      hora_fim:
-        modoHorario === "igual" ? horaFim : item.horaFim,
-      dia_inteiro:
-        modoHorario === "igual" ? diaInteiro : item.diaInteiro,
-    }));
-    for (const item of datasSelecionadas) {
-      const dataCheck =
-        modoHorario === "igual"
-          ? item.toISOString().split("T")[0]
-          : item.data.toISOString().split("T")[0];
-
-      const inicioCheck =
-        modoHorario === "igual" ? horaInicio : item.horaInicio;
-
-      const fimCheck =
-        modoHorario === "igual" ? horaFim : item.horaFim;
-
-      const diaInteiroCheck =
-  modoHorario === "igual" ? diaInteiro : item.diaInteiro;
-
-if (horarioConflita(dataCheck, inicioCheck, fimCheck, diaInteiroCheck)) {
-        setErrors({
-          datas: `A data ${formatarDataBr(dataCheck)} já possui um agendamento neste horário.`,
-        });
-        return;
-      }
-    }
-    const { error } = await supabase
-      .from("agendamentos")
-      .insert(novosRegistros);
-
-    if (error) {
-      alert("Erro ao salvar: " + error.message);
-      return;
-    }
-
-    const datasFormatadas = datasSelecionadas
-      .map((item) => {
-        const d = modoHorario === "igual" ? item : item.data;
-        return `${formatarDataBr(d)} - ${
-          modoHorario === "igual"
-            ? diaInteiro
-              ? "Dia inteiro"
-              : `${horaInicio} às ${horaFim}`
-            : item.diaInteiro
-            ? "Dia inteiro"
-            : `${item.horaInicio} às ${item.horaFim}`
-        }`;
-      })
-      .join("\n");
-
-    try {
-      await emailjs.send(
-        "service_seiz71a",
-        "template_va5k0hr",
-        {
-          nome,
-          email,
-          telefone,
-          arrumacao,
-          motivo,
-          datas: datasFormatadas,
-        },
-        "SZWf2utdw8nJQKtjZ"
-      );
-
-      alert("Solicitação enviada com sucesso!");
-    } catch (err) {
-      alert("Erro ao enviar email.");
-      console.error(err);
-    }
-
-    // Reset
-    setNome("");
-    setEmail("");
-    setTelefone("");
-    setMotivo("");
-    setArrumacao("");
-    setDatasSelecionadas([]);
-    setDiaInteiro(false);
-    aplicarTurno("manha");
+  // valida horário
+  if (!diaInteiro && horaInicio >= horaFim) {
+    newErrors.horaFim =
+      "O horário de término deve ser depois do horário de início.";
   }
+
+  if (Object.keys(newErrors).length > 0) {
+    setErrors(newErrors);
+    setEnviando(false);
+    return;
+  }
+
+  setErrors({});
+
+  // checar conflitos antes de salvar
+  for (const item of datasSelecionadas) {
+
+    const dataCheck =
+      modoHorario === "igual"
+        ? item.toISOString().split("T")[0]
+        : item.data.toISOString().split("T")[0];
+
+    const inicioCheck =
+      modoHorario === "igual" ? horaInicio : item.horaInicio;
+
+    const fimCheck =
+      modoHorario === "igual" ? horaFim : item.horaFim;
+
+    const diaInteiroCheck =
+      modoHorario === "igual" ? diaInteiro : item.diaInteiro;
+
+    if (horarioConflita(dataCheck, inicioCheck, fimCheck, diaInteiroCheck)) {
+      setErrors({
+        datas: `A data ${formatarDataBr(
+          dataCheck
+        )} já possui um agendamento neste horário.`,
+      });
+
+      setEnviando(false);
+      return;
+    }
+  }
+
+  const novosRegistros = datasSelecionadas.map((item) => ({
+    nome,
+    email,
+    telefone,
+    motivo,
+    arrumacao,
+    turno,
+    tipo: "USUÁRIO",
+    status: "pendente",
+    historico: [],
+    data:
+      modoHorario === "igual"
+        ? item.toISOString().split("T")[0]
+        : item.data.toISOString().split("T")[0],
+    hora_inicio:
+      modoHorario === "igual" ? horaInicio : item.horaInicio,
+    hora_fim:
+      modoHorario === "igual" ? horaFim : item.horaFim,
+    dia_inteiro:
+      modoHorario === "igual" ? diaInteiro : item.diaInteiro,
+  }));
+
+  const { error } = await supabase
+    .from("agendamentos")
+    .insert(novosRegistros);
+
+  if (error) {
+    alert("Erro ao salvar: " + error.message);
+    setEnviando(false);
+    return;
+  }
+
+  const datasFormatadas = datasSelecionadas
+    .map((item) => {
+      const d = modoHorario === "igual" ? item : item.data;
+
+      return `${formatarDataBr(d)} - ${
+        modoHorario === "igual"
+          ? diaInteiro
+            ? "Dia inteiro"
+            : `${horaInicio} às ${horaFim}`
+          : item.diaInteiro
+          ? "Dia inteiro"
+          : `${item.horaInicio} às ${item.horaFim}`
+      }`;
+    })
+    .join("\n");
+
+  try {
+    await emailjs.send(
+      "service_seiz71a",
+      "template_va5k0hr",
+      {
+        nome,
+        email,
+        telefone,
+        arrumacao,
+        motivo,
+        datas: datasFormatadas,
+      },
+      "SZWf2utdw8nJQKtjZ"
+    );
+
+    alert("Solicitação enviada com sucesso!");
+  } catch (err) {
+    alert("Erro ao enviar email.");
+    console.error(err);
+  }
+
+  // resetar formulário
+  setNome("");
+  setEmail("");
+  setTelefone("");
+  setMotivo("");
+  setArrumacao("");
+  setDatasSelecionadas([]);
+  setDiaInteiro(false);
+  aplicarTurno("manha");
+
+  setEnviando(false);
+  setStep(1);
+}
 
   function validarEtapa1() {
     const newErrors = {};
@@ -342,7 +377,7 @@ if (horarioConflita(dataCheck, inicioCheck, fimCheck, diaInteiroCheck)) {
               />
               <InputRed
                 title="Insira seu email:"
-                placeholder="Digite seu email"
+                placeholder="Digite seu email institucional"
                 value={email}
                 error={errors.email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -440,7 +475,7 @@ if (horarioConflita(dataCheck, inicioCheck, fimCheck, diaInteiroCheck)) {
                   </div>
                 )}
               </div>
-
+              {!diaInteiro &&(
               <div className="flex gap-2">
                 <InputDate
                   type="time"
@@ -461,6 +496,7 @@ if (horarioConflita(dataCheck, inicioCheck, fimCheck, diaInteiroCheck)) {
                   onChange={(e) => setHoraFim(e.target.value)}
                 />
               </div>
+              )}
 
               <button
                 type="button"
@@ -524,14 +560,14 @@ if (horarioConflita(dataCheck, inicioCheck, fimCheck, diaInteiroCheck)) {
 
                 <button
                   onClick={enviar}
+                  disabled={enviando}
                   className="bg-[#2756ac] hover:bg-[#001438] text-white h-[50px] text-lg rounded w-full"
                 >
-                  Enviar solicitação
+                  {enviando ? "Enviando..." : "Enviar solicitação"}
                 </button>
-                
               </div>
               <h1 className="text-md text-red-600 ">
-                  *Aguarde a confirmação da página antes de enviar uma nova Solicitação
+                  *Aguarde a confirmação da página antes de enviar uma nova Solicitação, após o envio, recarregue a página para atualizar o calendário
                 </h1>
             </>
           )}
