@@ -38,13 +38,25 @@ export default function AddPedidos() {
       7
     )}-${numero.slice(7)}`;
   }
+  function textoValido(texto) {
+    const regex = /^[A-Za-zÀ-ÿ0-9\s]+$/;
+    return regex.test(texto);
+  }
 
   function validarStep1() {
     const newErrors = {};
 
-    if (!solicitante) newErrors.solicitante = "Informe o nome completo.";
+    if (!solicitante) {
+      newErrors.solicitante = "Informe o nome completo.";
+    } else if (!textoValido(solicitante)) {
+      newErrors.solicitante = "O nome não pode conter caracteres especiais.";
+    };
     if (!email) newErrors.email = "Informe o email.";
-    if (!cursoETurma) newErrors.cursoETurma = "Informe curso/turma ou setor.";
+    if (!cursoETurma) {
+      newErrors.cursoETurma = "Informe curso/turma ou setor.";
+    } else if (!textoValido(cursoETurma)) {
+      newErrors.cursoETurma = "Curso/Turma não pode conter caracteres especiais.";
+    }
     if (!contato) newErrors.contato = "Informe o telefone.";
 
     setErrors(newErrors);
@@ -194,9 +206,13 @@ export default function AddPedidos() {
                   title="Solicitante:"
                   value={solicitante}
                   placeholder="Informe seu nome completo"
-                  onChange={(e) =>
-                    setSolicitante(e.target.value)
-                  }
+                  onChange={(e) => {
+                    const valor = e.target.value;
+
+                    if (/^[A-Za-zÀ-ÿ\s]*$/.test(valor)) {
+                      setSolicitante(valor);
+                    }
+                  }}
                   error={errors.solicitante}
                 />
 
@@ -217,9 +233,13 @@ export default function AddPedidos() {
                   title="Curso & Turma / Setor:"
                   value={cursoETurma}
                   placeholder="Informe seu curso e turma ou setor"
-                  onChange={(e) =>
-                    setCursoETurma(e.target.value)
-                  }
+                  onChange={(e) => {
+                    const valor = e.target.value;
+
+                    if (/^[A-Za-zÀ-ÿ0-9\s]*$/.test(valor)) {
+                      setCursoETurma(valor);
+                    }
+                  }}
                   error={errors.cursoETurma}
                 />
 
@@ -338,7 +358,7 @@ export default function AddPedidos() {
               <button
                 type="button"
                 onClick={() => setStep(1)}
-                className="h-[50px] hover:bg-blue-50 w-full bg-blue-300 rounded"
+                className="h-[50px] hover:bg-blue-500 w-full text-white bg-blue-400 rounded"
               >
                 Voltar
               </button>
@@ -351,7 +371,7 @@ export default function AddPedidos() {
                 Enviar
               </button>
             </div>
-            <h1 className="text-sm ">
+            <h1 className="text-md text-red-600 ">
               Aguarde a confirmação da página antes de enviar uma nova Solicitação
             </h1>
           </div>

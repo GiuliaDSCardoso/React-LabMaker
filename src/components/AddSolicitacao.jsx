@@ -66,7 +66,20 @@ export default function AddSolicitacao() {
 
   function adicionarComponente() {
     if (!componenteInput.trim()) return;
-    setComponentes((prev) => [...prev, { nome: componenteInput.trim(), quantidade: 1 }]);
+
+    if (!componenteValido(componenteInput)) {
+      setErrors((prev) => ({
+        ...prev,
+        componentes: "O nome do componente não pode conter caracteres especiais.",
+      }));
+      return;
+    }
+
+    setComponentes((prev) => [
+      ...prev,
+      { nome: componenteInput.trim(), quantidade: 1 },
+    ]);
+
     setComponenteInput("");
   }
 
@@ -79,11 +92,29 @@ export default function AddSolicitacao() {
   function removerComponente(index) {
     setComponentes(componentes.filter((_, i) => i !== index));
   }
+  function cursoValido(curso) {
+     const regex = /^[A-Za-zÀ-ÿ\s]+$/;
+    return regex.test(curso);
+  }
+
+  function nomeValido(nome) {
+    const regex = /^[A-Za-zÀ-ÿ\s]+$/;
+    return regex.test(nome);
+  }
+
+  function componenteValido(nome) {
+    const regex = /^[A-Za-zÀ-ÿ0-9\s]+$/;
+    return regex.test(nome);
+  } 
 
   function validarStep1() {
     const newErrors = {};
 
-    if (!solicitante) newErrors.solicitante = "Informe o nome completo.";
+   if (!solicitante) {
+      newErrors.solicitante = "Informe o nome completo.";
+    } else if (!nomeValido(solicitante)) {
+      newErrors.solicitante = "Nome não pode conter caracteres especiais.";
+    }
 
     if (!email) {
       newErrors.email = "Informe o email.";
@@ -91,7 +122,12 @@ export default function AddSolicitacao() {
       newErrors.email = "Email inválido ou domínio não permitido.";
     }
 
-    if (!cursoETurma) newErrors.cursoETurma = "Informe curso e turma ou setor.";
+    if (!cursoETurma) {
+      newErrors.cursoETurma = "Informe curso e turma ou setor.";
+    } else if (!cursoValido(cursoETurma)) {
+      newErrors.cursoETurma =
+        "Curso/Turma não pode conter caracteres especiais.";
+    }
     if (!contato) newErrors.contato = "Informe o telefone.";
 
     setErrors(newErrors);
@@ -145,7 +181,13 @@ export default function AddSolicitacao() {
                   title="Solicitante:"
                   value={solicitante}
                   placeholder="Insira seu nome completo"
-                  onChange={(e) => setSolicitante(e.target.value)}
+                  onChange={(e) => {
+                    const valor = e.target.value;
+
+                    if (/^[A-Za-zÀ-ÿ\s]*$/.test(valor)) {
+                      setSolicitante(valor);
+                    }
+                  }}
                   error={errors.solicitante}
                 />
                 <InputRed
@@ -164,7 +206,14 @@ export default function AddSolicitacao() {
                   title="Curso e Turma / Setor:"
                   value={cursoETurma}
                   placeholder="Insira seu curso e sua turma"
-                  onChange={(e) => setCursoETurma(e.target.value)}
+                  
+                  onChange={(e) => {
+                    const valor = e.target.value;
+
+                    if (/^[A-Za-zÀ-ÿ0-9\s\-/]*$/.test(valor)) {
+                      setCursoETurma(valor);
+                    }
+                  }}
                   error={errors.cursoETurma}
                 />
                 <InputRed
@@ -192,22 +241,24 @@ export default function AddSolicitacao() {
           <div className="flex flex-col gap-6">
             <ComponenteInput
               value={componenteInput}
-              onChange={setComponenteInput}
+              onChange={(valor) => {
+                if (/^[A-Za-zÀ-ÿ0-9\s]*$/.test(valor)) {
+                  setComponenteInput(valor);
+                }
+              }}
               onAdd={adicionarComponente}
               items={componentes}
               onRemove={removerComponente}
               onUpdateQuantidade={atualizarQuantidade}
-              title="Componentes:"
-              descricao="Digite o nome do componente"
+              title="Lista de Componentes:"
+              descricao="Digite o nome do componente *Dica: Clique no botão de + azul para adicionar o componente na lista"
               error={errors.componentes}
             />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Data do Empréstimo
-              </label>
               <DatePickerInput
+                title="Data do Empréstimo"
                 selected={
                   dataEmprestimo ? new Date(dataEmprestimo + "T12:00:00") : null
                 }
@@ -233,10 +284,9 @@ export default function AddSolicitacao() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Data de Devolução
-              </label>
+             
               <DatePickerInput
+                title="Data de Devolução"
                 selected={
                   dataDevolucao ? new Date(dataDevolucao + "T12:00:00") : null
                 }
@@ -317,7 +367,7 @@ export default function AddSolicitacao() {
             </div>
 
             <div className="flex gap-4">
-              <button type="button" onClick={() => setStep(1)} className="h-[50px] hover:bg-blue-500 w-full bg-blue-400 rounded">
+              <button type="button" onClick={() => setStep(1)} className="h-[50px] hover:bg-blue-500 w-full text-white bg-blue-400 rounded"> 
                 Voltar
               </button>
               <button type="submit" className="h-[50px] hover:bg-[#001438] w-full bg-[#0E4194] text-white rounded">

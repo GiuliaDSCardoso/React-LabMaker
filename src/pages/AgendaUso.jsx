@@ -112,6 +112,15 @@ function horarioConflita(data, inicio, fim, diaInteiro) {
       email.toLowerCase().endsWith(d)
     );
   }
+  function nomeValido(nome) {
+    const regex = /^[A-Za-zÀ-ÿ\s]+$/;
+    return regex.test(nome);
+  }
+
+  function motivoValido(texto) {
+    const regex = /^[A-Za-zÀ-ÿ0-9\s.,-]+$/;
+    return regex.test(texto);
+  }
 
  function formatarDataBr(date) {
   if (!date) return "";
@@ -190,10 +199,18 @@ function horarioConflita(data, inicio, fim, diaInteiro) {
 
   const newErrors = {};
 
-  if (!nome) newErrors.nome = "Informe seu nome.";
+  if (!nome) {
+    newErrors.nome = "Informe seu nome.";
+  } else if (!nomeValido(nome)) {
+    newErrors.nome = "O nome não pode conter caracteres especiais.";
+  }
   if (!email) newErrors.email = "Informe seu email.";
   if (!telefone) newErrors.telefone = "Informe seu telefone.";
-  if (!motivo) newErrors.motivo = "Informe o motivo.";
+  if (!motivo) {
+      newErrors.motivo = "Informe o motivo.";
+    } else if (!motivoValido(motivo)) {
+      newErrors.motivo = "O motivo contém caracteres inválidos.";
+    }
   if (!arrumacao) newErrors.arrumacao = "Selecione a arrumação.";
   if (datasSelecionadas.length === 0)
     newErrors.datas = "Adicione ao menos uma data.";
@@ -334,7 +351,11 @@ function horarioConflita(data, inicio, fim, diaInteiro) {
   function validarEtapa1() {
     const newErrors = {};
 
-    if (!nome) newErrors.nome = "Informe seu nome.";
+    if (!nome) {
+      newErrors.nome = "Informe seu nome.";
+    } else if (!nomeValido(nome)) {
+      newErrors.nome = "O nome não pode conter caracteres especiais.";
+    }
     if (!email) newErrors.email = "Informe seu email.";
     if (!telefone) newErrors.telefone = "Informe seu telefone.";
     if (!arrumacao) newErrors.arrumacao = "Selecione a arrumação.";
@@ -363,7 +384,7 @@ function horarioConflita(data, inicio, fim, diaInteiro) {
         descricao="* Restrito a colaboradores"
       />
 
-      <div className="flex flex-col lg:flex-row md:flex-col md:items-center mt-16 mb-20 gap-20 px-4 w-full max-w-6xl mx-auto justify-center">
+      <div className="flex flex-col lg:flex-row md:flex-col  mt-16 mb-20 gap-20 px-4 w-full max-w-6xl mx-auto justify-center">
 
         <div className="md:w-[40%] w-full space-y-4">
           {step === 1 && (
@@ -373,7 +394,13 @@ function horarioConflita(data, inicio, fim, diaInteiro) {
                 placeholder="Digite seu nome completo"
                 value={nome}
                 error={errors.nome}
-                onChange={(e) => setNome(e.target.value)}
+                onChange={(e) => {
+                  const valor = e.target.value;
+
+                  if (/^[A-Za-zÀ-ÿ\s]*$/.test(valor)) {
+                    setNome(valor);
+                  }
+                }}
               />
               <InputRed
                 title="Insira seu email:"
@@ -438,13 +465,15 @@ function horarioConflita(data, inicio, fim, diaInteiro) {
               <DatePickerInput
                 title="Data do agendamento:"
                 selected={data}
+                placeholder="Toque para selecionar"
                 onChange={(date) => setData(date)}
                 minDate={new Date()}
-              />
-
-              {errors.datas && (
+                error={errors.datas && (
                 <p className="text-red-500 text-sm">{errors.datas}</p>
               )}
+              />
+
+             
 
               <div className="flex flex-wrap items-center gap-4">
                 <label className="flex items-center gap-2 text-lg">
@@ -547,14 +576,20 @@ function horarioConflita(data, inicio, fim, diaInteiro) {
                 placeholder="Motivo"
                 value={motivo}
                 error={errors.motivo}
-                onChange={(e) => setMotivo(e.target.value)}
+                onChange={(e) => {
+                  const valor = e.target.value;
+
+                  if (/^[A-Za-zÀ-ÿ0-9\s.,-]*$/.test(valor)) {
+                    setMotivo(valor);
+                  }
+                }}
               />
 
               <div className="flex gap-4">
                 <button
                   type="button"
                   onClick={() => setStep(1)}
-                  className="h-[50px] hover:bg-blue-500 w-full bg-blue-400 rounded">              
+                  className="h-[50px] hover:bg-blue-500 w-full text-white bg-blue-400 rounded">              
                   Voltar
                 </button>
 
@@ -573,7 +608,7 @@ function horarioConflita(data, inicio, fim, diaInteiro) {
           )}
         </div>
 
-        <aside className="lg:w-[40%] justify-center w-full p-2 rounded-xl h-fit sticky top-6">
+        <aside className="lg:w-[40%]  justify-center w-full p-2 rounded-xl h-fit sticky top-6">
           <CalendarAgenda agendamentos={agendamentos} />
         </aside>
       </div>

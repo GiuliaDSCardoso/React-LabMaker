@@ -13,8 +13,25 @@ export default function ComponenteInput({
 }) {
   return (
     <div className="flex flex-col gap-2 w-full">
-      <label className="text-lg font-medium">{title}</label>
-
+      <label className="text-lg  font-medium md:text-xl text-gray-700 dark:text-white">
+        {title}
+        <span className="relative group cursor-help text-red-600">
+          *
+          <span
+            className="
+              absolute left-1/2 -translate-x-1/2 top-6
+              hidden group-hover:block
+              bg-textColor/40 dark:bg-textColor text-white text-xs md:text-sm
+              px-2 py-1 rounded
+              whitespace-nowrap
+              z-50
+            "
+          >
+            item obrigatório
+          </span>
+        </span>
+        </label>
+      
       <div className="flex gap-2">
         <input
           value={value}
@@ -28,8 +45,10 @@ export default function ComponenteInput({
             border-2
             outline-none
             transition-all
-            bg-[#e5eeff]
+            bg-transparent
+            hover:bg-[#e5eeff]
             dark:bg-textColor/20
+            dark:hover:bg-textColor/40
             ${
               error
                 ? "border-red-500"

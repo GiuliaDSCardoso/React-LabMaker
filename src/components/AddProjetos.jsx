@@ -60,12 +60,26 @@ export default function AddProjetos() {
     );
   }
 
+  function textoValido(texto) {
+    const regex = /^[A-Za-zÀ-ÿ0-9\s]+$/;
+    return regex.test(texto);
+  }
   function validarStep1() {
     const newErrors = {};
 
-    if (!solicitante) newErrors.solicitante = "Informe o nome completo.";
+    if (!solicitante) {
+      newErrors.solicitante = "Informe o nome completo.";
+    } else if (!/^[A-Za-zÀ-ÿ\s]+$/.test(solicitante)) {
+      newErrors.solicitante =
+        "O nome não pode conter números ou caracteres especiais.";
+    }
     if (!email) newErrors.email = "Informe o email.";
-    if (!cursoETurma) newErrors.cursoETurma = "Informe curso e turma.";
+    if (!cursoETurma) {
+      newErrors.cursoETurma = "Informe curso e turma.";
+    } else if (!textoValido(cursoETurma)) {
+      newErrors.cursoETurma =
+        "Curso e turma não podem conter caracteres especiais.";
+    }
     if (!contato) newErrors.contato = "Informe o telefone.";
     if (!cargo) newErrors.cargo = "Selecione o cargo.";
 
@@ -178,7 +192,13 @@ export default function AddProjetos() {
                   title="Solicitante:"
                   placeholder="Insira o seu nome completo"
                   value={solicitante}
-                  onChange={(e) => setSolicitante(e.target.value)}
+                  onChange={(e) => {
+                    const valor = e.target.value;
+
+                    if (/^[A-Za-zÀ-ÿ\s]*$/.test(valor)) {
+                      setSolicitante(valor);
+                    }
+                  }}
                   error={errors.solicitante}
                 />
 
@@ -195,7 +215,13 @@ export default function AddProjetos() {
                   title="Curso e Turma:"
                   placeholder="Insira seu curso e turma"
                   value={cursoETurma}
-                  onChange={(e) => setCursoETurma(e.target.value)}
+                  onChange={(e) => {
+                    const valor = e.target.value;
+
+                    if (/^[A-Za-zÀ-ÿ0-9\s]*$/.test(valor)) {
+                      setCursoETurma(valor);
+                    }
+                  }}
                   error={errors.cursoETurma}
                 />
               </div>
@@ -264,7 +290,7 @@ export default function AddProjetos() {
               <button
                 type="button"
                 onClick={() => setStep(1)}
-                className="h-[50px] hover:bg-blue-500 w-full bg-blue-400 rounded"
+                className="h-[50px] hover:bg-blue-500 w-full text-white bg-blue-400 rounded"
               >
                 Voltar
               </button>

@@ -22,7 +22,7 @@ const MaskedInput = forwardRef(({ value, onClick, onChange, error }, ref) => {
       value={value}
       onClick={onClick}
       onChange={handleChange}
-      placeholder="DD/MM/AAAA"
+      placeholder="Toque para escolher uma data"
       className={` w-full
           rounded-lg
           border-2
@@ -109,7 +109,7 @@ export default function DatePickerInput({ title, selected, error, onChange }) {
 
   return (
     <div className="flex flex-col gap-2 w-full">
-      <label className="text-lg font-medium md:text-xl text-gray-700 dark:text-white">
+      <label className="text-lg  font-medium md:text-xl text-gray-700 dark:text-white">
         {title}
         <span className="relative group cursor-help text-red-600">
           *
