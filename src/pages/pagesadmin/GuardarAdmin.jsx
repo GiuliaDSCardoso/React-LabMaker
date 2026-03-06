@@ -118,9 +118,9 @@ export default function GuardarAdmin() {
   <Body>
     <MenuLateralAdmin />
 
-    <div className="flex md:mt-12 mt-24 flex-col p-4 sm:p-6 lg:p-10 gap-8 md:ml-20
+    <div className="flex md:mt-1 mt-24 flex-col p-4 sm:p-6 lg:p-10 gap-8 md:ml-20
                     
-                    min-h-screen transition-colors duration-300">
+                    max-h-screen transition-colors duration-300">
 
       <h1 className="text-xl sm:text-2xl font-bold 
                      text-[#1976d2] dark:text-blue-400">
@@ -141,12 +141,12 @@ export default function GuardarAdmin() {
                      focus:outline-none focus:ring-1 focus:ring-blue-500"
         />
 
-        <div className="flex flex-wrap text-xl gap-2">
+        <div className="flex flex-wrap text-sm md:text-lg gap-2">
           {["all", "pending", "completed"].map((s) => (
             <button
               key={s}
               onClick={() => setStatusFilter(s)}
-              className={`px-4 h-9 rounded text-xl transition
+              className={`px-4 h-9 rounded text-sm md:text-lg transition
                 ${
                   statusFilter === s
                     ? "bg-blue-600 text-white"
@@ -164,12 +164,12 @@ export default function GuardarAdmin() {
       </div>
 
       {/* TABELA */}
-      <div className="overflow-x-auto  shadow">
-        <table className="min-w-[900px] w-full border text-lg
+      <div className="overflow-x-auto shadow max-h-[700px] overflow-y-auto">
+        <table className="min-w-[900px] w-full border text-sm md:text-lg
                            bg-white dark:bg-transparent
                            text-gray-800 dark:text-gray-200">
 
-          <thead className="bg-blue-100 text-blue-800
+          <thead className="bg-blue-100 sticky text-blue-800 -top-1 z-10
                              dark:bg-[#1e3a8a] dark:text-blue-200">
             <tr>
               {[

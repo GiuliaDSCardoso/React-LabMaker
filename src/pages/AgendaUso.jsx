@@ -244,7 +244,7 @@ function horarioConflita(data, inicio, fim, diaInteiro) {
     newErrors.datas = "Adicione ao menos uma data.";
 
   if (email && !emailValido(email))
-    newErrors.email = "Email inválido.";
+    newErrors.email = "Usuário não credenciado.";
 
   const telefoneRegex = /^\(\d{2}\) 9 \d{4}-\d{4}$/;
   if (telefone && !telefoneRegex.test(telefone))
