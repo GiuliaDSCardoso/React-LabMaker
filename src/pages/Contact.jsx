@@ -55,12 +55,17 @@ export default function Contact() {
               type="email"
               name="email"
               required
-              className="w-full mt-1 px-3 py-2 rounded-md  border
+              className="w-full mt-1 px-3 py-2 rounded-md  border-2
                 focus:outline-none
-                focus:ring-1
+                
                 dark:bg-[#001028]/70
+               
+                border-blue-500/20
                 outline-none
-                border-none
+                focus:ring-blue-400/60
+                dark:focus:ring-blue-900/60
+                focus:ring-2
+                border-dashed
                 dark:focus:border-blue-900/60
                 dark:outline-none
                 focus:border-blue-50
@@ -81,13 +86,17 @@ export default function Contact() {
               type="text"
               name="assunto"
               required
-              className="w-full mt-1 px-3 py-2 rounded-md  border
-                focus:outline-none
-                focus:ring-1
-                border-none
+              className="w-full mt-1 px-3 py-2 rounded-md  
+                border-dashed
+                border-2
+                border-blue-500/20
                 dark:bg-[#001028]/70
                 dark:focus:border-blue-900/60
                 dark:outline-none
+                outline-none
+                focus:ring-blue-400/60
+                dark:focus:ring-blue-900/60
+                focus:ring-2
                 focus:border-blue-50
                 resize-none"
               placeholder="Assunto da mensagem"
@@ -102,13 +111,14 @@ export default function Contact() {
               name="mensagem"
               required
               rows="5"
-              className="w-full mt-1 px-3 py-2 rounded-md  border
-                border-none
+              className="w-full mt-1 px-3 py-2 rounded-md  border-2
+                border-dashed
                 dark:focus:border-blue-900/60
                 dark:outline-none
-              dark:bg-[#001028]/70
+                border-blue-500/20
+                dark:bg-[#001028]/70
                 focus:outline-none
-                focus:ring-1
+                focus:ring-2
                 focus:border-blue-50
                 resize-none"
               placeholder="Digite sua mensagem..."
