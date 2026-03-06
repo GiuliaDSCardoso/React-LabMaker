@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState , useRef} from "react";
 import InputDate from "../assets/styles/InputDate";
 import Body from "../assets/styles/Body";
 import { supabase } from "../services/supabase";
@@ -10,6 +10,7 @@ import Header from "../assets/styles/Header";
 import InputSelect from "../assets/styles/InputSelect";
 import DatePickerInput from "../assets/styles/DatePickerInput";
 import emailjs from "@emailjs/browser";
+
 
 export default function AgendaUso() {
   const [nome, setNome] = useState("");
@@ -29,6 +30,24 @@ export default function AgendaUso() {
   const [errors, setErrors] = useState({});
   const [enviando, setEnviando] = useState(false);
 
+  const datasRef = useRef(datasSelecionadas);
+
+  useEffect(() => {
+    datasRef.current = datasSelecionadas;
+  }, [datasSelecionadas]);
+
+ useEffect(() => {
+  if (datasRef.current.length > 0) {
+    const confirmar = window.confirm(
+      "Ao trocar o modo de horário, as datas adicionadas serão removidas. Deseja continuar?"
+    );
+
+    if (!confirmar) return;
+  }
+
+  setDatasSelecionadas([]);
+}, [modoHorario]);
+
  useEffect(() => {
   supabase.auth.signOut(); // desloga sempre que acessar página pública
 }, []);
@@ -41,6 +60,12 @@ export default function AgendaUso() {
       aplicarTurno(turno);
     }
   }, [diaInteiro, turno]);
+
+  function horaParaMinutos(hora) {
+    const [h, m] = hora.split(":").map(Number);
+    return h * 60 + m;
+  }
+
   function dataEhPassada(date) {
     if (!date) return true;
     const hoje = new Date();
@@ -79,19 +104,22 @@ export default function AgendaUso() {
     }
   }
 function horarioConflita(data, inicio, fim, diaInteiro) {
+  const inicioNovo = horaParaMinutos(inicio);
+  const fimNovo = horaParaMinutos(fim);
+
   return agendamentos.some((ag) => {
 
     if (ag.data !== data) return false;
 
-    // se algum dos dois for dia inteiro
     if (ag.dia_inteiro || diaInteiro) return true;
 
-    const inicioExistente = ag.hora_inicio || "08:00";
-    const fimExistente = ag.hora_fim || "21:59";
+    const inicioExistente = horaParaMinutos(ag.hora_inicio || "08:00");
+    const fimExistente = horaParaMinutos(ag.hora_fim || "21:59");
 
-    return inicio < fimExistente && fim > inicioExistente;
+    return inicioNovo < fimExistente && fimNovo > inicioExistente;
   });
 }
+
   function formatarTelefone(valor) {
     let numero = valor.replace(/\D/g, "").slice(0, 11);
 
