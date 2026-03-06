@@ -12,67 +12,78 @@ import CardStyle from "../assets/styles/CardStyle.jsx";
 import Body from "../assets/styles/Body.jsx";
 import MenuLateral from "../assets/styles/MenuLateral.jsx";
 import CarrosselEventos from "../assets/styles/CarrosselEventos.jsx";
-import { supabase } from "../services/supabase.js";
 
-export default function Home() {
-  // CONFIGURAÇÃO DO HORÁRIO
-const [horaAbertura, setHoraAbertura] = useState(8);
-const [horaFechamento, setHoraFechamento] = useState(22);
-const [aberto, setAberto] = useState(false);
-useEffect(() => {
-  supabase.auth.signOut(); // desloga sempre que acessar página pública
-}, []);
-  
-useEffect(() => {
-  async function carregarHorario() {
-    const { data } = await supabase
-      .from("configuracoes")
-      .select("*")
-      .limit(1)
-      .single();
+import { supabase } from "../services/supabase";
 
-    if (data) {
-      setHoraAbertura(data.hora_abertura);
-      setHoraFechamento(data.hora_fechamento);
-    }
+export default function StatusLoja() {
+  const [horaAbertura, setHoraAbertura] = useState(null);
+  const [horaFechamento, setHoraFechamento] = useState(null);
+  const [aberto, setAberto] = useState(null);
+
+  // função que verifica horário
+  function verificarSeAberto(horaAbertura, horaFechamento) {
+    const agora = new Date();
+    const horaAtual = agora.getHours();
+
+    return horaAtual >= horaAbertura && horaAtual < horaFechamento;
   }
 
-  carregarHorario();
+  useEffect(() => {
+    async function carregarConfig() {
+      const { data, error } = await supabase
+        .from("configuracoes")
+        .select("*")
+        .single();
 
-  // 🔥 ESCUTAR ALTERAÇÕES EM TEMPO REAL
-  const channel = supabase
-    .channel("configuracoes-realtime")
-    .on(
-      "postgres_changes",
-      {
-        event: "UPDATE",
-        schema: "public",
-        table: "configuracoes",
-      },
-      (payload) => {
-        const novaConfig = payload.new;
-
-        setHoraAbertura(novaConfig.hora_abertura);
-        setHoraFechamento(novaConfig.hora_fechamento);
+      if (error) {
+        console.error("Erro ao buscar configurações:", error);
+        return;
       }
-    )
-    .subscribe();
 
-  return () => {
-    supabase.removeChannel(channel);
-  };
-}, []);
+      if (data) {
+        setHoraAbertura(data.hora_abertura);
+        setHoraFechamento(data.hora_fechamento);
 
-useEffect(() => {
-  const timer = setInterval(() => {
-    const agora = new Date();
-    const hora = agora.getHours();
-    setAberto(hora >= horaAbertura && hora < horaFechamento);
-  }, 1000);
+        setAberto(
+          verificarSeAberto(data.hora_abertura, data.hora_fechamento)
+        );
+      }
+    }
 
-  return () => clearInterval(timer);
-}, [horaAbertura, horaFechamento]);
-  
+    carregarConfig();
+
+    // realtime
+    const canal = supabase
+      .channel("configuracoes-realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "configuracoes",
+        },
+        (payload) => {
+          const novaConfig = payload.new;
+
+          setHoraAbertura(novaConfig.hora_abertura);
+          setHoraFechamento(novaConfig.hora_fechamento);
+
+          setAberto(
+            verificarSeAberto(
+              novaConfig.hora_abertura,
+              novaConfig.hora_fechamento
+            )
+          );
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(canal);
+    };
+  }, []);
+
+ 
 
   return (
     <Body>
@@ -123,7 +134,7 @@ useEffect(() => {
               </p>
              <span
               className={`inline-block px-4 py-1 rounded-full text-white text-sm font-bold ${
-                aberto ? "bg-[#0199ff]/30" : "bg-[#ff0000]"
+                aberto ? "bg-[#49ff0181]" : "bg-[#ff0000]"
               }`}
             >
               {aberto ? " ABERTO" : " FECHADO"}
