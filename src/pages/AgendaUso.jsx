@@ -136,7 +136,7 @@ function horarioConflita(data, inicio, fim, diaInteiro) {
   }
 
   function emailValido(email) {
-    return ["@fieb.org.br", "@fbest.org.br"].some((d) =>
+    return ["@ba.estudante.senai.br","@fieb.org.br", "@fbest.org.br"].some((d) =>
       email.toLowerCase().endsWith(d)
     );
   }
