@@ -371,7 +371,7 @@ export default function AddPedidos() {
                 Enviar
               </button>
             </div>
-            <h1 className="text-md text-red-600 ">
+            <h1 className="text-md text-justify text-red-600 ">
               *Aguarde a confirmação da página antes de enviar uma nova Solicitação
             </h1>
           </div>

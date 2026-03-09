@@ -143,7 +143,15 @@ export default function AddSolicitacao() {
     if (!dataEmprestimo) newErrors.dataEmprestimo = "Informe a data do empréstimo.";
     if (!dataDevolucao) newErrors.dataDevolucao = "Informe a data de devolução.";
     if (!termosAceitos) newErrors.termos = "Você precisa aceitar os termos.";
+     
+    if (dataEmprestimo && dataDevolucao) {
+      const dataEmp = new Date(dataEmprestimo + "T12:00:00");
+      const dataDev = new Date(dataDevolucao + "T12:00:00");
 
+      if (dataDev < dataEmp) {
+        newErrors.dataDevolucao = "A data de devolução não pode ser anterior à data de retirada.";
+      }
+    }
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length > 0) return;
@@ -166,6 +174,16 @@ export default function AddSolicitacao() {
     }
 
     alert("✅ Solicitação enviada!");
+    setSolicitante("");
+    setEmail("");
+    setCursoETurma("");
+    setContato("");
+    setComponentes([]);
+    setComponenteInput("");
+    setDataEmprestimo("");
+    setDataDevolucao("");
+    setTermosAceitos(false);
+    setErrors({});
     setStep(1);
   }
 
@@ -250,67 +268,69 @@ export default function AddSolicitacao() {
               items={componentes}
               onRemove={removerComponente}
               onUpdateQuantidade={atualizarQuantidade}
-              title="Lista de Componentes:"
-              descricao="Digite o nome do componente *Dica: Clique no botão de + azul para adicionar o componente na lista"
+              title="Lista de Itens Emprestados:"
+              descricao="Digite o nome do item *Dica: Clique no botão de + azul para adicionar o componente na lista e adicionar a quantidade"
               error={errors.componentes}
             />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <DatePickerInput
-                title="Data do Empréstimo"
-                selected={
-                  dataEmprestimo ? new Date(dataEmprestimo + "T12:00:00") : null
-                }
-                onChange={(date) => {
-                  if (!date) {
-                    setDataEmprestimo("");
-                    return;
-                  }
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Empréstimo */}
+              <div className="flex flex-col gap-1">
+                <DatePickerInput
+                  title="Data do Empréstimo"
+                  selected={dataEmprestimo ? new Date(dataEmprestimo + "T12:00:00") : null}
+                  onChange={(date) => {
+                    if (!date) {
+                      setDataEmprestimo("");
+                      return;
+                    }
+                    const dataLocal = new Date(date);
+                    dataLocal.setHours(12, 0, 0, 0);
+                    const ano = dataLocal.getFullYear();
+                    const mes = String(dataLocal.getMonth() + 1).padStart(2, "0");
+                    const dia = String(dataLocal.getDate()).padStart(2, "0");
+                    setDataEmprestimo(`${ano}-${mes}-${dia}`);
+                  }}
+                  dateFormat="dd/MM/yyyy"
+                  placeholderText="Selecione a data"
+                  className={`w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 ${
+                    errors.dataEmprestimo ? "border-red-500" : "border-gray-300"
+                  }`}
+                />
+                {/* Exibição do erro de empréstimo */}
+                {errors.dataEmprestimo && <span className="text-red-500 text-sm">{errors.dataEmprestimo}</span>}
+              </div>
 
-                  const dataLocal = new Date(date);
-                  dataLocal.setHours(12, 0, 0, 0);
-
-                  const ano = dataLocal.getFullYear();
-                  const mes = String(dataLocal.getMonth() + 1).padStart(2, "0");
-                  const dia = String(dataLocal.getDate()).padStart(2, "0");
-
-                  setDataEmprestimo(`${ano}-${mes}-${dia}`);
-                }}
-                dateFormat="dd/MM/yyyy"
-                placeholderText="Selecione a data"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
-              />
+              {/* Devolução */}
+              <div className="flex flex-col gap-1">
+                <DatePickerInput
+                  title="Data de Devolução"
+                  selected={dataDevolucao ? new Date(dataDevolucao + "T12:00:00") : null}
+                  onChange={(date) => {
+                    if (!date) {
+                      setDataDevolucao("");
+                      return;
+                    }
+                    const dataLocal = new Date(date);
+                    dataLocal.setHours(12, 0, 0, 0);
+                    const ano = dataLocal.getFullYear();
+                    const mes = String(dataLocal.getMonth() + 1).padStart(2, "0");
+                    const dia = String(dataLocal.getDate()).padStart(2, "0");
+                    setDataDevolucao(`${ano}-${mes}-${dia}`);
+                  }}
+                  dateFormat="dd/MM/yyyy"
+                  placeholderText="Selecione a data"
+                  // --- BLOQUEIA DATAS ANTERIORES NO CALENDÁRIO ---
+                  minDate={dataEmprestimo ? new Date(dataEmprestimo + "T12:00:00") : null}
+                  // ----------------------------------------------
+                  className={`w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 ${
+                    errors.dataDevolucao ? "border-red-500" : "border-gray-300"
+                  }`}
+                />
+                {/* Exibição do erro de devolução */}
+                {errors.dataDevolucao && <span className="text-red-500 text-sm">{errors.dataDevolucao}</span>}
+              </div>
             </div>
-
-            <div>
-             
-              <DatePickerInput
-                title="Data de Devolução"
-                selected={
-                  dataDevolucao ? new Date(dataDevolucao + "T12:00:00") : null
-                }
-                onChange={(date) => {
-                  if (!date) {
-                    setDataDevolucao("");
-                    return;
-                  }
-
-                  const dataLocal = new Date(date);
-                  dataLocal.setHours(12, 0, 0, 0);
-
-                  const ano = dataLocal.getFullYear();
-                  const mes = String(dataLocal.getMonth() + 1).padStart(2, "0");
-                  const dia = String(dataLocal.getDate()).padStart(2, "0");
-
-                  setDataDevolucao(`${ano}-${mes}-${dia}`);
-                }}
-                dateFormat="dd/MM/yyyy"
-                placeholderText="Selecione a data"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
             {/* ===== Termos de Responsabilidade ===== */}
             <div className="relative">
               <div className="flex items-center gap-2">
@@ -374,7 +394,7 @@ export default function AddSolicitacao() {
                 Enviar
               </button>
             </div>
-            <h1 className="text-md text-red-600 ">
+            <h1 className="text-md text-justify text-red-600 ">
               *Aguarde a confirmação da página antes de enviar uma nova Solicitação
             </h1>
           </div>

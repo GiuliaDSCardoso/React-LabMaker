@@ -54,8 +54,8 @@ export default function AgendaUso() {
 
   useEffect(() => {
     if (diaInteiro) {
-      setHoraInicio("00:00");
-      setHoraFim("23:59");
+      setHoraInicio("08:00");
+      setHoraFim("22:00");
     } else {
       aplicarTurno(turno);
     }
@@ -136,7 +136,7 @@ function horarioConflita(data, inicio, fim, diaInteiro) {
   }
 
   function emailValido(email) {
-    return ["@fieb.org.br", "@fbest.org.br"].some((d) =>
+    return ["@ba.estudante.senai.br","@fieb.org.br", "@fbest.org.br"].some((d) =>
       email.toLowerCase().endsWith(d)
     );
   }
@@ -261,7 +261,8 @@ function horarioConflita(data, inicio, fim, diaInteiro) {
     setEnviando(false);
     return;
   }
-
+  
+  
   setErrors({});
 
   // checar conflitos antes de salvar
@@ -324,7 +325,7 @@ function horarioConflita(data, inicio, fim, diaInteiro) {
     setEnviando(false);
     return;
   }
-
+  
   const datasFormatadas = datasSelecionadas
     .map((item) => {
       const d = modoHorario === "igual" ? item : item.data;
@@ -341,6 +342,10 @@ function horarioConflita(data, inicio, fim, diaInteiro) {
     })
     .join("\n");
 
+  const numeroLimpo = telefone.replace(/\D/g, "");
+  const linkWhatsApp = `https://wa.me/55${numeroLimpo}`;
+
+
   try {
     await emailjs.send(
       "service_seiz71a",
@@ -348,8 +353,7 @@ function horarioConflita(data, inicio, fim, diaInteiro) {
       {
         nome,
         email,
-        telefone,
-        arrumacao,
+        telefone: linkWhatsApp, // 👈 Agora envia o número + link
         motivo,
         datas: datasFormatadas,
       },
@@ -374,6 +378,8 @@ function horarioConflita(data, inicio, fim, diaInteiro) {
 
   setEnviando(false);
   setStep(1);
+  await carregarAgenda();
+
 }
 
   function validarEtapa1() {
@@ -465,6 +471,9 @@ function horarioConflita(data, inicio, fim, diaInteiro) {
               >
                 Próximo
               </button>
+              <h1 className="text-md text-justify text-red-600 ">
+                  *Um email será enviado para o NOA para confirmar seu agendamento, a confirmação chegará pelo seu email institucional inserido no campo email
+                </h1>
             </>
           )}
 
@@ -629,8 +638,8 @@ function horarioConflita(data, inicio, fim, diaInteiro) {
                   {enviando ? "Enviando..." : "Enviar solicitação"}
                 </button>
               </div>
-              <h1 className="text-md text-red-600 ">
-                  *Aguarde a confirmação da página antes de enviar uma nova Solicitação, após o envio, recarregue a página para atualizar o calendário
+              <h1 className="text-md text-justify text-red-600 ">
+                  *Aguarde a confirmação da página antes de enviar uma nova Solicitação, espere a confirmação do NOA no email, lembrando que estudantes precisam checar a disponibilidade de um acompanhante (estagiário, técnico especializado, professor)
                 </h1>
             </>
           )}
