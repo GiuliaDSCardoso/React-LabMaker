@@ -48,7 +48,9 @@ export default function AddPedidos() {
 
     if (!solicitante) {
       newErrors.solicitante = "Informe o nome completo.";
-    } else if (!textoValido(solicitante)) {
+    } else if (solicitante.trim().length < 15) {
+      newErrors.solicitante = "Insira seu nome completo.";
+    }  else if (!textoValido(solicitante)) {
       newErrors.solicitante = "O nome não pode conter caracteres especiais.";
     };
     if (!email) newErrors.email = "Informe o email.";
