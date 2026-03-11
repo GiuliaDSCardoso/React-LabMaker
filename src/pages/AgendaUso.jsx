@@ -420,7 +420,7 @@ function horarioConflita(data, inicio, fim, diaInteiro) {
         descricao="* Restrito a colaboradores"
       />
 
-      <div className="flex flex-col lg:flex-row md:flex-col  mt-16 mb-20 gap-20 px-4 w-full max-w-6xl mx-auto justify-center">
+      <div className="flex flex-col lg:flex-row md:flex-col  mt-16 mb-20 gap-20 px-8 w-full max-w-6xl mx-auto justify-center">
 
         <div className="md:w-[40%] w-full space-y-4">
           {step === 1 && (
@@ -647,7 +647,7 @@ function horarioConflita(data, inicio, fim, diaInteiro) {
           )}
         </div>
 
-        <aside className="lg:w-[40%]  justify-center w-full p-2 rounded-xl h-fit sticky top-6">
+        <aside className="lg:w-[40%]  justify-center w-full  rounded-xl h-fit sticky top-6">
           <CalendarAgenda agendamentos={agendamentos} />
         </aside>
       </div>
