@@ -387,7 +387,7 @@ function horarioConflita(data, inicio, fim, diaInteiro) {
 
     if (!nome) {
       newErrors.nome = "Informe seu nome.";
-    } else if (nome.trim().length < 15) {
+    } else if (nome.trim().length < 8) {
       newErrors.nome = "Digite seu nome completo.";
     } else if (!nomeValido(nome)) {
       newErrors.nome = "O nome não pode conter caracteres especiais.";

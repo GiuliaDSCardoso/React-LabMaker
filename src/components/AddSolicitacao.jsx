@@ -112,7 +112,7 @@ export default function AddSolicitacao() {
 
    if (!solicitante) {
   newErrors.solicitante = "Informe o nome completo.";
-    } else if (solicitante.trim().length < 15) {
+    } else if (solicitante.trim().length < 8) {
       newErrors.solicitante = "Insira seu nome completo.";
     } else if (!nomeValido(solicitante)) {
       newErrors.solicitante = "Nome não pode conter caracteres especiais.";

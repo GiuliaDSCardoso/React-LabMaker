@@ -69,7 +69,7 @@ export default function AddProjetos() {
 
     if (!solicitante) {
       newErrors.solicitante = "Informe o nome completo.";
-    } else if (solicitante.trim().length < 15) {
+    } else if (solicitante.trim().length < 8) {
       newErrors.solicitante = "Insira seu nome completo.";
     } else if (!/^[A-Za-zÀ-ÿ\s]+$/.test(solicitante)) {
       newErrors.solicitante =
