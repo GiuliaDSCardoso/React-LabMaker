@@ -286,6 +286,7 @@ export default function AddPedidos() {
                     "Acrílico 4mm",
                     "Acrílico 6mm",
                     "Acrílico 8mm",
+                    "Outro Material (especificar en Detalhe do pedido)",
                   ]}
                   error={errors.material}
                 />
