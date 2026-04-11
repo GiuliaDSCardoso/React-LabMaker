@@ -1,121 +1,123 @@
-import { useRef, useState } from "react";
-import { Upload, X } from "lucide-react";
+import { useRef } from "react";
+import { Upload, X, Plus } from "lucide-react";
 
 export default function InputFile({
   title,
   error,
   onChange,
+  files = [],
   accept = "*",
   required = false,
 }) {
   const inputRef = useRef(null);
-  const [fileName, setFileName] = useState("");
 
   function handleFileChange(e) {
-    const file = e.target.files[0];
+    const newFiles = Array.from(e.target.files);
 
-    if (file) {
-      setFileName(file.name);
-      onChange(file);
+    if (newFiles.length > 0) {
+      const updated = [...files, ...newFiles];
+      onChange(updated);
     }
+
+    e.target.value = "";
   }
 
-  function handleRemove() {
-    setFileName("");
-    inputRef.current.value = "";
-    onChange(null);
+  function removeFile(index) {
+    const updated = files.filter((_, i) => i !== index);
+    onChange(updated);
   }
 
   return (
     <div className="flex flex-col gap-2 w-full">
+
       {title && (
         <label className="text-lg font-medium md:text-xl flex gap-1 text-gray-700 dark:text-white">
           {title}
           {required && <span className="text-red-600">*</span>}
-          <span className="relative group cursor-help text-red-600">
-          *
-          <span
-            className="
-              absolute left-1/2 -translate-x-1/2 top-6
-              hidden group-hover:block
-              bg-textColor/40 dark:bg-textColor text-white text-xs md:text-sm
-              px-2 py-1 rounded
-              whitespace-nowrap
-              z-50
-            "
-          >
-            item obrigatório
-          </span>
-        </span>
         </label>
       )}
 
-      <div className="relative w-full">
-        <input
-          type="file"
-          ref={inputRef}
-          onChange={handleFileChange}
-          accept={accept}
-          className="hidden"
-        />
+      <input
+        type="file"
+        ref={inputRef}
+        onChange={handleFileChange}
+        accept={accept}
+        multiple
+        className="hidden"
+      />
 
-        {/* BOTÃO */}
-        <div
-          onClick={() => inputRef.current.click()}
-          className={`
-            w-full
-            h-[50px]
-            px-4
-            flex
-            items-center
-            justify-between
-            rounded-lg
-            cursor-pointer
-            bg-[#f4f8ff]
-            dark:bg-textColor/20
-            text-blue-800
-            dark:text-white
-            border
-            border-dashed
-            border-blue-300
-            dark:border-blue-900
-            hover:bg-blue-50
-            dark:hover:bg-[#001438]
-            transition
-            ${
-            error
-              ? "border-red-500/70"
-              : "border-blue-400/10 dark:border-transparent"
-          }
-          `}
-        > 
-        
-          <div className="flex items-center gap-2 truncate">
-            <Upload className="w-5 h-5" />
-            <span className="truncate">
-              {fileName || "Clique para enviar arquivo "}
-            </span>
+      {/* BOTÃO */}
+      <button
+        type="button"
+        onClick={() => inputRef.current.click()}
+        className="
+        w-full
+        h-[50px]
+        flex
+        items-center
+        justify-center
+        gap-2
+        rounded-lg
+        border
+        border-dashed
+        border-blue-400
+        bg-[#f4f8ff]
+        hover:bg-blue-50
+        text-blue-800
+        "
+      >
+        <Upload className="w-5 h-5" />
+        Adicionar arquivo
+        <Plus className="w-4 h-4" />
+      </button>
+
+      {/* LISTA DE ARQUIVOS */}
+      {files.length > 0 && (
+          <div className="flex flex-col gap-2 mt-2">
+
+            {files.map((file, index) => {
+              const previewUrl = URL.createObjectURL(file);
+
+              return (
+                <div
+                  key={index}
+                  className="
+                  flex
+                  items-center
+                  justify-between
+                  bg-gray-100
+                  dark:bg-white/10
+                  px-3
+                  py-2
+                  rounded
+                  text-sm
+                  "
+                >
+                  <a
+                    href={previewUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="truncate text-blue-700 dark:text-white dark:hover:text-blue-300 underline hover:text-blue-900"
+                  >
+                    {file.name}
+                  </a>
+
+                  <button
+                    type="button"
+                    onClick={() => removeFile(index)}
+                    className="text-red-500"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              );
+            })}
+
           </div>
-
-          {fileName && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleRemove();
-              }}
-              className="text-red-500 hover:text-red-700"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          )}
-          
-        </div>
-        
-      </div>
+        )}
       {error && (
-             <p className="text-red-500 text-sm -mt-1">{error}</p>
-           )}
+        <p className="text-red-500 text-sm">{error}</p>
+      )}
     </div>
   );
 }

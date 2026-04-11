@@ -54,8 +54,8 @@ export default function AgendaUso() {
 
   useEffect(() => {
     if (diaInteiro) {
-      setHoraInicio("08:00");
-      setHoraFim("22:00");
+      setHoraInicio("00:00");
+      setHoraFim("23:59");
     } else {
       aplicarTurno(turno);
     }
@@ -261,8 +261,7 @@ function horarioConflita(data, inicio, fim, diaInteiro) {
     setEnviando(false);
     return;
   }
-  
-  
+
   setErrors({});
 
   // checar conflitos antes de salvar
@@ -325,7 +324,7 @@ function horarioConflita(data, inicio, fim, diaInteiro) {
     setEnviando(false);
     return;
   }
-  
+
   const datasFormatadas = datasSelecionadas
     .map((item) => {
       const d = modoHorario === "igual" ? item : item.data;
@@ -342,10 +341,6 @@ function horarioConflita(data, inicio, fim, diaInteiro) {
     })
     .join("\n");
 
-  const numeroLimpo = telefone.replace(/\D/g, "");
-  const linkWhatsApp = `https://wa.me/55${numeroLimpo}`;
-
-
   try {
     await emailjs.send(
       "service_seiz71a",
@@ -353,7 +348,8 @@ function horarioConflita(data, inicio, fim, diaInteiro) {
       {
         nome,
         email,
-        telefone: linkWhatsApp, // 👈 Agora envia o número + link
+        telefone,
+        arrumacao,
         motivo,
         datas: datasFormatadas,
       },
@@ -378,8 +374,6 @@ function horarioConflita(data, inicio, fim, diaInteiro) {
 
   setEnviando(false);
   setStep(1);
-  await carregarAgenda();
-
 }
 
   function validarEtapa1() {
@@ -387,8 +381,6 @@ function horarioConflita(data, inicio, fim, diaInteiro) {
 
     if (!nome) {
       newErrors.nome = "Informe seu nome.";
-    } else if (nome.trim().length < 8) {
-      newErrors.nome = "Digite seu nome completo.";
     } else if (!nomeValido(nome)) {
       newErrors.nome = "O nome não pode conter caracteres especiais.";
     }
@@ -420,7 +412,7 @@ function horarioConflita(data, inicio, fim, diaInteiro) {
         descricao="* Restrito a colaboradores"
       />
 
-      <div className="flex flex-col lg:flex-row md:flex-col  mt-16 mb-20 gap-20 px-8 w-full max-w-6xl mx-auto justify-center">
+      <div className="flex flex-col lg:flex-row md:flex-col  mt-16 mb-20 gap-20 px-4 w-full max-w-6xl mx-auto justify-center">
 
         <div className="md:w-[40%] w-full space-y-4">
           {step === 1 && (
@@ -473,9 +465,6 @@ function horarioConflita(data, inicio, fim, diaInteiro) {
               >
                 Próximo
               </button>
-              <h1 className="text-md text-justify text-red-600 ">
-                  *Um email será enviado para o NOA para confirmar seu agendamento, a confirmação chegará pelo seu email institucional inserido no campo email
-                </h1>
             </>
           )}
 
@@ -640,14 +629,14 @@ function horarioConflita(data, inicio, fim, diaInteiro) {
                   {enviando ? "Enviando..." : "Enviar solicitação"}
                 </button>
               </div>
-              <h1 className="text-md text-justify text-red-600 ">
-                  *Aguarde a confirmação da página antes de enviar uma nova Solicitação, espere a confirmação do NOA no email, lembrando que estudantes precisam checar a disponibilidade de um acompanhante (estagiário, técnico especializado, professor)
+              <h1 className="text-md text-red-600 ">
+                  *Aguarde a confirmação da página antes de enviar uma nova Solicitação, após o envio, recarregue a página para atualizar o calendário
                 </h1>
             </>
           )}
         </div>
 
-        <aside className="lg:w-[40%]  justify-center w-full  rounded-xl h-fit sticky top-6">
+        <aside className="lg:w-[40%]  justify-center w-full p-2 rounded-xl h-fit sticky top-6">
           <CalendarAgenda agendamentos={agendamentos} />
         </aside>
       </div>

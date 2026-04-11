@@ -15,6 +15,7 @@ import GuardarAdmin from "./pages/pagesadmin/GuardarAdmin";
 import PedidosAdmin from "./pages/pagesadmin/PedidosAdmin";
 import EmprestimoAdmin from "./pages/pagesadmin/EmprestimoAdmin";
 import Contact from "./pages/Contact";
+import CatalogoAdmin from "./pages/pagesadmin/CatalogoAdmin";
 
 export default function App() {
   return (
@@ -68,6 +69,14 @@ export default function App() {
           element={
             <PrivateRoute>
               < EmprestimoAdmin />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/catalogoadmin"
+          element={
+            <PrivateRoute>
+              < CatalogoAdmin />
             </PrivateRoute>
           }
         />

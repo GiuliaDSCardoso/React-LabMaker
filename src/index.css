@@ -11,6 +11,7 @@
         fill 0.4s ease,
         stroke 0.4s ease;
 }
+
 /* Ícone do date e time */
 /* DARK MODE CALENDAR */
 /* DARK MODE CALENDAR */
@@ -94,17 +95,6 @@
   transition: background-color 0.5s ease,
               color 0.5s ease,
               border-color 0.5s ease !important;
-}
-/* modo claro */
-html:not(.dark) input[type="date"]::-webkit-calendar-picker-indicator,
-html:not(.dark) input[type="time"]::-webkit-calendar-picker-indicator {
-  filter: invert(70%) sepia(50%) saturate(2000%) hue-rotate(210deg);
-}
-
-/* modo escuro */
-.dark input[type="date"]::-webkit-calendar-picker-indicator,
-.dark input[type="time"]::-webkit-calendar-picker-indicator {
-  filter: invert(10%);
 }
 html {
   scroll-behavior: smooth;

@@ -1,4 +1,4 @@
-import { PlusIcon, X, Minus } from "lucide-react"; // adicionei o ícone Minus
+import { PlusIcon, X, Minus } from "lucide-react";
 
 export default function ComponenteInput({
   value,
@@ -7,6 +7,7 @@ export default function ComponenteInput({
   items,
   onRemove,
   onUpdateQuantidade,
+  catalogo = [],
   title,
   error,
   descricao,
@@ -30,10 +31,11 @@ export default function ComponenteInput({
             item obrigatório
           </span>
         </span>
-        </label>
-      
+      </label>
+
       <div className="flex gap-2">
         <input
+          list="catalogo-list"
           value={value}
           placeholder={descricao}
           onChange={(e) => onChange(e.target.value)}
@@ -56,6 +58,14 @@ export default function ComponenteInput({
             }
           `}
         />
+
+        <datalist id="catalogo-list">
+          {catalogo.map((item) => (
+            <option key={item.id} value={item.nome}>
+              {item.nome} ({item.quantidade} disponíveis)
+            </option>
+          ))}
+        </datalist>
 
         <button
           type="button"
@@ -90,7 +100,6 @@ export default function ComponenteInput({
         >
           <span className="flex-1">{item.nome}</span>
 
-          {/* Quantidade com + e - */}
           <div className="flex items-center gap-1">
             <button
               type="button"
@@ -124,7 +133,6 @@ export default function ComponenteInput({
             </button>
           </div>
 
-          {/* Botão remover */}
           <button
             type="button"
             onClick={() => onRemove(index)}

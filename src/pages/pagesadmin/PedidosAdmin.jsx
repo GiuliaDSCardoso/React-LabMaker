@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Body from "../../assets/styles/Body.jsx";
-import { DeleteIcon, PhoneIcon } from "lucide-react";
+import { Trash2, MessageCircle, History, CheckCircle, RotateCcw, Download } from "lucide-react";
 import { supabase } from "../../services/supabase";
 import MenuLateralAdmin from "../../assets/styles/MenuLateralAdmin.jsx";
 
@@ -20,39 +20,20 @@ export default function PedidosAdmin() {
       .select("*")
       .order("created_at", { ascending: false });
 
-    if (error) {
-      alert("Erro ao carregar pedidos");
-      return;
-    }
-
-    setPedidos(data || []);
+    if (!error) setPedidos(data || []);
   }
 
   function novoEvento(acao) {
     return { data: new Date().toLocaleString("pt-BR"), acao };
   }
 
-  async function marcarComoConcluido(id) {
-    const pedido = pedidos.find((p) => p.id === id);
-    const historicoAtual = pedido?.historico || [];
+  async function alternarStatus(id, historicoAtual, statusAtual) {
+    const acao = statusAtual ? "Pedido reaberto" : "Pedido concluído";
     await supabase
       .from("pedidos")
       .update({
-        is_completed: true,
-        historico: [...historicoAtual, novoEvento("Pedido concluído")],
-      })
-      .eq("id", id);
-    carregarPedidos();
-  }
-
-  async function desmarcarComoConcluido(id) {
-    const pedido = pedidos.find((p) => p.id === id);
-    const historicoAtual = pedido?.historico || [];
-    await supabase
-      .from("pedidos")
-      .update({
-        is_completed: false,
-        historico: [...historicoAtual, novoEvento("Pedido reaberto")],
+        is_completed: !statusAtual,
+        historico: [...(historicoAtual || []), novoEvento(acao)],
       })
       .eq("id", id);
     carregarPedidos();
@@ -65,231 +46,211 @@ export default function PedidosAdmin() {
   }
 
   function abrirWhatsApp(telefone) {
+    if (!telefone) return;
     const numeroLimpo = telefone.replace(/\D/g, "");
     window.open(`https://wa.me/55${numeroLimpo}`, "_blank");
   }
 
-  function renderArquivo(url) {
-    if (!url) return "Sem arquivo";
-    return (
-      <a href={url} download target="_blank" className="text-blue-600 underline">
-        Baixar
-      </a>
-    );
-  }
-
-  const pedidosFiltrados = pedidos.filter((p) => {
-    const texto = search.toLowerCase();
-    const matchTexto =
-      p.solicitante?.toLowerCase().includes(texto) ||
-      p.email?.toLowerCase().includes(texto) ||
-      p.curso_turma?.toLowerCase().includes(texto);
-
-    const matchStatus =
-      statusFilter === "all" ||
-      (statusFilter === "completed" && p.is_completed) ||
-      (statusFilter === "pending" && !p.is_completed);
-
-    return matchTexto && matchStatus;
-  });
+  const pedidosFiltrados = pedidos
+    .filter((p) => {
+      const texto = search.toLowerCase();
+      return (
+        p.solicitante?.toLowerCase().includes(texto) ||
+        p.email?.toLowerCase().includes(texto) ||
+        p.curso_turma?.toLowerCase().includes(texto)
+      ) && (
+        statusFilter === "all" ||
+        (statusFilter === "completed" && p.is_completed) ||
+        (statusFilter === "pending" && !p.is_completed)
+      );
+    })
+    .sort((a, b) => (a.is_completed === b.is_completed ? 0 : a.is_completed ? 1 : -1));
 
   return (
-  <Body>
-    <MenuLateralAdmin />
+    <Body>
+      <MenuLateralAdmin />
 
-    <div className="flex flex-col md:mt-1 mt-24  p-4 sm:p-6 lg:p-10 gap-8 md:ml-20
-                    max-h-screen transition-colors duration-300">
+      <div className="flex flex-col md:mt-4 mt-20 p-4 lg:p-8 gap-6 md:ml-20 transition-all duration-300">
+        <header className="flex flex-col gap-1">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-100">
+            Solicitações de Confecção
+          </h1>
+          <p className="text-sm text-slate-500">Acompanhe e gerencie as ordens de produção do LabMaker.</p>
+        </header>
 
-      <h1 className="text-xl sm:text-2xl font-bold 
-                     text-[#1976d2] dark:text-blue-400">
-        Solicitações de Confecção
-      </h1>
+        {/* FILTROS */}
+        <div className="flex flex-col md:flex-row gap-4 justify-between items-center bg-white dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
+          <input
+            type="text"
+            placeholder="Pesquisar..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full md:w-80 h-10 px-4 rounded-lg bg-slate-50 dark:bg-slate-800 border-none text-sm focus:ring-2 focus:ring-blue-500/20 transition-all outline-none"
+          />
 
-      {/* FILTROS */}
-      <div className="flex flex-col md:flex-row gap-4 justify-between">
-        <input
-          type="text"
-          placeholder="Pesquisar pedidos..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full md:w-[300px] h-[50px] px-3 py-2 border text-lg
-                     bg-white dark:bg-transparent
-                     text-gray-800 dark:text-gray-100
-                     border-gray-300 dark:border-white/50
-                     focus:outline-none focus:ring-1 focus:ring-blue-500"
-        />
-
-        <div className="flex flex-wrap gap-2 text-sm md:text-lg">
-          {["all", "pending", "completed"].map((s) => (
-            <button
-              key={s}
-              onClick={() => setStatusFilter(s)}
-              className={`px-4 h-9 rounded text-sm md:text-lg transition
-                ${
-                  statusFilter === s
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200"
+          <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
+            {["all", "pending", "completed"].map((s) => (
+              <button
+                key={s}
+                onClick={() => setStatusFilter(s)}
+                className={`px-4 py-1.5 rounded-md text-xs font-medium transition-all ${
+                  statusFilter === s 
+                    ? "bg-white dark:bg-slate-700 shadow-sm text-blue-600 dark:text-blue-400" 
+                    : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
                 }`}
-            >
-              {s === "all"
-                ? "Todas"
-                : s === "pending"
-                ? "Pendentes"
-                : "Concluídos"}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* TABELA */}
-      <div className="overflow-x-auto shadow max-h-[700px] overflow-y-auto">
-        <table className="min-w-[1200px] w-full border text-sm md:text-lg
-                           bg-white dark:bg-transparent
-                           text-gray-800 dark:text-gray-200">
-
-          <thead className="bg-blue-100 sticky text-blue-800 -top-1 z-10
-                             dark:bg-[#1e3a8a] dark:text-blue-200">
-            <tr>
-              {[
-                "Solicitante",
-                "Email",
-                "Curso",
-                "Contato",
-                "Detalhe",
-                "Projeto",
-                "Cargo",
-                "Centro de Custo",
-                "Arquivo",
-                "Entrega",
-                "Material",
-                "Status",
-                "Ações",
-              ].map((h) => (
-                <th
-                  key={h}
-                  className="border border-gray-200 dark:border-blue-400/50 px-2 py-4 whitespace-nowrap"
-                >
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-
-          <tbody>
-            {pedidosFiltrados.length === 0 ? (
-              <tr>
-                <td colSpan="13" className="text-center py-6 text-gray-500 dark:text-gray-400">
-                  Nenhum pedido encontrado
-                </td>
-              </tr>
-            ) : (
-              pedidosFiltrados.map((item) => (
-                <tr
-                  key={item.id}
-                  className="text-center hover:bg-blue-50 dark:hover:bg-[#011b3f] transition"
-                >
-                  <td className="border border-gray-200 dark:border-blue-400/50 px-2 py-4">{item.solicitante}</td>
-                  <td className="border border-gray-200 dark:border-blue-400/50 px-2 py-4">{item.email}</td>
-                  <td className="border border-gray-200 dark:border-blue-400/50 px-2 py-4">{item.curso_turma}</td>
-                  <td className="border border-gray-200 dark:border-blue-400/50 px-2 py-4">{item.contato}</td>
-                  <td className="border border-gray-200 dark:border-blue-400/50 px-2 py-4">{item.detalhe}</td>
-                  <td className="border border-gray-200 dark:border-blue-400/50 px-2 py-4">{item.sobre_projeto}</td>
-                  <td className="border border-gray-200 dark:border-blue-400/50 px-2 py-4">{item.cargo}</td>
-                  <td className="border border-gray-200 dark:border-blue-400/50 px-2 py-4">{item.centro_custo}</td>
-                  <td className="border border-gray-200 dark:border-blue-400/50 px-2 py-4">
-                    {renderArquivo(item.arquivo)}
-                  </td>
-                  <td className="border border-gray-200 dark:border-blue-400/50 px-2 py-4">{item.data_entrega}</td>
-                  <td className="border border-gray-200 dark:border-blue-400/50 px-2 py-4">{item.material}</td>
-
-                  <td className="border border-gray-200 dark:border-blue-400/50 px-2 py-4">
-                    {item.is_completed ? (
-                      <span className="text-green-600 dark:text-green-400 font-semibold">
-                        Concluído
-                      </span>
-                    ) : (
-                      <span className="text-yellow-600 dark:text-yellow-400 font-semibold">
-                        Pendente
-                      </span>
-                    )}
-                  </td>
-
-                  <td className="border border-gray-200 dark:border-gray-700 px-2 py-2">
-                    <div className="flex flex-wrap gap-2 justify-center">
-                      {!item.is_completed ? (
-                        <button
-                          onClick={() => marcarComoConcluido(item.id)}
-                          className="bg-green-500 hover:bg-green-700 text-white px-2 py-2 rounded transition"
-                        >
-                          Concluir
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => desmarcarComoConcluido(item.id)}
-                          className="bg-yellow-500 hover:bg-yellow-700 text-white px-2 py-2 rounded transition"
-                        >
-                          Reabrir
-                        </button>
-                      )}
-
-                      <button
-                        onClick={() => abrirWhatsApp(item.contato)}
-                        className="bg-green-600 hover:bg-green-800 text-white p-2 rounded transition"
-                      >
-                        <PhoneIcon size={14} />
-                      </button>
-
-                      <button
-                        onClick={() => setHistoricoAberto(item)}
-                        className="bg-blue-500 hover:bg-blue-700 text-white px-2 py-2 rounded transition"
-                      >
-                        Histórico
-                      </button>
-
-                      <button
-                        onClick={() => excluirPedido(item.id)}
-                        className="bg-red-500 hover:bg-red-700 text-white p-2 rounded transition"
-                      >
-                        <DeleteIcon size={16} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    {/* MODAL HISTÓRICO */}
-    {historicoAberto && (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
-        <div className="bg-white dark:bg-[#1e293b]
-                        text-gray-800 dark:text-gray-200
-                        w-full max-w-[500px] p-6 rounded shadow-lg">
-
-          <h2 className="font-bold mb-4 text-[#1976d2] dark:text-blue-400">
-            Histórico – {historicoAberto.solicitante}
-          </h2>
-
-          <ul className="space-y-2 text-sm max-h-[300px] overflow-y-auto">
-            {historicoAberto.historico?.map((h, i) => (
-              <li key={i} className="border-b border-gray-200 dark:border-gray-700 pb-1">
-                <strong>{h.data}</strong> — {h.acao}
-              </li>
+              >
+                {s === "all" ? "Todas" : s === "pending" ? "Pendentes" : "Concluídos"}
+              </button>
             ))}
-          </ul>
+          </div>
+        </div>
 
-          <button
-            onClick={() => setHistoricoAberto(null)}
-            className="mt-4 bg-[#1976d2] hover:bg-blue-800 text-white px-4 py-2 rounded w-full transition"
-          >
-            Fechar
-          </button>
+        {/* TABELA */}
+        <div className="overflow-hidden bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="min-w-[1400px] w-full border-collapse table-fixed text-left">
+              <thead>
+                <tr className="bg-slate-50/50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 text-center">
+                  <th className="w-[180px] px-4 py-4 text-[11px] font-bold uppercase text-slate-500 tracking-wider">Solicitante</th>
+                  <th className="w-[130px] px-4 py-4 text-[11px] font-bold uppercase text-slate-500 tracking-wider">Curso/Turma</th>
+                  <th className="w-[100px] px-4 py-4 text-[11px] font-bold uppercase text-slate-500 tracking-wider">Cargo</th>
+                  <th className="w-[100px] px-4 py-4 text-[11px] font-bold uppercase text-slate-500 tracking-wider">Material</th>
+                  <th className="w-[220px] px-4 py-4 text-[11px] font-bold uppercase text-slate-500 tracking-wider">Projeto/Detalhes</th>
+                  <th className="w-[120px] px-4 py-4 text-[11px] font-bold uppercase text-slate-500 tracking-wider">Arquivo</th>
+                  <th className="w-[120px] px-4 py-4 text-[11px] font-bold uppercase text-slate-500 tracking-wider">Prazos</th>
+                  <th className="w-[110px] px-4 py-4 text-[11px] font-bold uppercase text-slate-500 tracking-wider">Status</th>
+                  <th className="w-[160px] px-4 py-4 text-[11px] font-bold uppercase text-slate-500 tracking-wider">Ações</th>
+                </tr>
+              </thead>
+
+              <tbody className="divide-y divide-slate-50 dark:divide-slate-800 text-center text-xs">
+                {pedidosFiltrados.map((item) => (
+                  <tr
+                    key={item.id}
+                    className={`group transition-colors duration-200 ${
+                      item.is_completed 
+                        ? "bg-slate-50/40 dark:bg-slate-900/40 opacity-75 grayscale-[0.2]" 
+                        : "hover:bg-slate-50/80 dark:hover:bg-slate-800/50"
+                    }`}
+                  >
+                    <td className="px-4 py-4">
+                      <div className="flex flex-col items-center">
+                        <span className="font-semibold text-slate-700 dark:text-slate-200 truncate w-full">{item.solicitante}</span>
+                        <span className="text-[10px] text-slate-400 truncate w-full">{item.email}</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-4 text-slate-600 dark:text-slate-400 truncate">{item.curso_turma}</td>
+                    <td className="px-4 py-4 text-slate-600 dark:text-slate-400 italic">{item.cargo}</td>
+                    <td className="px-4 py-4 text-slate-600 dark:text-slate-400 italic">{item.material}</td>
+                    <td className="px-4 py-4">
+                       <div className="flex flex-col gap-0.5 items-center">
+                          <span className="font-medium text-slate-700 dark:text-slate-200 truncate w-full" title={item.sobre_projeto}>{item.sobre_projeto}</span>
+                          <span className="text-[10px] text-slate-500 truncate w-full font-light" title={item.detalhe}>{item.detalhe}</span>
+                       </div>
+                    </td>
+
+                    <td className="px-4 py-4">
+                      {item.arquivos ? (() => {
+                        let lista = [];
+                        try {
+                          if (Array.isArray(item.arquivos)) lista = item.arquivos;
+                          else {
+                            const str = item.arquivos.replace(/^"|"$/g, '').replace(/\\"/g, '"');
+                            const parsed = JSON.parse(str);
+                            lista = Array.isArray(parsed) ? parsed : [parsed];
+                          }
+                        } catch {
+                           if (typeof item.arquivos === 'string' && item.arquivos.includes('http')) {
+                             lista = [item.arquivos.replace(/[\]"']/g, '')];
+                           }
+                        }
+                        if (lista.length === 0) return <span className="text-slate-300">Nenhum</span>;
+                        return (
+                          <div className="flex flex-col gap-1.5 items-center">
+                            {lista.map((url, idx) => (
+                              <a 
+                                key={idx}
+                                href={url.trim().replace(/[\]'"]+$/, "")} 
+                                target="_blank" rel="noopener noreferrer" download 
+                                className="inline-flex items-center gap-1 text-blue-500 hover:text-blue-700 bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded-md transition-colors"
+                              >
+                                <Download size={12} /> <span className="text-[9px] font-bold uppercase">{lista.length > 1 ? `ARQ ${idx+1}` : "Baixar"}</span>
+                              </a>
+                            ))}
+                          </div>
+                        );
+                      })() : <span className="text-slate-300">Nenhum</span>}
+                    </td>
+
+                    <td className="px-4 py-4">
+                      <div className="flex flex-col text-[10px]">
+                        <span className="text-slate-400 font-medium">ENTREGA</span>
+                        <span className="text-slate-600 dark:text-slate-300 font-bold">{item.data_entrega}</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                        item.is_completed 
+                          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" 
+                          : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                      }`}>
+                        {item.is_completed ? "Concluído" : "Pendente"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="flex gap-1.5 justify-center">
+                        <button
+                          onClick={() => alternarStatus(item.id, item.historico, item.is_completed)}
+                          className={`p-2 rounded-lg transition-all ${item.is_completed ? "text-amber-600 hover:bg-amber-50" : "text-emerald-600 hover:bg-emerald-50"}`}
+                        >
+                          {item.is_completed ? <RotateCcw size={16}/> : <CheckCircle size={16}/>}
+                        </button>
+                        <button onClick={() => abrirWhatsApp(item.contato)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-all">
+                          <MessageCircle size={16}/>
+                        </button>
+                        <button onClick={() => setHistoricoAberto(item)} className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-all">
+                          <History size={16}/>
+                        </button>
+                        <button onClick={() => excluirPedido(item.id)} className="p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-all">
+                          <Trash2 size={16}/>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
-    )}
-  </Body>
-);
+
+      {/* MODAL HISTÓRICO */}
+      {historicoAberto && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden">
+            <div className="p-6 border-b border-slate-50 dark:border-slate-800">
+              <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">Linha do Tempo</h2>
+              <p className="text-xs text-slate-500">{historicoAberto.solicitante}</p>
+            </div>
+            <div className="p-6 max-h-[300px] overflow-y-auto">
+              <div className="relative border-l-2 border-slate-100 dark:border-slate-800 ml-2 space-y-6">
+                {historicoAberto.historico?.map((h, i) => (
+                  <div key={i} className="relative pl-6">
+                    <div className="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-white dark:bg-slate-900 border-2 border-blue-500"></div>
+                    <time className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{h.data}</time>
+                    <p className="text-sm text-slate-700 dark:text-slate-300">{h.acao}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="p-4 bg-slate-50 dark:bg-slate-800/50 flex justify-end">
+              <button onClick={() => setHistoricoAberto(null)} className="px-6 py-2 bg-slate-900 dark:bg-slate-100 dark:text-slate-900 text-white rounded-xl text-sm font-bold hover:opacity-90">
+                Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </Body>
+  );
 }

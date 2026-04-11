@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+
+import { useEffect, useState} from "react";
 import { supabase } from "../services/supabase";
 import InputRed from "../assets/styles/InputRed";
 import InputSelect from "../assets/styles/InputSelect";
@@ -15,15 +16,24 @@ export default function AddPedidos() {
   const [contato, setContato] = useState("");
   const [centroDeCusto, setCentroDeCusto] = useState("");
   const [cargo, setCargo] = useState("");
-  const [enviarArquivo, setEnviarArquivo] = useState(null);
+
+  // 🔥 ALTERADO: agora é lista
+  const [arquivos, setArquivos] = useState([]);
+
   const [dataEntrega, setDataEntrega] = useState(null);
   const [material, setMaterial] = useState("");
   const [sobreProjeto, setSobreProjeto] = useState("");
   const [detalhe, setDetalhe] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-  supabase.auth.signOut(); // desloga sempre que acessar página pública
-}, []); 
+    supabase.auth.signOut();
+  }, []);
+
+ 
+
+ 
+
   function formatarTelefone(valor) {
     let numero = valor.replace(/\D/g, "").slice(0, 11);
 
@@ -38,6 +48,7 @@ export default function AddPedidos() {
       7
     )}-${numero.slice(7)}`;
   }
+
   function textoValido(texto) {
     const regex = /^[A-Za-zÀ-ÿ0-9\s]+$/;
     return regex.test(texto);
@@ -46,23 +57,23 @@ export default function AddPedidos() {
   function validarStep1() {
     const newErrors = {};
 
-    if (!solicitante) {
-      newErrors.solicitante = "Informe o nome completo.";
-    } else if (solicitante.trim().length <8) {
+    if (!solicitante) newErrors.solicitante = "Informe o nome completo.";
+    else if (solicitante.trim().length < 8)
       newErrors.solicitante = "Insira seu nome completo.";
-    }  else if (!textoValido(solicitante)) {
+    else if (!textoValido(solicitante))
       newErrors.solicitante = "O nome não pode conter caracteres especiais.";
-    };
+
     if (!email) newErrors.email = "Informe o email.";
-    if (!cursoETurma) {
+
+    if (!cursoETurma)
       newErrors.cursoETurma = "Informe curso/turma ou setor.";
-    } else if (!textoValido(cursoETurma)) {
-      newErrors.cursoETurma = "Curso/Turma não pode conter caracteres especiais.";
-    }
+    else if (!textoValido(cursoETurma))
+      newErrors.cursoETurma =
+        "Curso/Turma não pode conter caracteres especiais.";
+
     if (!contato) newErrors.contato = "Informe o telefone.";
 
     setErrors(newErrors);
-
     return Object.keys(newErrors).length === 0;
   }
 
@@ -86,53 +97,55 @@ export default function AddPedidos() {
       }
     }
 
-    if (!enviarArquivo) newErrors.enviarArquivo = "Anexe um arquivo.";
+    // 🔥 ALTERADO
+    if (arquivos.length === 0)
+      newErrors.enviarArquivo = "Anexe ao menos um arquivo.";
 
     if (cargo === "Administrativo" && !centroDeCusto) {
       newErrors.centroDeCusto = "Informe o Centro de Custo.";
     }
 
     setErrors(newErrors);
-
     return Object.keys(newErrors).length === 0;
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
 
+    if (isSubmitting) return;
     if (!validarFormulario()) return;
 
+    setIsSubmitting(true);
+
     try {
-      const arquivoReal = Array.isArray(enviarArquivo)
-        ? enviarArquivo[0]
-        : enviarArquivo;
+      const urlsArquivos = [];
 
-      if (!arquivoReal) {
-        setErrors({ enviarArquivo: "Selecione um arquivo." });
-        return;
+      // 🔥 upload múltiplo
+      for (const arquivo of arquivos) {
+        const filePath = `${Date.now()}-${arquivo.name.replace(
+          /[^a-zA-Z0-9.-]/g,
+          "_"
+        )}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("pedidos")
+          .upload(filePath, arquivo, {
+            cacheControl: "3600",
+            upsert: true,
+          });
+
+        if (uploadError) {
+          setErrors({ supabase: uploadError.message });
+          setIsSubmitting(false);
+          return;
+        }
+
+        const { data } = supabase.storage
+          .from("pedidos")
+          .getPublicUrl(filePath);
+
+        urlsArquivos.push(data.publicUrl);
       }
-
-      const filePath = `${Date.now()}-${arquivoReal.name.replace(
-        /[^a-zA-Z0-9.-]/g,
-        "_"
-      )}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("pedidos")
-        .upload(filePath, arquivoReal, {
-          cacheControl: "3600",
-          upsert: true,
-        });
-
-      if (uploadError) {
-        console.error("Erro upload:", uploadError);
-        setErrors({ supabase: uploadError.message });
-        return;
-      }
-
-      const { data } = supabase.storage
-        .from("pedidos")
-        .getPublicUrl(filePath);
 
       const { error } = await supabase.from("pedidos").insert([
         {
@@ -141,14 +154,18 @@ export default function AddPedidos() {
           curso_turma: cursoETurma || "",
           contato,
           cargo: cargo || "",
-          centro_custo: cargo === "Administrativo" ? centroDeCusto || "" : "",
+          centro_custo:
+            cargo === "Administrativo" ? centroDeCusto || "" : "",
           material,
           sobre_projeto: sobreProjeto || "",
           detalhe,
           data_entrega: dataEntrega
             ? dataEntrega.toISOString().split("T")[0]
             : null,
-          arquivo: data.publicUrl,
+          
+          // 🔥 CORREÇÃO AQUI: Envie o array puro, sem JSON.stringify
+          arquivos: urlsArquivos, 
+
           is_completed: false,
           historico: [
             {
@@ -160,8 +177,8 @@ export default function AddPedidos() {
       ]);
 
       if (error) {
-        console.error(error);
         setErrors({ supabase: "Erro ao salvar pedido." });
+        setIsSubmitting(false);
         return;
       }
 
@@ -178,11 +195,13 @@ export default function AddPedidos() {
       setSobreProjeto("");
       setDetalhe("");
       setDataEntrega(null);
-      setEnviarArquivo(null);
+      setArquivos([]); // 🔥 reset
       setErrors({});
     } catch (err) {
       console.error(err);
       setErrors({ supabase: "Erro inesperado." });
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -193,6 +212,7 @@ export default function AddPedidos() {
   const hoje = new Date();
   const dataMinima = new Date();
   dataMinima.setDate(hoje.getDate() + 10);
+
   return (
    <div className="flex flex-col  max-w-6xl mx-auto mt-5  md:px-24 items-center w-full px-4 mb-20">
       <form className="flex flex-col gap-6 w-full ">
@@ -275,18 +295,19 @@ export default function AddPedidos() {
 
               <div className="w-full flex flex-col gap-4">
                 <InputSelect
-                  title="Material:"
+                  title="Materiais Disponíveis:"
                   value={material}
                   onChange={(e) =>
                     setMaterial(e.target.value)
                   }
                   options={[
                     "Impressão 3D",
+                    "Acrílico 2mm",
                     "Acrílico 3mm",
                     "Acrílico 4mm",
                     "Acrílico 6mm",
                     "Acrílico 8mm",
-                    "Outro Material (especificar en Detalhe do pedido)",
+                    "Outro Material (especificar em Detalhe do pedido)",
                   ]}
                   error={errors.material}
                 />
@@ -330,12 +351,20 @@ export default function AddPedidos() {
               
 
               <div className="w-full flex flex-col gap-4">
-                <InputFile
-                  title="Anexar arquivo"
-                  accept=".dxf,.png,.gcode,.3mf,.svg,.pdf,.jpg,.jpeg"
-                  onChange={setEnviarArquivo}
-                  error={errors.enviarArquivo}
-                />
+               <>
+                {/* Dentro do AddPedidos.jsx */}
+                  <InputFile
+                    title="Anexar arquivos"
+                    accept=".dxf,.png,.gcode,.3mf,.svg,.pdf,.stl,.mp4,.mp3,.jpg,.jpeg"
+                    files={arquivos} // Passa a lista atual
+                    onChange={setArquivos} // Atualiza a lista completa de uma vez
+                    error={errors.enviarArquivo}
+                  />
+
+
+
+               
+              </>
 
                <DatePickerInput
                   title="Data de Entrega:"
@@ -369,9 +398,14 @@ export default function AddPedidos() {
               <button
                 type="button"
                 onClick={handleSubmit}
-                className="h-[50px] hover:bg-[#001438] w-full bg-[#0E4194] text-white rounded"
+                disabled={isSubmitting}
+                className={`h-[50px] w-full rounded text-white ${
+                  isSubmitting
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-[#0E4194] hover:bg-[#001438]"
+                }`}
               >
-                Enviar
+                {isSubmitting ? "Enviando..." : "Enviar"}
               </button>
             </div>
             <h1 className="text-md text-justify text-red-600 ">
