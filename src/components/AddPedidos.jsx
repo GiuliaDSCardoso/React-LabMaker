@@ -355,7 +355,7 @@ export default function AddPedidos() {
                 {/* Dentro do AddPedidos.jsx */}
                   <InputFile
                     title="Anexar arquivos"
-                    accept=".dxf,.png,.gcode,.3mf,.svg,.pdf,.stl,.mp4,.mp3,.jpg,.jpeg"
+                    accept=".dxf,.png,.gcode,.3mf,.svg,.pdf,.stl,.mp4,.mp3,.jpg,.jpeg, .pwj5"
                     files={arquivos} // Passa a lista atual
                     onChange={setArquivos} // Atualiza a lista completa de uma vez
                     error={errors.enviarArquivo}
