@@ -89,11 +89,11 @@ export default function AddPedidos() {
       newErrors.dataEntrega = "Informe a data de entrega.";
     } else {
       const hojeMais10 = new Date();
-      hojeMais10.setDate(hojeMais10.getDate() + 10);
+      hojeMais10.setDate(hojeMais10.getDate() + 20);
 
       if (dataEntrega < hojeMais10) {
         newErrors.dataEntrega =
-          "A data deve ser pelo menos 10 dias a partir de hoje.";
+          "A data deve ser pelo menos 20 dias a partir de hoje, não aceitamos pedidos fora desse prazo mínimo.";
       }
     }
 
