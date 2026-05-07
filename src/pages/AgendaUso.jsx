@@ -24,6 +24,8 @@ export default function AgendaUso() {
   const [diaInteiro, setDiaInteiro] = useState(false);
   const [turno, setTurno] = useState("manha");
   const [agendamentos, setAgendamentos] = useState([]);
+  const [turma, setTurma] = useState("");
+  const [responsavel, setResponsavel] = useState("");
   const [step, setStep] = useState(1);
   const [datasSelecionadas, setDatasSelecionadas] = useState([]);
   const [modoHorario, setModoHorario] = useState("igual");
@@ -73,6 +75,15 @@ export default function AgendaUso() {
     const dataSelecionada = new Date(date);
     dataSelecionada.setHours(0, 0, 0, 0);
     return dataSelecionada < hoje;
+  }
+
+  function turmaValida(valor) {
+    const regex = /^[A-Za-z0-9\s-]+$/;
+    return regex.test(valor);
+  }
+
+  function precisaResponsavel(email) {
+    return email.toLowerCase().endsWith("@ba.estudante.senai.br");
   }
 
   async function carregarAgenda() {
@@ -255,6 +266,10 @@ function horarioConflita(data, inicio, fim, diaInteiro) {
     newErrors.horaFim =
       "O horário de término deve ser depois do horário de início.";
   }
+  if (precisaResponsavel(email) && !responsavel) {
+    newErrors.responsavel =
+    "Informe o responsável que acompanhará.";
+}
 
   if (Object.keys(newErrors).length > 0) {
     setErrors(newErrors);
@@ -299,6 +314,10 @@ function horarioConflita(data, inicio, fim, diaInteiro) {
     telefone,
     motivo,
     arrumacao,
+    turma,
+    responsavel: precisaResponsavel(email)
+      ? responsavel
+      : null,
     turno,
     tipo: "USUÁRIO",
     status: "pendente",
@@ -343,18 +362,20 @@ function horarioConflita(data, inicio, fim, diaInteiro) {
 
   try {
     await emailjs.send(
-      "service_seiz71a",
-      "template_va5k0hr",
-      {
-        nome,
-        email,
-        telefone,
-        arrumacao,
-        motivo,
-        datas: datasFormatadas,
-      },
-      "SZWf2utdw8nJQKtjZ"
-    );
+    "service_seiz71a",
+    "template_va5k0hr",
+    {
+      nome,
+      email,
+      telefone,
+      turma,
+      responsavel,
+      arrumacao,
+      motivo,
+      datas: datasFormatadas,
+    },
+    "SZWf2utdw8nJQKtjZ"
+  );
 
     alert("Solicitação enviada com sucesso!");
   } catch (err) {
@@ -390,7 +411,11 @@ function horarioConflita(data, inicio, fim, diaInteiro) {
 
     if (email && !emailValido(email))
       newErrors.email = "Email inválido.";
-
+    if (!turma) {
+      newErrors.turma = "Informe o código da turma.";
+    } else if (!turmaValida(turma)) {
+      newErrors.turma = "Código da turma inválido.";
+    }
     const telefoneRegex = /^\(\d{2}\) 9 \d{4}-\d{4}$/;
     if (telefone && !telefoneRegex.test(telefone))
       newErrors.telefone = "Telefone inválido.";
@@ -444,6 +469,19 @@ function horarioConflita(data, inicio, fim, diaInteiro) {
                 error={errors.telefone}
                 onChange={(e) => setTelefone(formatarTelefone(e.target.value))}
               />
+              <InputRed
+                  title="Código da turma:"
+                  placeholder="Ex.: DS3M24"
+                  value={turma}
+                  error={errors.turma}
+                  onChange={(e) => {
+                    const valor = e.target.value;
+
+                    if (/^[A-Za-z0-9\s-]*$/.test(valor)) {
+                      setTurma(valor.toUpperCase());
+                    }
+                  }}
+                />
               <InputSelect
                 title="Arrumação da sala:"
                 value={arrumacao}
@@ -596,7 +634,21 @@ function horarioConflita(data, inicio, fim, diaInteiro) {
                   ))}
                 </div>
               )}
+              {precisaResponsavel(email) && (
+                <InputRed
+                  title="Nome do responsável acompanhante:"
+                  placeholder="Digite o nome do responsável"
+                  value={responsavel}
+                  error={errors.responsavel}
+                  onChange={(e) => {
+                    const valor = e.target.value;
 
+                    if (/^[A-Za-zÀ-ÿ\s]*$/.test(valor)) {
+                      setResponsavel(valor);
+                    }
+                  }}
+                />
+              )}
               <InputRed
                 type="text"
                 title="Motivo da Solicitação:"
